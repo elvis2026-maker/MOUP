@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 """
-台股盤中即時報價抓取腳本 V8
-V8 修正：
-  1. mis.twse 境外 IP 封鎖問題：改用多重備援策略
-     主要：TWSE openapi /v1/exchangeReport/STOCK_DAY_ALL（境外可連，每日更新）
-     盤中主要：mis.twse getStockInfo（境外可能被封，加強 Session + retry）
-     盤中備援：twse openapi 即時成交（/v1/futuresoption/StockOptDailyTrade 或 ISIN）
-  2. 非交易時段：直接寫入 prev_close 讓前端顯示昨收，不再顯示空白
-  3. 增加 fetch_source 欄位，前端可顯示資料來源說明
+台股盤中即時報價抓取腳本 V7
+V7 修正：
+  1. 輸出格式文件化：prices[sid] = {price, prev, open, high, low, vol, time, name, market}
+     前端 V7 已對應此格式進行 key 轉換（price→z, prev→y, open→o, high→h, low→l, vol→v）
+  2. 沿用 V5 所有修正：Session 機制、is_trading 動態判斷、備用 API、非交易時段處理
 """
 
 import requests, json, os, time
@@ -15,6 +12,7 @@ from datetime import datetime, timezone, timedelta
 
 TZ_TW = timezone(timedelta(hours=8))
 
+# mis.twse 需要帶完整 Header + 正確 Referer
 HEADERS_MIS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
     "Accept": "application/json, text/javascript, */*; q=0.01",
@@ -24,9 +22,8 @@ HEADERS_MIS = {
 }
 
 HEADERS_OPENAPI = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "User-Agent": "Mozilla/5.0",
     "Accept": "application/json",
-    "Accept-Language": "zh-TW,zh;q=0.9",
 }
 
 STOCKS_PATH = os.path.join(os.path.dirname(__file__), "../data/stocks.json")
@@ -42,13 +39,16 @@ def is_trading_now():
     total = now.hour * 60 + now.minute
     return (9 * 60) <= total <= (13 * 60 + 30)
 
-# ── 方法1：mis.twse（盤中即時，境外可能被封） ─────────────
 def get_mis_session():
+    """
+    mis.twse 必須先造訪 fibest.htm 才能取得有效 jsessionid
+    否則 getStockInfo.jsp 回傳空 msgArray
+    """
     sess = requests.Session()
     sess.headers.update(HEADERS_MIS)
     try:
-        r = sess.get("https://mis.twse.com.tw/stock/fibest.htm", timeout=12)
-        r.raise_for_status()
+        # Step 1: 打首頁拿 session
+        sess.get("https://mis.twse.com.tw/stock/fibest.htm", timeout=12)
         time.sleep(0.5)
         print("  → mis.twse session 取得成功")
     except Exception as e:
@@ -56,8 +56,13 @@ def get_mis_session():
     return sess
 
 def fetch_mis_twse(sess, sids, markets):
+    """
+    呼叫 mis.twse getStockInfo，批次處理
+    markets: dict {sid: 'tse'|'otc'}
+    """
     result = {}
-    batch_size = 20
+    batch_size = 30  # 縮小批次，URL 不要太長
+
     for i in range(0, len(sids), batch_size):
         batch = sids[i:i+batch_size]
         parts = []
@@ -65,6 +70,7 @@ def fetch_mis_twse(sess, sids, markets):
             mkt = markets.get(sid, 'tse')
             prefix = 'otc' if mkt == 'otc' else 'tse'
             parts.append(f"{prefix}_{sid}.tw")
+
         ex_ch = "|".join(parts)
         url = (
             f"https://mis.twse.com.tw/stock/api/getStockInfo.jsp"
@@ -75,134 +81,77 @@ def fetch_mis_twse(sess, sids, markets):
             r.raise_for_status()
             data = r.json()
             arr = data.get("msgArray", [])
-            print(f"  → mis 批次 {i//batch_size+1}: 回傳 {len(arr)} 筆")
+            print(f"  → 批次 {i//batch_size+1}: 回傳 {len(arr)} 筆")
             for item in arr:
                 sid = item.get("c", "")
                 if not sid:
                     continue
-                z = item.get("z", "-")
-                if z in ("-", "--", ""):
-                    z = item.get("y", "-")  # 若即時價空，用昨收
                 result[sid] = {
-                    "price":  z,
-                    "prev":   item.get("y", "-"),
-                    "open":   item.get("o", "-"),
-                    "high":   item.get("h", "-"),
-                    "low":    item.get("l", "-"),
-                    "vol":    item.get("v", "0"),
-                    "time":   item.get("tlong", ""),
-                    "name":   item.get("n", ""),
+                    "price": item.get("z", "-"),
+                    "prev":  item.get("y", "-"),
+                    "open":  item.get("o", "-"),
+                    "high":  item.get("h", "-"),
+                    "low":   item.get("l", "-"),
+                    "vol":   item.get("v", "0"),
+                    "time":  item.get("tlong", ""),
+                    "name":  item.get("n", ""),
                     "market": "otc" if item.get("ex","") == "otc" else "tse",
-                    "source": "mis_live",
                 }
         except Exception as e:
-            print(f"  ! mis 批次 {i//batch_size+1} 失敗：{e}")
+            print(f"  ! 批次 {i//batch_size+1} 失敗：{e}")
         time.sleep(0.4)
+
     return result
 
-# ── 方法2：TWSE OpenAPI 上市股票（境外可連，有當日成交） ──
-def fetch_twse_openapi(sids):
+def fetch_openapi_fallback(sids):
     """
-    https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL
-    回傳當日（或最近交易日）所有上市股票行情，境外 IP 可連
+    備用 API：openapi.twse.com.tw（無需 Session，但只有上市收盤價，非盤中）
+    僅用於 mis.twse 完全失敗時的降級方案
     """
     result = {}
-    sid_set = set(sids)
     try:
         url = "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL"
-        r = requests.get(url, headers=HEADERS_OPENAPI, timeout=25)
+        r = requests.get(url, headers=HEADERS_OPENAPI, timeout=20)
         r.raise_for_status()
         data = r.json()
+        sid_set = set(sids)
         for item in data:
             sid = item.get("Code", "")
             if sid not in sid_set:
                 continue
-            close = item.get("ClosingPrice", "-").replace(",","").strip()
-            open_ = item.get("OpeningPrice", "-").replace(",","").strip()
-            high  = item.get("HighestPrice", "-").replace(",","").strip()
-            low   = item.get("LowestPrice",  "-").replace(",","").strip()
-            chg   = item.get("Change", "0").replace(",","").strip()
-            vol   = item.get("TradeVolume", "0").replace(",","").strip()
-            # prev = close - change
-            try:
-                prev = str(round(float(close) - float(chg), 2)) if close not in ("-","") and chg not in ("","--") else close
-            except:
-                prev = close
-            vol_lots = str(int(vol) // 1000) if vol.lstrip("-").isdigit() else "0"
+            close = item.get("ClosingPrice", "-")
+            open_ = item.get("OpeningPrice", "-")
+            high  = item.get("HighestPrice", "-")
+            low   = item.get("LowestPrice",  "-")
+            vol   = item.get("TradeVolume",  "0")
             result[sid] = {
-                "price":  close if close not in ("","0") else "-",
-                "prev":   prev,
-                "open":   open_,
-                "high":   high,
-                "low":    low,
-                "vol":    vol_lots,
-                "time":   "",
-                "name":   item.get("Name", sid),
+                "price": close,   # 昨日收盤當暫用
+                "prev":  close,
+                "open":  open_,
+                "high":  high,
+                "low":   low,
+                "vol":   str(int(vol.replace(",","")) // 1000) if vol.replace(",","").isdigit() else "0",
+                "time":  "",
+                "name":  item.get("Name", sid),
                 "market": "tse",
-                "source": "twse_openapi",
+                "is_prev_close": True,  # 標記是昨日收盤，非盤中
             }
-        print(f"  → TWSE openapi 取得 {len(result)} 筆（上市當日行情）")
+        print(f"  → openapi 備用取得 {len(result)} 筆（為昨日收盤，非即時）")
     except Exception as e:
-        print(f"  ! TWSE openapi 失敗：{e}")
-    return result
-
-# ── 方法3：TPEx OpenAPI 上櫃股票 ──────────────────────────
-def fetch_tpex_openapi(sids):
-    """
-    https://www.tpex.org.tw/openapi/v1/tpex_mainboard_daily_close_quotes
-    回傳上櫃股票每日收盤行情
-    """
-    result = {}
-    sid_set = set(sids)
-    try:
-        url = "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_daily_close_quotes"
-        r = requests.get(url, headers=HEADERS_OPENAPI, timeout=25)
-        r.raise_for_status()
-        data = r.json()
-        for item in data:
-            sid = str(item.get("SecuritiesCompanyCode", "")).strip()
-            if sid not in sid_set:
-                continue
-            close = str(item.get("Close", "-")).replace(",","").strip()
-            open_ = str(item.get("Open", "-")).replace(",","").strip()
-            high  = str(item.get("High", "-")).replace(",","").strip()
-            low   = str(item.get("Low",  "-")).replace(",","").strip()
-            chg   = str(item.get("Change", "0")).replace(",","").strip()
-            vol   = str(item.get("TradingShares", "0")).replace(",","").strip()
-            try:
-                prev = str(round(float(close) - float(chg), 2)) if close not in ("-","") and chg not in ("","--") else close
-            except:
-                prev = close
-            vol_lots = str(int(vol) // 1000) if vol.lstrip("-").isdigit() else "0"
-            result[sid] = {
-                "price":  close if close not in ("","0") else "-",
-                "prev":   prev,
-                "open":   open_,
-                "high":   high,
-                "low":    low,
-                "vol":    vol_lots,
-                "time":   "",
-                "name":   str(item.get("CompanyName", sid)).strip(),
-                "market": "otc",
-                "source": "tpex_openapi",
-            }
-        print(f"  → TPEx openapi 取得 {len(result)} 筆（上櫃當日行情）")
-    except Exception as e:
-        print(f"  ! TPEx openapi 失敗：{e}")
+        print(f"  ! openapi 備用也失敗：{e}")
     return result
 
 def main():
     now = tw_now()
     now_str = now.strftime("%Y/%m/%d %H:%M:%S")
     trading = is_trading_now()
-    print(f"[{now_str} 台灣時間] V8 抓取報價 (交易中: {trading})")
+    print(f"[{now_str} 台灣時間] 抓取盤中即時報價 (交易中: {trading})")
 
     errors = []
-    fetch_source = "twse_openapi"
 
     if not os.path.exists(STOCKS_PATH):
-        errors.append("stocks.json 不存在，請先確認每日盤後 workflow 執行成功，且 FINMIND_TOKEN 已設定")
-        _write_out({}, now_str, now.strftime("%Y%m%d"), trading, errors, fetch_source)
+        errors.append("stocks.json 不存在，請先執行 fetch_twse.py")
+        _write_out({}, now_str, now.strftime("%Y%m%d"), trading, errors)
         return
 
     with open(STOCKS_PATH, encoding="utf-8") as f:
@@ -210,81 +159,60 @@ def main():
 
     stocks = stocks_data.get("stocks", [])
     if not stocks:
-        errors.append("stocks.json 內無候選股，請確認每日盤後抓資料 workflow 是否正常執行")
-        _write_out({}, now_str, now.strftime("%Y%m%d"), trading, errors, fetch_source)
+        errors.append("stocks.json 無候選股，請確認每日盤後抓資料 workflow 是否正常執行")
+        _write_out({}, now_str, now.strftime("%Y%m%d"), trading, errors)
         return
 
-    sids    = [s["sid"]                        for s in stocks]
-    markets = {s["sid"]: s.get("market","tse") for s in stocks}
-    tse_sids = [s for s in sids if markets[s] == "tse"]
-    otc_sids = [s for s in sids if markets[s] == "otc"]
+    sids    = [s["sid"]              for s in stocks]
+    markets = {s["sid"]: s.get("market", "tse") for s in stocks}
     print(f"  → 候選股：{', '.join(sids)}")
-    print(f"  → 上市：{len(tse_sids)} 支，上櫃：{len(otc_sids)} 支")
 
-    live = {}
-    mis_tried = False
+    # V5修正：非交易時段仍嘗試抓取（可能有盤後零星成交），但明確標記
+    if not trading:
+        print("  ⚠ 目前非交易時段，嘗試取得最近成交價...")
 
-    # 盤中優先嘗試 mis.twse（有逐筆即時價）
-    if trading:
-        print("  ► 嘗試 mis.twse 即時報價...")
-        sess = get_mis_session()
-        mis_result = fetch_mis_twse(sess, sids, markets)
-        valid_mis = {k: v for k, v in mis_result.items() if v.get("price") not in (None, "-", "--", "")}
-        print(f"  → mis.twse 有效報價：{len(valid_mis)} 筆")
-        if len(valid_mis) >= len(sids) * 0.5:  # 至少取得一半才用
-            live = mis_result
-            fetch_source = "mis_live"
-            mis_tried = True
-        else:
-            msg = f"mis.twse 只取得 {len(valid_mis)}/{len(sids)} 筆（可能境外 IP 被限），改用 TWSE OpenAPI"
-            print(f"  ! {msg}")
-            errors.append(msg)
-        mis_tried = True
+    # 主要方式：mis.twse（需要 Session）
+    sess = get_mis_session()
+    live = fetch_mis_twse(sess, sids, markets)
 
-    # 備援（或非交易時段）：TWSE + TPEx OpenAPI
-    if not live or len(live) < len(sids) * 0.5:
-        print("  ► 使用 TWSE/TPEx OpenAPI 備援...")
-        if tse_sids:
-            tse_data = fetch_twse_openapi(tse_sids)
-            live.update(tse_data)
-        if otc_sids:
-            otc_data = fetch_tpex_openapi(otc_sids)
-            live.update(otc_data)
-        if fetch_source != "mis_live":
-            fetch_source = "openapi_daily"
+    if len(live) == 0:
+        msg = "mis.twse 回傳 0 筆（可能非交易時段或 API 暫時不可用），改用 openapi 備用"
+        print(f"  ! {msg}")
+        errors.append(msg)
+        live = fetch_openapi_fallback(sids)
 
-    # 最終確認
-    valid_count = sum(1 for v in live.values() if v.get("price") not in (None, "-", "--", ""))
-    print(f"  ✅ 最終取得 {len(live)} 筆，有效報價 {valid_count} 筆")
+    if len(live) == 0:
+        errors.append("所有 API 均無法取得報價（非交易時段為正常現象）")
+    
+    # V5修正：非交易時段 prices 為空是正常的，不算錯誤
+    if not trading and len(live) == 0:
+        errors = ["非交易時段，盤中資料將在 09:05 後自動更新"]
+
+    print(f"  ✅ 最終取得 {len(live)} 筆")
     for sid, p in live.items():
         price = p.get("price", "-")
         prev  = p.get("prev",  "-")
         name  = p.get("name",  sid)
-        src   = p.get("source","?")
         try:
-            chg = f"+{(float(price)-float(prev))/float(prev)*100:.2f}%" if price not in ("-","--") and prev not in ("-","--","0") else "--"
+            chg = f"+{(float(price)-float(prev))/float(prev)*100:.2f}%" if price not in ("-","--") else "--"
         except:
             chg = "--"
-        print(f"  {p.get('market','?')} {sid} {name:8s} {str(price):>8s}  {chg}  [{src}]")
+        print(f"  {p.get('market','?')} {sid} {name:8s} {price:>8s}  {chg}")
 
-    if not trading and valid_count == 0:
-        errors = ["非交易時段；若資料仍為空，請手動觸發 workflow 或等待隔日 09:05 自動更新"]
+    _write_out(live, now_str, now.strftime("%Y%m%d"), trading, errors)
 
-    _write_out(live, now_str, now.strftime("%Y%m%d"), trading, errors, fetch_source)
-
-def _write_out(prices, now_str, trade_date, trading, errors, fetch_source="unknown"):
+def _write_out(prices, now_str, trade_date, trading, errors):
     output = {
-        "updated_at":    now_str,
-        "trade_date":    trade_date,
-        "is_trading":    trading,
-        "fetch_source":  fetch_source,
-        "prices":        prices,
-        "fetch_errors":  errors,
+        "updated_at":   now_str,
+        "trade_date":   trade_date,
+        "is_trading":   trading,
+        "prices":       prices,
+        "fetch_errors": errors,
     }
     os.makedirs(os.path.dirname(LIVE_PATH), exist_ok=True)
     with open(LIVE_PATH, "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
-    print(f"  💾 live.json 寫入完成（{len(prices)} 筆，來源：{fetch_source}）")
+    print(f"  💾 live.json 寫入完成（{len(prices)} 筆）")
 
 if __name__ == "__main__":
     main()

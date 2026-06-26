@@ -19,9 +19,8 @@ def main():
         "updated_at":   now_str,
         "trade_date":   trade_date,
         "is_trading":   False,
-        "fetch_source": "reset",
         "prices":       {},
-        "fetch_errors": [f"盤後重置完成（{now_str}），盤中資料將於隔日 09:05 後自動更新（V8）"]
+        "fetch_errors": [f"盤後重置完成（{now_str}），盤中資料將於隔日 09:05 後自動更新（V7）"]
     }
 
     os.makedirs(os.path.dirname(LIVE_PATH), exist_ok=True)
