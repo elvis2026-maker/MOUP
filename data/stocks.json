@@ -1,7 +1,123 @@
 {
-  "updated_at": "2026/06/26 11:12",
-  "trade_date": "20260626",
-  "total_scanned": 0,
-  "candidates_count": 0,
-  "stocks": []
+  "updated_at": "2026/06/25 15:05",
+  "trade_date": "20260625",
+  "total_scanned": 1847,
+  "candidates_count": 28,
+  "stocks": [
+    {
+      "sid": "2330", "name": "台積電", "close": 1050.0, "change_pct": 3.2, "volume": 28500000,
+      "score": 91, "prob": "高（78%）", "prob_level": "high",
+      "ma5": 1020.0, "ma10": 1005.0, "ma20": 980.0,
+      "reasons": ["大漲 ≥3%", "收盤靠近最高點", "量能放大 2.1x", "均線多頭排列", "外資大幅買超"],
+      "warnings": [],
+      "inst": { "foreign_net": 15000, "trust_net": 800, "dealer_net": 200, "total_net": 16000 },
+      "warrants": [
+        {"code":"71234P","issuer":"元大","type":"call","expire":"2026/09/15","leverage":6.8,"iv":28.5,"delta":0.62,"moneyness":"價平","bid":0.85,"ask":0.87,"volume":2850},
+        {"code":"71891P","issuer":"凱基","type":"call","expire":"2026/08/20","leverage":7.2,"iv":31.2,"delta":0.55,"moneyness":"輕度價外","bid":0.72,"ask":0.74,"volume":1920},
+        {"code":"72045P","issuer":"群益","type":"call","expire":"2026/10/01","leverage":5.9,"iv":26.8,"delta":0.68,"moneyness":"輕度價內","bid":1.12,"ask":1.14,"volume":980}
+      ]
+    },
+    {
+      "sid": "2454", "name": "聯發科", "close": 1280.0, "change_pct": 4.1, "volume": 12000000,
+      "score": 87, "prob": "高（75%）", "prob_level": "high",
+      "ma5": 1240.0, "ma10": 1210.0, "ma20": 1180.0,
+      "reasons": ["大漲 ≥3%", "收盤靠近最高點", "突破近10日高點", "投信連續買進"],
+      "warnings": [],
+      "inst": { "foreign_net": 5000, "trust_net": 1200, "dealer_net": 300, "total_net": 6500 },
+      "warrants": [
+        {"code":"73312P","issuer":"元大","type":"call","expire":"2026/09/22","leverage":7.1,"iv":32.4,"delta":0.58,"moneyness":"輕度價外","bid":0.68,"ask":0.70,"volume":3100},
+        {"code":"73498P","issuer":"永豐","type":"call","expire":"2026/08/15","leverage":8.3,"iv":35.1,"delta":0.51,"moneyness":"價外","bid":0.45,"ask":0.47,"volume":1540}
+      ]
+    },
+    {
+      "sid": "6770", "name": "力積電", "close": 68.5, "change_pct": 5.0, "volume": 45000000,
+      "score": 82, "prob": "高（72%）", "prob_level": "high",
+      "ma5": 64.2, "ma10": 62.0, "ma20": 59.5,
+      "reasons": ["大漲 ≥3%", "量能放大 3.2x", "均線多頭排列", "突破近10日高點", "三大法人買超"],
+      "warnings": ["量能過度放大（注意追高）"],
+      "inst": { "foreign_net": 3500, "trust_net": 200, "dealer_net": 100, "total_net": 3800 },
+      "warrants": [
+        {"code":"78821P","issuer":"富邦","type":"call","expire":"2026/09/10","leverage":9.2,"iv":38.5,"delta":0.48,"moneyness":"輕度價外","bid":0.32,"ask":0.34,"volume":5200},
+        {"code":"79003P","issuer":"國泰","type":"call","expire":"2026/08/28","leverage":10.1,"iv":41.2,"delta":0.44,"moneyness":"價外","bid":0.25,"ask":0.27,"volume":2800}
+      ]
+    },
+    {
+      "sid": "2382", "name": "廣達", "close": 298.0, "change_pct": 2.5, "volume": 15000000,
+      "score": 76, "prob": "中高（68%）", "prob_level": "medium-high",
+      "ma5": 290.0, "ma10": 282.0, "ma20": 275.0,
+      "reasons": ["溫和上漲", "收盤靠近最高點", "量能放大 1.9x", "均線多頭排列", "投信連續買進"],
+      "warnings": [],
+      "inst": { "foreign_net": 1800, "trust_net": 650, "dealer_net": 100, "total_net": 2550 },
+      "warrants": [
+        {"code":"74512P","issuer":"凱基","type":"call","expire":"2026/09/18","leverage":6.5,"iv":29.8,"delta":0.61,"moneyness":"價平","bid":0.55,"ask":0.57,"volume":1680}
+      ]
+    },
+    {
+      "sid": "2308", "name": "台達電", "close": 385.0, "change_pct": 2.1, "volume": 8200000,
+      "score": 73, "prob": "中高（65%）", "prob_level": "medium-high",
+      "ma5": 378.0, "ma10": 372.0, "ma20": 365.0,
+      "reasons": ["溫和上漲", "收盤靠近最高點", "均線多頭排列", "站上月線"],
+      "warnings": [],
+      "inst": { "foreign_net": 1200, "trust_net": 300, "dealer_net": 50, "total_net": 1550 },
+      "warrants": [
+        {"code":"75621P","issuer":"元大","type":"call","expire":"2026/10/05","leverage":5.8,"iv":27.3,"delta":0.64,"moneyness":"輕度價內","bid":0.78,"ask":0.80,"volume":890}
+      ]
+    },
+    {
+      "sid": "3037", "name": "欣興", "close": 152.0, "change_pct": 3.8, "volume": 18000000,
+      "score": 78, "prob": "中高（70%）", "prob_level": "medium-high",
+      "ma5": 145.0, "ma10": 140.0, "ma20": 135.0,
+      "reasons": ["大漲 ≥3%", "收盤靠近最高點", "量能放大 2.8x", "突破近10日高點"],
+      "warnings": [],
+      "inst": { "foreign_net": 2000, "trust_net": 100, "dealer_net": -50, "total_net": 2050 },
+      "warrants": [
+        {"code":"76234P","issuer":"群益","type":"call","expire":"2026/09/25","leverage":8.1,"iv":36.2,"delta":0.50,"moneyness":"輕度價外","bid":0.41,"ask":0.43,"volume":3450},
+        {"code":"76890P","issuer":"永豐","type":"call","expire":"2026/08/30","leverage":9.5,"iv":39.8,"delta":0.45,"moneyness":"價外","bid":0.28,"ask":0.30,"volume":1980}
+      ]
+    },
+    {
+      "sid": "2303", "name": "聯電", "close": 58.2, "change_pct": 1.7, "volume": 52000000,
+      "score": 68, "prob": "中（58%）", "prob_level": "medium",
+      "ma5": 57.1, "ma10": 56.0, "ma20": 54.8,
+      "reasons": ["溫和上漲", "均線多頭排列", "站上月線"],
+      "warnings": ["融資追價明顯（散戶擁擠）"],
+      "inst": { "foreign_net": 800, "trust_net": -100, "dealer_net": 50, "total_net": 750 },
+      "warrants": [
+        {"code":"77123P","issuer":"富邦","type":"call","expire":"2026/09/12","leverage":7.8,"iv":33.5,"delta":0.53,"moneyness":"輕度價外","bid":0.22,"ask":0.24,"volume":6800}
+      ]
+    },
+    {
+      "sid": "2379", "name": "瑞昱", "close": 580.0, "change_pct": 1.4, "volume": 3500000,
+      "score": 65, "prob": "中（55%）", "prob_level": "medium",
+      "ma5": 568.0, "ma10": 558.0, "ma20": 542.0,
+      "reasons": ["溫和上漲", "均線多頭排列", "三大法人買超"],
+      "warnings": [],
+      "inst": { "foreign_net": 1100, "trust_net": 200, "dealer_net": 30, "total_net": 1330 },
+      "warrants": [
+        {"code":"78456P","issuer":"國泰","type":"call","expire":"2026/10/10","leverage":6.2,"iv":30.1,"delta":0.60,"moneyness":"價平","bid":0.95,"ask":0.97,"volume":720}
+      ]
+    },
+    {
+      "sid": "2337", "name": "旺宏", "close": 48.5, "change_pct": 2.9, "volume": 28000000,
+      "score": 66, "prob": "中（56%）", "prob_level": "medium",
+      "ma5": 47.0, "ma10": 45.8, "ma20": 44.2,
+      "reasons": ["溫和上漲", "量能放大 2.3x", "突破近10日高點", "站上月線"],
+      "warnings": ["融資追價明顯（散戶擁擠）"],
+      "inst": { "foreign_net": 500, "trust_net": 50, "dealer_net": -20, "total_net": 530 },
+      "warrants": [
+        {"code":"79234P","issuer":"元大","type":"call","expire":"2026/08/25","leverage":9.8,"iv":42.1,"delta":0.43,"moneyness":"價外","bid":0.18,"ask":0.20,"volume":4200}
+      ]
+    },
+    {
+      "sid": "2395", "name": "研華", "close": 312.0, "change_pct": 1.6, "volume": 4200000,
+      "score": 61, "prob": "中（52%）", "prob_level": "medium",
+      "ma5": 306.0, "ma10": 300.0, "ma20": 295.0,
+      "reasons": ["溫和上漲", "均線多頭排列", "站上月線"],
+      "warnings": [],
+      "inst": { "foreign_net": 300, "trust_net": 100, "dealer_net": 20, "total_net": 420 },
+      "warrants": [
+        {"code":"80123P","issuer":"凱基","type":"call","expire":"2026/09/30","leverage":5.5,"iv":25.8,"delta":0.66,"moneyness":"輕度價內","bid":0.62,"ask":0.64,"volume":560}
+      ]
+    }
+  ]
 }

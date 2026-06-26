@@ -1,9 +1,7 @@
 {
-  "updated_at": "2026/06/26 11:12:10",
+  "updated_at": "2026/06/26 10:47:00",
   "trade_date": "20260626",
-  "is_trading": false,
+  "is_trading": true,
   "prices": {},
-  "fetch_errors": [
-    "盤後重置完成（2026/06/26 11:12:10），盤中資料將於隔日 09:05 後自動更新"
-  ]
+  "fetch_errors": ["V5初始化：等待 GitHub Actions 盤中排程更新（每30分鐘）"]
 }
