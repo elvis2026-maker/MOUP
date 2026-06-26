@@ -17,8 +17,23 @@ body{background:var(--bg);}
 ══════════════════════════════════ */
 .nameplate-wrap{
   display:flex;
+  align-items:center;
   justify-content:center;
+  gap:8px;
   padding:18px 0 0;
+}
+.nameplate-version{
+  font-family:'JetBrains Mono','Fira Code',monospace;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0.12em;
+  padding:2px 8px;
+  border-radius:3px;
+  background:linear-gradient(135deg,#1a6ef5,#6ee7ff);
+  color:#fff;
+  box-shadow:0 1px 4px rgba(26,110,245,0.28);
+  user-select:none;
+  align-self:center;
 }
 .nameplate{
   position:relative;
@@ -164,20 +179,6 @@ body{background:var(--bg);}
   letter-spacing:0.02em;
   line-height:1.6;
 }
-.hero-version{
-  display:inline-block;
-  margin-top:14px;
-  font-family:'JetBrains Mono',monospace;
-  font-size:10px;
-  font-weight:700;
-  letter-spacing:0.15em;
-  padding:3px 10px;
-  border-radius:20px;
-  background:linear-gradient(135deg,#1a6ef5,#6ee7ff);
-  color:#fff;
-  box-shadow:0 2px 6px rgba(26,110,245,0.3);
-}
-
 /* ══ HEADER (slim, below hero) ══ */
 .hdr{
   display:flex;
@@ -409,6 +410,7 @@ body{background:var(--bg);}
       <span class="screw br"></span>
     </div>
   </div>
+  <div class="nameplate-version">V6</div>
 </div>
 
 <!-- ══ 主標題 Hero ══ -->
@@ -420,7 +422,6 @@ body{background:var(--bg);}
     <span class="hero-sub-title">續漲機率分析</span>
   </h1>
   <div class="hero-desc">每日自動篩選台股中最具續漲潛力的 Top 10 標的，精準推薦可投資的認購權證</div>
-  <div class="hero-version">V6</div>
 </div>
 
 <header class="hdr">
