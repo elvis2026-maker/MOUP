@@ -1,0 +1,43 @@
+name: 盤中即時報價更新
+
+on:
+  schedule:
+    # 台灣交易時段 09:00~13:30，UTC = 01:00~05:30
+    # 每小時整點抓一次（UTC 01,02,03,04,05 = 台灣 09,10,11,12,13）
+    - cron: "5 1 * * 1-5"   # 09:05 台灣
+    - cron: "5 2 * * 1-5"   # 10:05 台灣
+    - cron: "5 3 * * 1-5"   # 11:05 台灣
+    - cron: "5 4 * * 1-5"   # 12:05 台灣
+    - cron: "5 5 * * 1-5"   # 13:05 台灣
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-live:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run live fetch script
+        run: python scripts/fetch_live.py
+
+      - name: Commit and push live data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/live.json
+          git diff --staged --quiet || git commit -m "live: 即時報價 $(date +'%Y/%m/%d %H:%M' -d '+8 hours')"
+          git push
