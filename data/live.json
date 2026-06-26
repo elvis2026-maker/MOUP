@@ -1,7 +1,9 @@
 {
-  "updated_at": "2026/06/26 10:39:00",
+  "updated_at": "2026/06/26 10:50:32",
   "trade_date": "20260626",
   "is_trading": true,
   "prices": {},
-  "fetch_errors": ["初始化資料，等待 GitHub Actions 盤中排程更新（每30分鐘）"]
+  "fetch_errors": [
+    "stocks.json 無候選股"
+  ]
 }
