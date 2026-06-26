@@ -290,7 +290,7 @@ async function loadData(){
     const d = await r.json();
     allStocks = d.stocks || [];
 
-    // V5修正：加上 +08:00 台灣時區，避免把 14:00 台灣時間誤算成 UTC 14:00（差 8 小時）
+    // V6修正：加上 +08:00 台灣時區，避免把 14:00 台灣時間誤算成 UTC 14:00（差 8 小時）
     const updatedAt = d.updated_at || '--';
     let freshnessHtml = '';
     try{
@@ -506,17 +506,24 @@ function toggleCard(el){
 // ════════════════════════════════════════════
 function startLive(){
   if(liveRunning) return;
-  // V5修正：若 allStocks 尚未載入，等待 data 先 load 完再啟動
+  // V6修正：若 allStocks 尚未載入，最多重試 10 次（8 秒），超過則顯示錯誤，避免 spinner 永遠轉
   if(!allStocks.length){
     const grid = document.getElementById('live-grid');
-    grid.innerHTML = '<div class="loading" style="padding:30px;grid-column:1/-1"><div class="spinner"></div>等待選股清單載入...</div>';
-    // 500ms 後再試一次（loadData 是 async，可能還沒跑完）
-    setTimeout(()=>{ if(allStocks.length) startLive(); }, 800);
+    if(typeof startLive._retries === 'undefined') startLive._retries = 0;
+    if(startLive._retries < 10){
+      startLive._retries++;
+      grid.innerHTML = '<div class="loading" style="padding:30px;grid-column:1/-1"><div class="spinner"></div>等待選股清單載入...</div>';
+      setTimeout(()=>{ if(allStocks.length){ startLive._retries=0; startLive(); } else { startLive(); } }, 800);
+    } else {
+      startLive._retries = 0;
+      grid.innerHTML = '<div class="err" style="grid-column:1/-1">⚠ 選股資料載入失敗，請重新整理頁面或確認 stocks.json 是否正常部署。</div>';
+    }
     return;
   }
+  startLive._retries = 0;
   liveRunning = true;
   fetchLive();
-  // V4：每60秒重新讀取（比 V3 的30秒更保守，避免不必要的請求）
+  // V4：每60秒重新讀取
   liveTimer = setInterval(fetchLive, 60000);
 }
 function stopLive(){
@@ -573,7 +580,7 @@ async function fetchLive(){
 
     document.getElementById('live-update').innerHTML = freshnessHtml;
 
-  // V5修正：prices 為空 {} 時，顯示提示訊息而非永遠轉圈
+  // V6修正：prices 為空 {} 時，顯示提示訊息而非永遠轉圈
   const map = {};
   let hasAnyPrice = false;
   Object.entries(prices).forEach(([sid, p]) => {
@@ -603,7 +610,7 @@ async function fetchLive(){
       ' <span class="freshness-stale">(讀取失敗)</span>';
     errBanner.textContent = '⚠ live.json 讀取失敗：' + e.message;
     errBanner.classList.add('show');
-    // V5修正：失敗時顯示靜態卡片（等待狀態），而非讓 spinner 卡住
+    // V6修正：失敗時顯示靜態卡片（等待狀態），而非讓 spinner 卡住
     if(allStocks.length > 0){
       grid.innerHTML = allStocks.map(s => liveCardHTML(s, null, false)).join('');
     } else {
