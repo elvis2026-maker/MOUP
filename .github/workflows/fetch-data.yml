@@ -2,10 +2,14 @@ name: 每日盤後抓資料
 
 on:
   schedule:
-    # 台灣時間 15:00 = UTC 07:00，收盤後資料約 14:30~15:00 上線
-    - cron: "0 7 * * 1-5"   # 週一到週五 UTC 07:00
-    - cron: "30 7 * * 1-5"  # 備份：若第一次資料未更新，再跑一次
-  workflow_dispatch:          # 允許手動觸發（測試用）
+    # 台灣時間 16:00 = UTC 08:00（收盤後等資料穩定再抓）
+    - cron: "0 8 * * 1-5"    # 週一到週五 UTC 08:00 (台灣16:00)
+    - cron: "30 8 * * 1-5"   # 備份：若第一次資料未更新，再跑一次
+  workflow_dispatch:           # 允許手動觸發（測試用）
+
+# ✅ 修正：新版 GitHub Actions 需明確授權寫入權限，否則 git push 會 403 失敗
+permissions:
+  contents: write
 
 jobs:
   fetch-and-update:
