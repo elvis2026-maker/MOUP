@@ -15,10 +15,11 @@ on:
     - cron: "25 5 * * 1-5"   # 13:25 台灣（收盤前最後一次）
   workflow_dispatch:
 
-# ✅ 只需要 contents:write（git push data/live.json）
-# 不加 pages:write，避免與 GitHub Pages deploy workflow 衝突互相取消
+# V5修正：加上 pages:write 讓 live.json 推送後能觸發 Pages rebuild
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   fetch-live:

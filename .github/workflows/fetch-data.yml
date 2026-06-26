@@ -8,10 +8,11 @@ on:
     - cron: "0 8 * * 1-5"    # 台灣 16:00（保底，確認資料完整）
   workflow_dispatch:
 
-# ✅ 只需要 contents:write（git push data/stocks.json）
-# 不加 pages:write，避免與 GitHub Pages deploy workflow 衝突
+# V5修正：加上 pages:write，確保 data 推送後 Pages 能正確 rebuild
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   fetch-and-update:
@@ -34,10 +35,14 @@ jobs:
       - name: Run fetch script
         run: python scripts/fetch_twse.py
 
+      # V5新增：重置 live.json，清除昨日殘留報價
+      - name: Reset live.json
+        run: python scripts/init_live.py
+
       - name: Commit and push data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/stocks.json
+          git add data/stocks.json data/live.json
           git diff --staged --quiet || git commit -m "chore: 更新選股資料 $(TZ='Asia/Taipei' date +'%Y/%m/%d %H:%M')"
           git push
