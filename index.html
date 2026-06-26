@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>權證標的精選｜續漲機率分析 V2</title>
+<title>權證標的精選｜續漲機率分析 V3</title>
 <style>
 :root {
   --bg:       #080b10;
@@ -187,7 +187,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 <!-- HEADER -->
 <header class="hdr">
   <div>
-    <h1>權證標的精選 <em>// 續漲機率分析</em> <small style="font-size:11px;color:var(--text3);font-weight:400">V2</small></h1>
+    <h1>權證標的精選 <em>// 續漲機率分析</em> <small style="font-size:11px;color:var(--text3);font-weight:400">V3</small></h1>
     <div class="sub" id="sub-info">載入中...</div>
   </div>
   <div class="hdr-right">
@@ -224,9 +224,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 <!-- ====== 即時 TAB ====== -->
 <div id="live-panel">
   <div class="live-notice">
-    ℹ 開盤後每 <strong>30秒</strong> 自動刷新。資料來源：TWSE OpenAPI（<code>openapi.twse.com.tw</code>，官方 CORS 支援）。
-    確認精選股開盤是否延續昨日強勢，<strong>「開高走高」綠燈才是最佳進場時機。</strong>
-    <br><small style="color:var(--text3)">⚠ OpenAPI 為盤後彙整資料，非即時 Tick；盤中約每10~30分鐘更新一次</small>
+    ℹ 資料由 <strong>GitHub Actions 每小時</strong>（09:05、10:05、11:05、12:05、13:05）自動從 TWSE 抓取並寫入 <code>data/live.json</code>。
+    開盤後確認精選股是否延續強勢，<strong>「開高走高」綠燈才是最佳進場時機。</strong>
+    <br><small style="color:var(--text3)">⚠ 非即時 Tick，每小時更新一次；若顯示「⚠ 逾90分鐘未更新」表示 Actions 可能未正常跑</small>
   </div>
   <div class="live-header">
     <h2>盤中即時報價</h2>
@@ -508,49 +508,44 @@ async function fetchLive(){
       </div>`).join('');
   }
 
-  // ✅ 修正：改用 openapi.twse.com.tw（官方支援 CORS，瀏覽器可直接存取）
-  // mis.twse.com.tw 雖有資料但瀏覽器 CORS policy 會 block（非同源且無 Access-Control-Allow-Origin）
-  // 注意：瀏覽器會忽略自訂 User-Agent header（安全限制），不需要傳
-  const sidList = allStocks.map(s => s.sid);
-  const url = `https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL`;
-
+  // ✅ V3 架構：讀 data/live.json（由 GitHub Actions 伺服器端每小時寫入）
+  // 同源請求，完全沒有 CORS 問題！
   try{
-    const r = await fetch(url);
+    const r = await fetch(`data/live.json?t=${Date.now()}`);
     if(!r.ok) throw new Error(`HTTP ${r.status}`);
-    const arr = await r.json();
+    const liveData = await r.json();
 
-    // openapi 回傳全市場陣列，建立 Map
+    const prices    = liveData.prices || {};
+    const updatedAt = liveData.updated_at || '--';
+    const isTrading = liveData.is_trading || false;
+
+    // 判斷資料是否新鮮（距現在 < 90 分鐘）
+    let freshness = '';
+    try{
+      const liveTime = new Date(updatedAt.replace(/\//g,'-'));
+      const diffMin  = (Date.now() - liveTime.getTime()) / 60000;
+      if(diffMin > 90) freshness = ` ⚠ 資料逾90分鐘未更新`;
+    }catch(e){}
+
+    document.getElementById('live-update').textContent = updatedAt + freshness;
+
+    // 建立 live card 資料（price="-" 表示集合競價/未成交）
     const map = {};
-    arr.forEach(item => {
-      const sid = item.Code;
-      if(sidList.includes(sid)){
-        // 轉換成與 mis 相容的格式
-        map[sid] = {
-          z: item.ClosingPrice,        // 收盤 / 最新價
-          y: item.PreviousClosingPrice, // 昨收
-          o: item.OpeningPrice,         // 開盤
-          h: item.HighestPrice,         // 最高
-          l: item.LowestPrice,          // 最低
-          v: item.TradeVolume           // 成交量（股）
-        };
-      }
+    Object.entries(prices).forEach(([sid, p]) => {
+      const price = (p.price && p.price !== '-') ? p.price : null;
+      map[sid] = price ? { z:p.price, y:p.prev, o:p.open, h:p.high, l:p.low, v:p.vol } : null;
     });
 
-    document.getElementById('live-update').textContent =
-      new Date().toLocaleTimeString('zh-TW',{hour12:false}) + ' (TWSE)';
-
-    grid.innerHTML = allStocks.map(s => liveCardHTML(s, map[s.sid]||null)).join('');
+    grid.innerHTML = allStocks.map(s => liveCardHTML(s, map[s.sid]||null, isTrading)).join('');
 
   }catch(e){
-    console.warn('openapi.twse 失敗，改用 TWSE 盤後靜態資料：', e.message);
-    // ✅ Fallback：顯示 stocks.json 中的昨日收盤資料（不呼叫有 CORS 問題的 API）
+    console.warn('live.json 讀取失敗：', e.message);
     document.getElementById('live-update').textContent =
-      new Date().toLocaleTimeString('zh-TW',{hour12:false}) + ' (昨日收盤)';
-    grid.innerHTML = allStocks.map(s => liveCardHTML(s, null)).join('');
+      new Date().toLocaleTimeString('zh-TW',{hour12:false}) + ' (讀取失敗)';
+    grid.innerHTML = allStocks.map(s => liveCardHTML(s, null, false)).join('');
   }
 }
-
-function liveCardHTML(s, live){
+function liveCardHTML(s, live, isTrading){
   const color = probColor(s.prob_level);
 
   // ✅ 修正：openapi 欄位值可能為 "--"（停牌/無資料），需過濾
@@ -570,7 +565,7 @@ function liveCardHTML(s, live){
         <div><div class="lc-name">${s.name}</div><div class="lc-sid">${s.sid} · 昨收 ${s.close}</div></div>
         <div><div class="lc-price" style="color:var(--text3)">--</div></div>
       </div>
-      <div class="open-signal neutral">⏸ 非交易時段 / 資料未更新</div>
+      <div class="open-signal neutral">${isTrading ? "⏳ 尚無成交 / 集合競價中" : "⏸ 非交易時段 / 等待下次更新"}</div>
     </div>`;
   }
 
@@ -581,9 +576,9 @@ function liveCardHTML(s, live){
   const chg     = price - prevCls;
   const chgPct  = prevCls ? (chg / prevCls * 100).toFixed(2) : '0.00';
   const up      = chg >= 0;
-  // ✅ 修正：openapi TradeVolume 是「股數」，除以1000轉為「張」
+  // V3: live.json 的 vol 已是「張」（mis.twse v欄位為千股，等同「張」）
   const rawVol  = live.v ? parseInt(String(live.v).replace(/,/g,'')) : 0;
-  const vol     = rawVol > 0 ? (rawVol / 1000).toFixed(0) + '張' : '--';
+  const vol     = rawVol > 0 ? rawVol.toLocaleString() + '張' : '--';
 
   // 開盤確認訊號
   let signal, sigClass;
