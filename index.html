@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>權證標的精選｜續漲機率分析 V7</title>
+<title>權證標的精選｜續漲機率分析 V8</title>
 <style>
 /* ══ GOOGLE FONTS ══ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
@@ -410,7 +410,7 @@ body{background:var(--bg);}
       <span class="screw br"></span>
     </div>
   </div>
-  <div class="nameplate-version">V7</div>
+  <div class="nameplate-version">V8</div>
 </div>
 
 <!-- ══ 主標題 Hero ══ -->
@@ -441,6 +441,13 @@ body{background:var(--bg);}
   <div class="stat"><div class="lbl">高機率標的</div><div class="val green" id="s-high">--</div></div>
 </div>
 
+<!-- V8: DEMO banner -->
+<div id="demo-banner" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:10px 14px;font-size:12px;color:#856404;margin-bottom:10px">
+  ⚠ <strong>抓取警告：精選清單為 DEMO 示範資料，非真實篩選結果。</strong>
+  請確認：①<div class="tabs">nbsp;<a href="https://github.com/elvis2026-maker/MOUP/settings/secrets/actions" target="_blank">FINMIND_TOKEN</a> 已設定於 GitHub Secrets<div class="tabs">nbsp;
+  ②<div class="tabs">nbsp;每日盤後 workflow（14:00 後）執行成功<div class="tabs">nbsp;③<div class="tabs">nbsp;API 未超限（免費 300 req/hr）
+</div>
+
 <div class="tabs">
   <div class="tab active" onclick="switchTab('list',this)">📋 精選清單</div>
   <div class="tab" onclick="switchTab('live',this)">⚡ 盤中即時確認</div>
@@ -462,7 +469,7 @@ body{background:var(--bg);}
   <div class="live-notice">
     ℹ 資料由 <strong>GitHub Actions 每30分鐘</strong>（09:05、09:35、10:05...13:25）自動從 TWSE 抓取並寫入 <code>data/live.json</code>。
     開盤後確認精選股是否延續強勢，<strong>「開高走高」綠燈才是最佳進場時機。</strong>
-    <br><small style="color:var(--text3)">⚠ V7 更新頻率每30分鐘；若資料超過 60 分鐘未更新，表示 Actions 可能異常。V7 修正：盤中報價格式對齊、精選清單保護機制</small>
+    <br><small style="color:var(--text3)">⚠ V8 更新頻率每30分鐘；若資料超過 60 分鐘未更新，表示 Actions 可能異常。V8 修正：盤中改用 TWSE/TPEx OpenAPI（境外可連），不再依賴 mis.twse</small>
   </div>
   <!-- V4：錯誤提示 -->
   <div class="err-banner" id="err-banner"></div>
@@ -488,7 +495,7 @@ body{background:var(--bg);}
   <div class="footer-inner">
     <div class="footer-brand">程式設計 Elvis Liu｜版權所有</div>
     <div class="footer-meta">
-      <span>MOUP V7</span>
+      <span>MOUP V8</span>
       <span class="footer-dot">·</span>
       <span>Taiwan Warrant Intelligence System</span>
       <span class="footer-dot">·</span>
@@ -571,10 +578,14 @@ async function loadData(){
     document.getElementById('s-sel').textContent  = allStocks.length;
     document.getElementById('s-high').textContent = allStocks.filter(s=>s.prob_level==='high').length;
 
+    // V8: DEMO data detection
+    const demoBanner = document.getElementById('demo-banner');
+    if(demoBanner) demoBanner.style.display = (d.is_demo === false) ? 'none' : 'block';
+
     renderCards();
     if(curTab==='live') startLive();
   }catch(e){
-    document.getElementById('cards').innerHTML = `<div class="err">⚠ 資料載入失敗：${e.message}<br><small style="color:var(--text3)">請確認 GitHub Actions 是否正常執行</small></div>`;
+    document.getElementById('cards').innerHTML = `<div class="err">⚠ 資料載入失敗：${e.message}<br><small style="color:var(--text3)">請確認 GitHub Actions 是否正常執行，且 FINMIND_TOKEN 已設定於 Secrets</small></div>`;
   }
 }
 
@@ -833,7 +844,11 @@ async function fetchLive(){
       }
     }catch(e){ console.warn('freshness parse error', e); }
 
-    document.getElementById('live-update').innerHTML = freshnessHtml;
+    // V8: show fetch source
+    const srcMap = {'mis_live':'🔴 MIS即時','twse_openapi':'📊 TWSE OpenAPI','openapi_daily':'📊 OpenAPI每日行情'};
+    const srcLabel = srcMap[liveData.fetch_source] || (liveData.fetch_source || '');
+    const srcHtml = srcLabel ? ' <span style="font-size:10px;color:var(--text3)">[' + srcLabel + ']</span>' : '';
+    document.getElementById('live-update').innerHTML = freshnessHtml + srcHtml;
 
   // V7修正：prices 為空 {} 時，顯示提示訊息而非永遠轉圈
   // V7修正：fetch_live.py 寫入的格式為 {price,prev,open,high,low,vol}
