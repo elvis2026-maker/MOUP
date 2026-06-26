@@ -1,1 +1,37 @@
+name: 每日盤後抓資料
 
+on:
+  schedule:
+    # 台灣時間 15:00 = UTC 07:00，收盤後資料約 14:30~15:00 上線
+    - cron: "0 7 * * 1-5"   # 週一到週五 UTC 07:00
+    - cron: "30 7 * * 1-5"  # 備份：若第一次資料未更新，再跑一次
+  workflow_dispatch:          # 允許手動觸發（測試用）
+
+jobs:
+  fetch-and-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run fetch script
+        run: python scripts/fetch_twse.py
+
+      - name: Commit and push data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/stocks.json
+          git diff --staged --quiet || git commit -m "chore: 更新選股資料 $(date +'%Y/%m/%d %H:%M')"
+          git push
