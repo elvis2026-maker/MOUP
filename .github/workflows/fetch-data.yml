@@ -2,13 +2,11 @@ name: 每日盤後抓資料
 
 on:
   schedule:
-    # 台灣時間 14:00 = UTC 06:00（盤後資料通常 13:35 後已上傳到 TWSE）
     - cron: "0 6 * * 1-5"    # 台灣 14:00（主要）
     - cron: "30 6 * * 1-5"   # 台灣 14:30（備份）
-    - cron: "0 8 * * 1-5"    # 台灣 16:00（保底，確認資料完整）
+    - cron: "0 8 * * 1-5"    # 台灣 16:00（保底）
   workflow_dispatch:
 
-# V5修正：加上 pages:write，確保 data 推送後 Pages 能正確 rebuild
 permissions:
   contents: write
   pages: write
@@ -17,7 +15,6 @@ permissions:
 jobs:
   fetch-and-update:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -33,9 +30,12 @@ jobs:
         run: pip install requests
 
       - name: Run fetch script
+        env:
+          # 可選：至 finmindtrade.com 免費註冊後，在 GitHub Settings > Secrets 加入
+          # FINMIND_TOKEN 可將 API 上限從 300/hr 提升到 600/hr
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
         run: python scripts/fetch_twse.py
 
-      # V5新增：重置 live.json，清除昨日殘留報價
       - name: Reset live.json
         run: python scripts/init_live.py
 
