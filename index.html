@@ -224,8 +224,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 <!-- ====== 即時 TAB ====== -->
 <div id="live-panel">
   <div class="live-notice">
-    ℹ 開盤後每 <strong>30秒</strong> 自動刷新。此面板抓取 TWSE 即時行情，確認精選股開盤是否延續昨日強勢。
-    <strong>「開盤確認」綠燈才是最佳進場時機。</strong>
+    ℹ <strong>交易時段（09:00~13:35）</strong>：每 30 秒自動刷新，確認開盤是否延續強勢，「✅ 開高走高」才是最佳進場時機。
+    非交易時段則顯示昨日收盤分析，供盤前功課使用。
   </div>
   <div class="live-header">
     <h2>盤中即時報價</h2>
@@ -480,11 +480,24 @@ function toggleCard(el){
 // ════════════════════════════════════════════
 //  LIVE PANEL
 // ════════════════════════════════════════════
+
+// 判斷現在是否為台股交易時段（週一~五 09:00~13:35 台灣時間）
+function isTradingHours(){
+  const now = new Date();
+  // 轉換為台灣時間 (UTC+8)
+  const tw = new Date(now.toLocaleString('en-US', {timeZone:'Asia/Taipei'}));
+  const day = tw.getDay(); // 0=日,6=六
+  if(day === 0 || day === 6) return false;
+  const h = tw.getHours(), m = tw.getMinutes();
+  const mins = h * 60 + m;
+  return mins >= 9*60 && mins <= 13*60+35;
+}
+
 function startLive(){
   if(liveRunning) return;
   liveRunning = true;
   fetchLive();
-  liveTimer = setInterval(fetchLive, 30000); // 每30秒
+  liveTimer = setInterval(fetchLive, 30000);
 }
 function stopLive(){
   liveRunning = false;
@@ -495,106 +508,152 @@ async function fetchLive(){
   if(!allStocks.length) return;
   const grid = document.getElementById('live-grid');
 
-  // 先顯示 loading skeleton
-  if(grid.querySelector('.loading')){
+  // ── 非交易時段：直接顯示昨日盤後資料，不打 API ──
+  if(!isTradingHours()){
+    document.getElementById('live-update').textContent =
+      '非交易時段（顯示昨日收盤）';
+    grid.innerHTML = allStocks.map(s => liveCardOffHours(s)).join('');
+    return;
+  }
+
+  // ── 交易時段：先顯示 skeleton ──
+  if(!grid.querySelector('.live-card') || grid.querySelector('.loading')){
     grid.innerHTML = allStocks.map(s=>`
-      <div class="live-card" style="opacity:.5">
+      <div class="live-card">
         <div class="lc-top">
           <div><div class="lc-name">${s.name}</div><div class="lc-sid">${s.sid}</div></div>
-          <div><div class="lc-price up">--</div><div class="lc-chg up">--</div></div>
+          <div><div class="lc-price" style="color:var(--text3)">---</div></div>
         </div>
-        <div class="open-signal loading">⏳ 抓取中...</div>
+        <div class="open-signal loading">⏳ 即時報價抓取中...</div>
       </div>`).join('');
   }
 
-  // 呼叫 TWSE mis 即時 API
-  const sids   = allStocks.map(s => `tse_${s.sid}.tw`).join('|');
-  const url    = `https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=${encodeURIComponent(sids)}&json=1&delay=0&_=${Date.now()}`;
-
-  try{
-    const r   = await fetch(url, { headers:{"User-Agent":"Mozilla/5.0"} });
-    const d   = await r.json();
-    const map = {};
-    (d.msgArray||[]).forEach(item=>{ map[item.c]=item; });
-
-    document.getElementById('live-update').textContent = new Date().toLocaleTimeString('zh-TW',{hour12:false});
-
-    grid.innerHTML = allStocks.map(s=>{
-      const live = map[s.sid];
-      return liveCardHTML(s, live);
-    }).join('');
-
-  }catch(e){
-    // CORS fallback: 改用 Yahoo Finance
-    await fetchLiveYahoo();
+  // ── 嘗試 TWSE OpenAPI（有開放 CORS）──
+  // openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL 回傳今日所有股票
+  let liveMap = {};
+  try {
+    const r = await fetch(
+      'https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL',
+      { cache: 'no-store' }
+    );
+    if(r.ok){
+      const arr = await r.json();
+      arr.forEach(item => {
+        // 欄位: Code, Name, TradeVolume, Transaction, TradeValue,
+        //        OpeningPrice, HighestPrice, LowestPrice, ClosingPrice, Change, Transaction
+        liveMap[item.Code] = {
+          z: item.ClosingPrice,
+          o: item.OpeningPrice,
+          h: item.HighestPrice,
+          l: item.LowestPrice,
+          y: null, // 昨收需另算 (用 close - change)
+          chg_raw: item.Change,
+          v: item.TradeVolume
+        };
+      });
+    }
+  } catch(e1) {
+    console.warn('TWSE OpenAPI failed:', e1.message);
   }
-}
 
-async function fetchLiveYahoo(){
-  const grid = document.getElementById('live-grid');
-  // Yahoo Finance v8 每支分別抓（有 CORS 限制，用 proxy-free 的 query1）
-  const results = await Promise.allSettled(
-    allStocks.map(async s=>{
-      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${s.sid}.TW?range=1d&interval=5m`;
-      const r   = await fetch(url, {headers:{"User-Agent":"Mozilla/5.0"}});
-      const d   = await r.json();
-      const meta= d?.chart?.result?.[0]?.meta;
-      return { sid:s.sid, meta };
-    })
-  );
+  // ── 若 OpenAPI 抓不到，fallback 到 TWSE 即時 mis（有 CORS 問題時才走這）──
+  if(Object.keys(liveMap).length === 0){
+    try {
+      const sids = allStocks.map(s=>`tse_${s.sid}.tw`).join('|');
+      const r = await fetch(
+        `https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=${encodeURIComponent(sids)}&json=1&delay=0&_=${Date.now()}`
+      );
+      const d = await r.json();
+      (d.msgArray||[]).forEach(item=>{
+        if(item.z && item.z !== '-'){
+          liveMap[item.c] = { z:item.z, o:item.o, h:item.h, l:item.l, y:item.y, v:item.v };
+        }
+      });
+    } catch(e2) {
+      console.warn('MIS API failed:', e2.message);
+    }
+  }
 
-  const metaMap = {};
-  results.forEach(r=>{ if(r.status==='fulfilled'&&r.value?.meta) metaMap[r.value.sid]=r.value.meta; });
+  document.getElementById('live-update').textContent =
+    new Date().toLocaleTimeString('zh-TW',{hour12:false}) + ' 盤中';
 
-  document.getElementById('live-update').textContent = new Date().toLocaleTimeString('zh-TW',{hour12:false});
-
-  grid.innerHTML = allStocks.map(s=>{
-    const meta = metaMap[s.sid];
-    const live = meta ? {
-      z: meta.regularMarketPrice?.toFixed(2),
-      y: meta.previousClose?.toFixed(2),
-      o: meta.regularMarketOpen?.toFixed(2),
-      h: meta.regularMarketDayHigh?.toFixed(2),
-      l: meta.regularMarketDayLow?.toFixed(2),
-      v: meta.regularMarketVolume
-    } : null;
-    return liveCardHTML(s, live);
+  grid.innerHTML = allStocks.map(s => {
+    const raw = liveMap[s.sid];
+    if(!raw || !raw.z || raw.z === '-' || raw.z === '--'){
+      // 資料還沒進來（例如剛開盤）→ 顯示昨日
+      return liveCardOffHours(s, true);
+    }
+    return liveCardLive(s, raw);
   }).join('');
 }
 
-function liveCardHTML(s, live){
-  const color = probColor(s.prob_level);
+// 非交易時段 / 資料未到：顯示昨日收盤分析
+function liveCardOffHours(s, waitingOpen = false){
+  const color  = probColor(s.prob_level);
+  const chgPct = s.change_pct >= 0 ? `+${s.change_pct}%` : `${s.change_pct}%`;
+  const up     = s.change_pct >= 0;
+  // 昨日收盤位置（close相對high/low）當作強度指標
+  const scoreColor = s.score >= 80 ? 'var(--accent)' : s.score >= 65 ? 'var(--blue)' : 'var(--warn)';
+  const label  = waitingOpen
+    ? '⏳ 等待開盤資料...'
+    : '🌙 盤後資料 ／ 等待明日開盤';
 
-  if(!live || !live.z || live.z === '-'){
-    return `
-    <div class="live-card" style="opacity:.6">
-      <div class="lc-top">
-        <div><div class="lc-name">${s.name}</div><div class="lc-sid">${s.sid} · 昨收 ${s.close}</div></div>
-        <div><div class="lc-price" style="color:var(--text3)">--</div></div>
+  return `
+  <div class="live-card ${up?'up':'down'}" style="border-left-color:${color}">
+    <div class="lc-top">
+      <div>
+        <div class="lc-name">${s.name}</div>
+        <div class="lc-sid">${s.sid} · 昨日收盤</div>
       </div>
-      <div class="open-signal neutral">⏸ 非交易時段 / 資料未更新</div>
-    </div>`;
-  }
+      <div>
+        <div class="lc-price ${up?'up':'down'}">${s.close?.toFixed(1)}</div>
+        <div class="lc-chg  ${up?'up':'down'}">${chgPct}</div>
+      </div>
+    </div>
+    <div class="lc-bars">
+      <div class="lc-bar-item"><div class="lci-lbl">MA5</div><div class="lci-val">${s.ma5||'--'}</div></div>
+      <div class="lc-bar-item"><div class="lci-lbl">MA20</div><div class="lci-val">${s.ma20||'--'}</div></div>
+      <div class="lc-bar-item"><div class="lci-lbl">評分</div><div class="lci-val" style="color:${scoreColor}">${s.score}分</div></div>
+      <div class="lc-bar-item"><div class="lci-lbl">機率</div><div class="lci-val" style="color:${color};font-size:10px">${s.prob}</div></div>
+    </div>
+    <div class="open-signal neutral" style="font-size:11px">${label}</div>
+  </div>`;
+}
 
-  const price   = parseFloat(live.z);
-  const prevCls = parseFloat(live.y || s.close);
-  const open    = parseFloat(live.o || price);
+// 盤中即時資料卡
+function liveCardLive(s, raw){
+  const color   = probColor(s.prob_level);
+  const price   = parseFloat(raw.z);
+  // 昨收：若有 y 用 y，否則用 close - chg_raw
+  let prevCls = raw.y ? parseFloat(raw.y) : s.close;
+  if(raw.chg_raw !== undefined && raw.chg_raw !== null){
+    // TWSE OpenAPI 的 Change 欄位格式: "+12.00" / "-5.00" / "0.00"
+    const chgNum = parseFloat(String(raw.chg_raw).replace('+','')) || 0;
+    prevCls = price - chgNum;
+  }
+  if(!prevCls || isNaN(prevCls)) prevCls = s.close;
+
+  const open    = parseFloat(raw.o || price);
+  const high    = parseFloat(raw.h || price);
+  const low     = parseFloat(raw.l || price);
   const chg     = price - prevCls;
-  const chgPct  = (chg / prevCls * 100).toFixed(2);
+  const chgPct  = prevCls ? (chg / prevCls * 100).toFixed(2) : '0.00';
   const up      = chg >= 0;
-  const vol     = live.v ? (parseInt(live.v)/1000).toFixed(0)+'K' : '--';
+  const volNum  = parseInt(String(raw.v||'0').replace(/,/g,''));
+  const vol     = volNum > 0 ? (volNum >= 1000000
+    ? (volNum/1000000).toFixed(1)+'M'
+    : (volNum/1000).toFixed(0)+'K') : '--';
 
   // 開盤確認訊號
   let signal, sigClass;
-  const openVsYest = ((open - prevCls) / prevCls * 100);
-  if(price > open && price > prevCls * 1.005 && up){
+  if(price > open && chg > 0 && price > prevCls * 1.005){
     signal = '✅ 開高走高 ／ 續漲確認';  sigClass = 'bullish';
-  } else if(price >= prevCls * 1.003){
+  } else if(chg >= prevCls * 0.003){
     signal = '📈 溫和上漲 ／ 觀察量能';  sigClass = 'bullish';
-  } else if(price < prevCls * 0.997){
+  } else if(price < open && chg < -(prevCls * 0.003)){
     signal = '❌ 開低走弱 ／ 暫緩進場';  sigClass = 'bearish';
   } else {
-    signal = '➡ 盤整中 ／ 等待方向';     sigClass = 'neutral';
+    signal = '➡ 盤整中 ／ 等待明確方向'; sigClass = 'neutral';
   }
 
   return `
@@ -611,8 +670,8 @@ function liveCardHTML(s, live){
     </div>
     <div class="lc-bars">
       <div class="lc-bar-item"><div class="lci-lbl">開盤</div><div class="lci-val">${open.toFixed(1)}</div></div>
-      <div class="lc-bar-item"><div class="lci-lbl">最高</div><div class="lci-val">${parseFloat(live.h||price).toFixed(1)}</div></div>
-      <div class="lc-bar-item"><div class="lci-lbl">最低</div><div class="lci-val">${parseFloat(live.l||price).toFixed(1)}</div></div>
+      <div class="lc-bar-item"><div class="lci-lbl">最高</div><div class="lci-val">${high.toFixed(1)}</div></div>
+      <div class="lc-bar-item"><div class="lci-lbl">最低</div><div class="lci-val">${low.toFixed(1)}</div></div>
       <div class="lc-bar-item"><div class="lci-lbl">成交量</div><div class="lci-val">${vol}</div></div>
     </div>
     <div class="open-signal ${sigClass}">${signal}</div>
