@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
 """
-台股權證標的篩選腳本 V4
-V4 新增/修正：
-  1. 新增上櫃(OTC/TPEX) 股票行情抓取 fetch_daily_price_tpex()
-  2. 新增上櫃三大法人資料 fetch_institutional_tpex()
-  3. 新增上櫃認購權證 fetch_warrants_tpex()（TWTB8U）
-  4. 合併上市+上櫃結果一起評分
-  5. fetch_twse 日期時區修正（明確使用台灣時區 UTC+8）
-  6. 上櫃股票 vol 過濾標準調降（上櫃量較小）
-  7. 機率標籤數值修正（V3 有計算bug）
+台股權證標的篩選腳本 V5
+V5 保留 V4 全部功能，新增：
+  1. fetch-data workflow 同時 git add live.json（避免初始化 live.json 過舊）
+  2. 機率標籤邏輯沿用 V4 修正版
 """
 
 import requests, json, time, os, statistics

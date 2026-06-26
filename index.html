@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>權證標的精選｜續漲機率分析 V4</title>
+<title>權證標的精選｜續漲機率分析 V5</title>
 <style>
 :root {
   --bg:       #080b10;
@@ -183,7 +183,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 
 <header class="hdr">
   <div>
-    <h1>權證標的精選 <em>// 續漲機率分析</em> <small style="font-size:11px;color:var(--text3);font-weight:400">V4</small></h1>
+    <h1>權證標的精選 <em>// 續漲機率分析</em> <small style="font-size:11px;color:var(--text3);font-weight:400">V5</small></h1>
     <div class="sub" id="sub-info">載入中...</div>
   </div>
   <div class="hdr-right">
@@ -229,7 +229,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
     <span class="live-time">最後更新：<span id="live-update">--</span></span>
   </div>
   <div class="live-grid" id="live-grid">
-    <div class="loading"><div class="spinner"></div>等待資料載入...</div>
+    <div class="loading" style="padding:30px;grid-column:1/-1">
+      <div class="spinner"></div>
+      載入中... 若長時間無資料，請切換至「精選清單」確認資料是否正常
+    </div>
   </div>
 </div>
 
@@ -287,15 +290,23 @@ async function loadData(){
     const d = await r.json();
     allStocks = d.stocks || [];
 
-    // V4：顯示資料新鮮度
+    // V5修正：加上 +08:00 台灣時區，避免把 14:00 台灣時間誤算成 UTC 14:00（差 8 小時）
     const updatedAt = d.updated_at || '--';
     let freshnessHtml = '';
     try{
-      const upd = new Date(updatedAt.replace(/\//g,'-'));
+      const normalized = updatedAt.replace(/\//g,'-').replace(' ','T');
+      const withSec = /T\d{2}:\d{2}$/.test(normalized) ? normalized + ':00' : normalized;
+      const upd = new Date(withSec + '+08:00');
       const diffHr = (Date.now() - upd.getTime()) / 3600000;
-      if(diffHr < 1)       freshnessHtml = ' <span class="freshness-ok">✓ 最新</span>';
-      else if(diffHr < 12) freshnessHtml = ` <span class="freshness-warn">↻ ${Math.floor(diffHr)}小時前</span>`;
-      else                 freshnessHtml = ` <span class="freshness-stale">⚠ ${Math.floor(diffHr)}小時未更新</span>`;
+      if(isNaN(diffHr)){
+        freshnessHtml = '';
+      } else if(diffHr < 1){
+        freshnessHtml = ' <span class="freshness-ok">✓ 最新</span>';
+      } else if(diffHr < 12){
+        freshnessHtml = ` <span class="freshness-warn">↻ ${Math.floor(diffHr)}小時前</span>`;
+      } else {
+        freshnessHtml = ` <span class="freshness-stale">⚠ ${Math.floor(diffHr)}小時未更新</span>`;
+      }
     }catch(e){}
 
     document.getElementById('sub-info').innerHTML =
@@ -495,6 +506,14 @@ function toggleCard(el){
 // ════════════════════════════════════════════
 function startLive(){
   if(liveRunning) return;
+  // V5修正：若 allStocks 尚未載入，等待 data 先 load 完再啟動
+  if(!allStocks.length){
+    const grid = document.getElementById('live-grid');
+    grid.innerHTML = '<div class="loading" style="padding:30px;grid-column:1/-1"><div class="spinner"></div>等待選股清單載入...</div>';
+    // 500ms 後再試一次（loadData 是 async，可能還沒跑完）
+    setTimeout(()=>{ if(allStocks.length) startLive(); }, 800);
+    return;
+  }
   liveRunning = true;
   fetchLive();
   // V4：每60秒重新讀取（比 V3 的30秒更保守，避免不必要的請求）
@@ -554,15 +573,28 @@ async function fetchLive(){
 
     document.getElementById('live-update').innerHTML = freshnessHtml;
 
-    const map = {};
-    Object.entries(prices).forEach(([sid, p]) => {
-      const price = (p.price && p.price !== '-') ? p.price : null;
-      map[sid] = price
-        ? { z:p.price, y:p.prev, o:p.open, h:p.high, l:p.low, v:p.vol }
-        : null;
-    });
+  // V5修正：prices 為空 {} 時，顯示提示訊息而非永遠轉圈
+  const map = {};
+  let hasAnyPrice = false;
+  Object.entries(prices).forEach(([sid, p]) => {
+    const price = (p.price && p.price !== '-') ? p.price : null;
+    map[sid] = price
+      ? { z:p.price, y:p.prev, o:p.open, h:p.high, l:p.low, v:p.vol }
+      : null;
+    if(price) hasAnyPrice = true;
+  });
 
+  if(allStocks.length === 0){
+    grid.innerHTML = '<div class="loading" style="padding:30px">等待選股清單載入...</div>';
+    return;
+  }
+
+  if(!hasAnyPrice && errors.length > 0){
+    // 有錯誤訊息（例如初始化）：顯示靜態卡片 + 提示
+    grid.innerHTML = allStocks.map(s => liveCardHTML(s, null, isTrading)).join('');
+  } else {
     grid.innerHTML = allStocks.map(s => liveCardHTML(s, map[s.sid]||null, isTrading)).join('');
+  }
 
   }catch(e){
     console.warn('live.json 讀取失敗：', e.message);
@@ -571,7 +603,12 @@ async function fetchLive(){
       ' <span class="freshness-stale">(讀取失敗)</span>';
     errBanner.textContent = '⚠ live.json 讀取失敗：' + e.message;
     errBanner.classList.add('show');
-    grid.innerHTML = allStocks.map(s => liveCardHTML(s, null, false)).join('');
+    // V5修正：失敗時顯示靜態卡片（等待狀態），而非讓 spinner 卡住
+    if(allStocks.length > 0){
+      grid.innerHTML = allStocks.map(s => liveCardHTML(s, null, false)).join('');
+    } else {
+      grid.innerHTML = '<div class="err">⚠ live.json 讀取失敗：' + e.message + '</div>';
+    }
   }
 }
 

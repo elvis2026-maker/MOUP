@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 """
-台股盤中即時報價抓取腳本 V4.1
-修正：
-  1. 上市(tse_) + 上櫃(otc_) 自動偵測
-  2. mis.twse Session 必須先打 /stock/fibest.htm 才能拿到有效 Cookie
-  3. is_trading 動態判斷（V3 hardcode True 已修正）
-  4. live.json 加入 fetch_errors，前端可顯示警告
-  5. updated_at 台灣時區（GitHub Actions 跑 UTC，必須加 +8h offset）
-  6. 備用 API：若 mis.twse 完全失敗，改用 openapi.twse.com.tw
+台股盤中即時報價抓取腳本 V5
+V5 修正：
+  1. 非交易時段 prices={} 為正常現象，不寫入誤導性錯誤訊息
+  2. 錯誤訊息更清楚，區分「非交易時段」和「API 失敗」
+  3. 原 V4.1 所有修正保留：Session 機制、is_trading 動態判斷、備用 API
 """
 
 import requests, json, os, time
@@ -162,7 +159,7 @@ def main():
 
     stocks = stocks_data.get("stocks", [])
     if not stocks:
-        errors.append("stocks.json 無候選股")
+        errors.append("stocks.json 無候選股，請確認每日盤後抓資料 workflow 是否正常執行")
         _write_out({}, now_str, now.strftime("%Y%m%d"), trading, errors)
         return
 
@@ -170,18 +167,26 @@ def main():
     markets = {s["sid"]: s.get("market", "tse") for s in stocks}
     print(f"  → 候選股：{', '.join(sids)}")
 
+    # V5修正：非交易時段仍嘗試抓取（可能有盤後零星成交），但明確標記
+    if not trading:
+        print("  ⚠ 目前非交易時段，嘗試取得最近成交價...")
+
     # 主要方式：mis.twse（需要 Session）
     sess = get_mis_session()
     live = fetch_mis_twse(sess, sids, markets)
 
     if len(live) == 0:
-        msg = "mis.twse 回傳 0 筆，改用 openapi 備用（僅有昨日收盤價）"
+        msg = "mis.twse 回傳 0 筆（可能非交易時段或 API 暫時不可用），改用 openapi 備用"
         print(f"  ! {msg}")
         errors.append(msg)
         live = fetch_openapi_fallback(sids)
 
     if len(live) == 0:
-        errors.append("所有 API 均失敗，live.json 無報價資料")
+        errors.append("所有 API 均無法取得報價（非交易時段為正常現象）")
+    
+    # V5修正：非交易時段 prices 為空是正常的，不算錯誤
+    if not trading and len(live) == 0:
+        errors = ["非交易時段，盤中資料將在 09:05 後自動更新"]
 
     print(f"  ✅ 最終取得 {len(live)} 筆")
     for sid, p in live.items():
