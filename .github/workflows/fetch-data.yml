@@ -8,11 +8,10 @@ on:
     - cron: "0 8 * * 1-5"    # 台灣 16:00（保底，確認資料完整）
   workflow_dispatch:
 
-# ✅ V4修正：明確授權寫入 + pages 部署
+# ✅ 只需要 contents:write（git push data/stocks.json）
+# 不加 pages:write，避免與 GitHub Pages deploy workflow 衝突
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
   fetch-and-update:
