@@ -15,7 +15,6 @@ on:
     - cron: "25 5 * * 1-5"   # 13:25 台灣（收盤前最後一次）
   workflow_dispatch:
 
-# V5修正：加上 pages:write 讓 live.json 推送後能觸發 Pages rebuild
 permissions:
   contents: write
   pages: write
@@ -47,4 +46,6 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/live.json
           git diff --staged --quiet || git commit -m "live: 即時報價 $(TZ='Asia/Taipei' date +'%Y/%m/%d %H:%M')"
+          # V6修正：push 前先 pull --rebase，避免多個 workflow 同時 push 造成衝突
+          git pull --rebase origin main
           git push
