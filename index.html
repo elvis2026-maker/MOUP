@@ -531,19 +531,26 @@ async function fetchLive(){
       errBanner.classList.remove('show');
     }
 
-    // V4修正：資料新鮮度判斷從 90 分鐘縮短到 60 分鐘（對應每30分鐘更新）
+    // V4修正：資料新鮮度判斷（每30分鐘更新，60分鐘以上才警告）
+    // updated_at 格式可能是 "2026/06/26 10:05:30" 或 "2026/06/26 10:05"，兩種都能解析
     let freshnessHtml = updatedAt;
     try{
-      const liveTime = new Date(updatedAt.replace(/\//g,'-').replace(' ','T') + '+08:00');
+      // 統一格式：把 "/" 換 "-"、空格換 "T"、補上台灣時區
+      const normalized = updatedAt.replace(/\//g,'-').replace(' ','T');
+      // 若只有 HH:MM 補上 :00
+      const withSec = /T\d{2}:\d{2}$/.test(normalized) ? normalized + ':00' : normalized;
+      const liveTime = new Date(withSec + '+08:00');
       const diffMin  = (Date.now() - liveTime.getTime()) / 60000;
-      if(diffMin > 60){
+      if(isNaN(diffMin)){
+        freshnessHtml = updatedAt;
+      } else if(diffMin > 60){
         freshnessHtml = `${updatedAt} <span class="freshness-stale">⚠ 逾${Math.floor(diffMin)}分鐘未更新</span>`;
       } else if(diffMin > 30){
         freshnessHtml = `${updatedAt} <span class="freshness-warn">（${Math.floor(diffMin)}分鐘前）</span>`;
       } else {
         freshnessHtml = `${updatedAt} <span class="freshness-ok">✓</span>`;
       }
-    }catch(e){}
+    }catch(e){ console.warn('freshness parse error', e); }
 
     document.getElementById('live-update').innerHTML = freshnessHtml;
 
