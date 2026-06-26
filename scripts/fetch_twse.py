@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-台股權證標的篩選腳本 V5
+台股權證標的篩選腳本 V7
 資料來源改為 FinMind API（完全支援 GitHub Actions 境外 IP）
 原 TWSE/MI_INDEX 境外 403 問題已修正。
 
@@ -502,6 +502,11 @@ def main():
             c["prob"] = f"中（{prob_pct}%）"; c["prob_level"] = "medium"
         else:
             c["prob"] = "偏低（<48%）"; c["prob_level"] = "low"
+
+    # V7 保護機制：若本次掃描結果為空（API 失敗或盤中誤跑），保留上次有效資料
+    if len(top10) == 0 and os.path.exists(OUTPUT_PATH):
+        print("  ⚠ V7保護：本次精選結果為 0 支，保留上次 stocks.json 資料，不覆蓋")
+        return
 
     output = {
         "updated_at":       tw_now().strftime("%Y/%m/%d %H:%M"),

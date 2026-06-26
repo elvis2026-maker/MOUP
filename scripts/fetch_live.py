@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-台股盤中即時報價抓取腳本 V5
-V5 修正：
-  1. 非交易時段 prices={} 為正常現象，不寫入誤導性錯誤訊息
-  2. 錯誤訊息更清楚，區分「非交易時段」和「API 失敗」
-  3. 原 V4.1 所有修正保留：Session 機制、is_trading 動態判斷、備用 API
+台股盤中即時報價抓取腳本 V7
+V7 修正：
+  1. 輸出格式文件化：prices[sid] = {price, prev, open, high, low, vol, time, name, market}
+     前端 V7 已對應此格式進行 key 轉換（price→z, prev→y, open→o, high→h, low→l, vol→v）
+  2. 沿用 V5 所有修正：Session 機制、is_trading 動態判斷、備用 API、非交易時段處理
 """
 
 import requests, json, os, time

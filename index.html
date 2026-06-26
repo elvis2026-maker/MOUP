@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>權證標的精選｜續漲機率分析 V6</title>
+<title>權證標的精選｜續漲機率分析 V7</title>
 <style>
 /* ══ GOOGLE FONTS ══ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
@@ -410,7 +410,7 @@ body{background:var(--bg);}
       <span class="screw br"></span>
     </div>
   </div>
-  <div class="nameplate-version">V6</div>
+  <div class="nameplate-version">V7</div>
 </div>
 
 <!-- ══ 主標題 Hero ══ -->
@@ -462,7 +462,7 @@ body{background:var(--bg);}
   <div class="live-notice">
     ℹ 資料由 <strong>GitHub Actions 每30分鐘</strong>（09:05、09:35、10:05...13:25）自動從 TWSE 抓取並寫入 <code>data/live.json</code>。
     開盤後確認精選股是否延續強勢，<strong>「開高走高」綠燈才是最佳進場時機。</strong>
-    <br><small style="color:var(--text3)">⚠ V4 更新頻率由每小時升級為每30分鐘；若資料超過 60 分鐘未更新，表示 Actions 可能異常</small>
+    <br><small style="color:var(--text3)">⚠ V7 更新頻率每30分鐘；若資料超過 60 分鐘未更新，表示 Actions 可能異常。V7 修正：盤中報價格式對齊、精選清單保護機制</small>
   </div>
   <!-- V4：錯誤提示 -->
   <div class="err-banner" id="err-banner"></div>
@@ -488,7 +488,7 @@ body{background:var(--bg);}
   <div class="footer-inner">
     <div class="footer-brand">程式設計 Elvis Liu｜版權所有</div>
     <div class="footer-meta">
-      <span>MOUP V6</span>
+      <span>MOUP V7</span>
       <span class="footer-dot">·</span>
       <span>Taiwan Warrant Intelligence System</span>
       <span class="footer-dot">·</span>
@@ -545,7 +545,7 @@ async function loadData(){
     const d = await r.json();
     allStocks = d.stocks || [];
 
-    // V6修正：加上 +08:00 台灣時區，避免把 14:00 台灣時間誤算成 UTC 14:00（差 8 小時）
+    // V7修正：加上 +08:00 台灣時區，避免把 14:00 台灣時間誤算成 UTC 14:00（差 8 小時）
     const updatedAt = d.updated_at || '--';
     let freshnessHtml = '';
     try{
@@ -761,7 +761,7 @@ function toggleCard(el){
 // ════════════════════════════════════════════
 function startLive(){
   if(liveRunning) return;
-  // V6修正：若 allStocks 尚未載入，最多重試 10 次（8 秒），超過則顯示錯誤，避免 spinner 永遠轉
+  // V7修正：若 allStocks 尚未載入，最多重試 10 次（8 秒），超過則顯示錯誤，避免 spinner 永遠轉
   if(!allStocks.length){
     const grid = document.getElementById('live-grid');
     if(typeof startLive._retries === 'undefined') startLive._retries = 0;
@@ -835,14 +835,23 @@ async function fetchLive(){
 
     document.getElementById('live-update').innerHTML = freshnessHtml;
 
-  // V6修正：prices 為空 {} 時，顯示提示訊息而非永遠轉圈
+  // V7修正：prices 為空 {} 時，顯示提示訊息而非永遠轉圈
+  // V7修正：fetch_live.py 寫入的格式為 {price,prev,open,high,low,vol}
+  // 前端 liveCardHTML 讀取的是 mis.twse 原始格式 {z,y,o,h,l,v}，需要轉換
   const map = {};
   let hasAnyPrice = false;
   Object.entries(prices).forEach(([sid, p]) => {
-    const price = (p.price && p.price !== '-') ? p.price : null;
-    map[sid] = price
-      ? { z:p.price, y:p.prev, o:p.open, h:p.high, l:p.low, v:p.vol }
-      : null;
+    // 相容兩種格式：新格式(price/prev) 或 mis.twse 原始格式(z/y)
+    const rawPrice = p.price ?? p.z ?? null;
+    const price = (rawPrice && rawPrice !== '-' && rawPrice !== '--') ? rawPrice : null;
+    map[sid] = price ? {
+      z: rawPrice,
+      y: p.prev  ?? p.y ?? '-',
+      o: p.open  ?? p.o ?? '-',
+      h: p.high  ?? p.h ?? '-',
+      l: p.low   ?? p.l ?? '-',
+      v: p.vol   ?? p.v ?? '0',
+    } : null;
     if(price) hasAnyPrice = true;
   });
 
@@ -851,12 +860,8 @@ async function fetchLive(){
     return;
   }
 
-  if(!hasAnyPrice && errors.length > 0){
-    // 有錯誤訊息（例如初始化）：顯示靜態卡片 + 提示
-    grid.innerHTML = allStocks.map(s => liveCardHTML(s, null, isTrading)).join('');
-  } else {
-    grid.innerHTML = allStocks.map(s => liveCardHTML(s, map[s.sid]||null, isTrading)).join('');
-  }
+  // V7修正：無論有無報價，一律渲染卡片；有即時報價則套用，無則顯示靜態等待狀態
+  grid.innerHTML = allStocks.map(s => liveCardHTML(s, map[s.sid]||null, isTrading)).join('');
 
   }catch(e){
     console.warn('live.json 讀取失敗：', e.message);
@@ -865,7 +870,7 @@ async function fetchLive(){
       ' <span class="freshness-stale">(讀取失敗)</span>';
     errBanner.textContent = '⚠ live.json 讀取失敗：' + e.message;
     errBanner.classList.add('show');
-    // V6修正：失敗時顯示靜態卡片（等待狀態），而非讓 spinner 卡住
+    // V7修正：失敗時顯示靜態卡片（等待狀態），而非讓 spinner 卡住
     if(allStocks.length > 0){
       grid.innerHTML = allStocks.map(s => liveCardHTML(s, null, false)).join('');
     } else {
