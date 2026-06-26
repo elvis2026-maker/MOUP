@@ -1,6 +1,7 @@
 {
-  "updated_at": "2026/06/25 15:05:00",
-  "trade_date": "20260625",
+  "updated_at": "2026/06/26 00:00:00",
+  "trade_date": "20260626",
   "is_trading": false,
-  "prices": {}
+  "prices": {},
+  "fetch_errors": []
 }
