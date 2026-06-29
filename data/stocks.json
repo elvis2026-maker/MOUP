@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026/06/29 20:29",
+  "updated_at": "2026/06/29 22:00",
   "trade_date": "20260629",
   "data_date": "2026-06-29",
   "total_scanned": 420,
@@ -135,54 +135,6 @@
       "prob_level": "medium"
     },
     {
-      "sid": "1445",
-      "name": "大宇",
-      "close": 11.8,
-      "change_pct": 9.26,
-      "volume": 597075,
-      "market": "tse",
-      "score": 57,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "收盤靠近最高點（買盤強）",
-        "站上月線 MA20=11.19",
-        "突破近10日高點"
-      ],
-      "warnings": [
-        "量能過度放大"
-      ],
-      "inst": {},
-      "ma5": 10.74,
-      "ma10": 10.89,
-      "ma20": 11.19,
-      "warrants": [],
-      "prob": "中（50%）",
-      "prob_level": "medium"
-    },
-    {
-      "sid": "1626",
-      "name": "艾美特-KY",
-      "close": 10.8,
-      "change_pct": 9.98,
-      "volume": 435457,
-      "market": "tse",
-      "score": 52,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "收盤靠近最高點（買盤強）",
-        "站上月線 MA20=9.98",
-        "突破近10日高點"
-      ],
-      "warnings": [],
-      "inst": {},
-      "ma5": 9.81,
-      "ma10": 9.94,
-      "ma20": 9.98,
-      "warrants": [],
-      "prob": "偏低（<48%）",
-      "prob_level": "low"
-    },
-    {
       "sid": "1718",
       "name": "中纖",
       "close": 12.25,
@@ -205,6 +157,32 @@
       "ma5": 9.91,
       "ma10": 9.69,
       "ma20": 9.22,
+      "warrants": [],
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "1445",
+      "name": "大宇",
+      "close": 11.8,
+      "change_pct": 9.26,
+      "volume": 597075,
+      "market": "tse",
+      "score": 52,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "站上月線 MA20=11.19",
+        "突破近10日高點"
+      ],
+      "warnings": [
+        "量能過度放大",
+        "融資追價明顯"
+      ],
+      "inst": {},
+      "ma5": 10.74,
+      "ma10": 10.89,
+      "ma20": 11.19,
       "warrants": [],
       "prob": "偏低（<48%）",
       "prob_level": "low"
@@ -256,6 +234,31 @@
       "ma5": 28.28,
       "ma10": 26.34,
       "ma20": 24.89,
+      "warrants": [],
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "1617",
+      "name": "榮星",
+      "close": 18.95,
+      "change_pct": 9.86,
+      "volume": 1156495,
+      "market": "tse",
+      "score": 48,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "量能放大 1.5x",
+        "站上月線 MA20=16.43",
+        "突破近10日高點"
+      ],
+      "warnings": [
+        "融資追價明顯"
+      ],
+      "inst": {},
+      "ma5": 16.39,
+      "ma10": 16.38,
+      "ma20": 16.43,
       "warrants": [],
       "prob": "偏低（<48%）",
       "prob_level": "low"
