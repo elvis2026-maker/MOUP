@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>權證標的精選｜續漲機率分析 V14</title>
+<title>權證標的精選｜續漲機率分析 V15</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -34,7 +34,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6;min-height:100vh}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.65;min-height:100vh}
 
 /* ══ LAYOUT ══ */
 .app{max-width:1080px;margin:0 auto;padding:0 14px 60px}
@@ -64,30 +64,30 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 
 /* ══ HEADER ══ */
 .hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 0 14px;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap;gap:8px}
-.hdr .sub{font-size:11px;color:var(--text2);font-family:var(--mono)}
+.hdr .sub{font-size:13px;color:var(--text2);font-family:var(--mono)}
 .hdr-right{display:flex;align-items:center;gap:10px}
-.live-badge{font-family:var(--mono);font-size:11px;color:var(--text2);background:var(--surface);border:1px solid var(--border);padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:6px;box-shadow:var(--shadow-sm)}
+.live-badge{font-family:var(--mono);font-size:13px;color:var(--text2);background:var(--surface);border:1px solid var(--border);padding:6px 14px;border-radius:20px;display:flex;align-items:center;gap:6px;box-shadow:var(--shadow-sm)}
 .live-dot{width:6px;height:6px;border-radius:50%;background:#059669;animation:pulse 2s infinite}
 .live-dot.off{background:var(--text3);animation:none}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.btn{background:var(--surface);border:1px solid var(--border);color:var(--text2);padding:5px 14px;border-radius:var(--r);cursor:pointer;font-size:12px;font-family:var(--font);transition:all .15s;box-shadow:var(--shadow-sm)}
+.btn{background:var(--surface);border:1px solid var(--border);color:var(--text2);padding:7px 18px;border-radius:var(--r);cursor:pointer;font-size:14px;font-family:var(--font);transition:all .15s;box-shadow:var(--shadow-sm)}
 .btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 6px rgba(37,99,235,.15)}
 
 /* ══ STATS ══ */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
-.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;box-shadow:var(--shadow-sm)}
-.stat .lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
-.stat .val{font-size:26px;font-weight:800;font-family:var(--mono);color:var(--text);line-height:1}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:18px 20px;box-shadow:var(--shadow-sm)}
+.stat .lbl{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.stat .val{font-size:32px;font-weight:800;font-family:var(--mono);color:var(--text);line-height:1}
 .stat .val.green{color:var(--ok)} .stat .val.blue{color:var(--accent)}
 
 /* ══ TABS ══ */
 .tabs{display:flex;gap:2px;margin-bottom:18px;background:#eef1f8;border:1px solid var(--border);border-radius:var(--r2);padding:3px;width:fit-content}
-.tab{padding:7px 22px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);transition:all .15s;white-space:nowrap}
+.tab{padding:10px 26px;border-radius:9px;cursor:pointer;font-size:15px;font-weight:500;color:var(--text2);transition:all .15s;white-space:nowrap}
 .tab.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:var(--shadow-sm)}
 
 /* ══ FILTER BAR ══ */
 .filter-bar{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
-.flt{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font);transition:all .15s;box-shadow:var(--shadow-sm)}
+.flt{padding:8px 18px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:14px;cursor:pointer;font-family:var(--font);transition:all .15s;box-shadow:var(--shadow-sm)}
 .flt.on,.flt:hover{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
 
 /* ══ STOCK CARDS ══ */
@@ -101,8 +101,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
   display:grid;
   grid-template-columns: 36px 1fr auto;
   align-items:center;
-  gap:12px;
-  padding:14px 16px;
+  gap:14px;
+  padding:18px 18px;
   position:relative;
 }
 /* 左側彩色條 */
@@ -123,7 +123,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
   gap:3px;
   padding-left:6px;
 }
-.rank-num{font-family:var(--mono);font-size:18px;font-weight:800;color:var(--text3);line-height:1}
+.rank-num{font-family:var(--mono);font-size:22px;font-weight:800;color:var(--text3);line-height:1}
 .rank-bar{width:24px;height:3px;border-radius:2px;background:var(--border);overflow:hidden}
 .rank-bar-fill{height:100%;border-radius:2px;background:var(--prob-color,var(--border))}
 
@@ -136,9 +136,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
   min-width:0;
 }
 .name-block{}
-.nb-sid{font-family:var(--mono);font-size:10px;color:var(--text3);display:flex;align-items:center;gap:5px}
-.nb-name{font-size:16px;font-weight:700;color:var(--text)}
-.mkt-badge{padding:1px 5px;border-radius:3px;font-size:9px;font-family:var(--mono)}
+.nb-sid{font-family:var(--mono);font-size:13px;color:var(--text3);display:flex;align-items:center;gap:5px}
+.nb-name{font-size:20px;font-weight:800;color:var(--text)}
+.mkt-badge{padding:2px 7px;border-radius:4px;font-size:11px;font-family:var(--mono);font-weight:700}
 .mkt-badge.tse{background:rgba(37,99,235,.1);color:#2563eb}
 .mkt-badge.otc{background:rgba(217,119,6,.1);color:#d97706}
 
@@ -156,8 +156,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
   align-items:flex-start;
   min-width:52px;
 }
-.km-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
-.km-val{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text);line-height:1.2}
+.km-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.km-val{font-family:var(--mono);font-size:16px;font-weight:800;color:var(--text);line-height:1.3}
 .km-val.up{color:var(--danger)}
 .km-val.ok{color:var(--ok)}
 .km-val.warn{color:var(--warn)}
@@ -172,9 +172,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
   flex-shrink:0;
 }
 .prob-pill{
-  padding:3px 10px;
+  padding:5px 14px;
   border-radius:20px;
-  font-size:11px;
+  font-size:13px;
   font-weight:700;
   white-space:nowrap;
 }
@@ -183,35 +183,35 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .medium .prob-pill{background:rgba(217,119,6,.12);color:var(--warn)}
 .low .prob-pill{background:rgba(224,58,58,.1);color:var(--danger)}
 .score-row{display:flex;align-items:center;gap:6px}
-.score-bar-wrap{width:72px;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.score-bar-wrap{width:80px;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
 .score-bar-fill{height:100%;border-radius:3px}
-.score-num{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text2);min-width:24px;text-align:right}
+.score-num{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text2);min-width:28px;text-align:right}
 
 /* 展開提示箭頭 */
 .expand-hint{
-  font-size:10px;
+  font-size:13px;
   color:var(--text3);
   text-align:right;
-  padding:2px 16px 6px;
+  padding:4px 16px 8px;
   letter-spacing:.03em;
 }
 
 /* ── 卡片展開詳細 ── */
-.card-body{display:none;padding:14px 16px 16px;border-top:1px solid var(--border);background:var(--surface2)}
+.card-body{display:none;padding:18px 20px 20px;border-top:1px solid var(--border);background:var(--surface2)}
 .card.open .card-body{display:block}
 .card.open .expand-hint{display:none}
 .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.d-section h4{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;font-weight:600}
+.d-section h4{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;font-weight:700}
 .chip-row{display:flex;gap:6px;flex-wrap:wrap}
-.chip{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:5px 10px;font-family:var(--mono);font-size:11px;color:var(--text);box-shadow:var(--shadow-sm)}
-.chip .cl{font-size:9px;color:var(--text3);display:block;margin-bottom:1px}
+.chip{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:7px 12px;font-family:var(--mono);font-size:13px;color:var(--text);box-shadow:var(--shadow-sm)}
+.chip .cl{font-size:11px;color:var(--text3);display:block;margin-bottom:2px}
 .inst-row{display:flex;gap:6px;flex-wrap:wrap}
 .inst-item{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 10px;flex:1;min-width:64px;box-shadow:var(--shadow-sm)}
-.inst-item .il{font-size:9px;color:var(--text3);display:block;margin-bottom:2px}
-.inst-item .iv{font-family:var(--mono);font-size:13px;font-weight:700}
+.inst-item .il{font-size:11px;color:var(--text3);display:block;margin-bottom:3px}
+.inst-item .iv{font-family:var(--mono);font-size:15px;font-weight:800}
 .iv.pos{color:var(--danger)} .iv.neg{color:var(--ok)}
 .tag-row{display:flex;flex-wrap:wrap;gap:5px}
-.tag{font-size:11px;padding:3px 8px;border-radius:5px}
+.tag{font-size:13px;padding:5px 10px;border-radius:5px}
 .tag.g{background:rgba(5,150,105,.08);color:#059669;border:1px solid rgba(5,150,105,.2)}
 .tag.w{background:rgba(217,119,6,.08);color:#d97706;border:1px solid rgba(217,119,6,.2)}
 
@@ -219,69 +219,69 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .warrant-section{margin-top:14px;grid-column:1/-1;border-top:1px solid var(--border);padding-top:14px}
 .warrant-section h4{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-weight:600}
 .w-count{background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.2);border-radius:10px;padding:1px 8px;font-size:10px;color:var(--accent)}
-.w-table{width:100%;border-collapse:collapse;font-size:12px}
-.w-table th{text-align:left;padding:6px 8px;font-size:10px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border);background:var(--surface);letter-spacing:.04em}
-.w-table td{padding:7px 8px;border-bottom:1px solid var(--border);color:var(--text)}
+.w-table{width:100%;border-collapse:collapse;font-size:14px}
+.w-table th{text-align:left;padding:8px 10px;font-size:12px;color:var(--text3);font-weight:700;border-bottom:1px solid var(--border);background:var(--surface);letter-spacing:.04em}
+.w-table td{padding:10px 10px;border-bottom:1px solid var(--border);color:var(--text);font-size:14px}
 .w-table tr:last-child td{border-bottom:none}
 .w-table tr:hover td{background:var(--accent-l)}
 .w-code{font-family:var(--mono);font-weight:700;color:var(--accent)}
 .w-mono{font-family:var(--mono)}
-.w-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600}
+.w-badge{display:inline-block;padding:3px 9px;border-radius:4px;font-size:12px;font-weight:700}
 .w-badge.pi{background:rgba(5,150,105,.1);color:#059669}
 .w-badge.pp{background:rgba(37,99,235,.1);color:var(--accent)}
 .w-badge.po{background:rgba(217,119,6,.1);color:#d97706}
 .w-badge.dpo{background:rgba(224,58,58,.08);color:var(--danger)}
 .w-ok{color:var(--ok)} .w-warn{color:var(--warn)}
-.no-warrant{padding:12px;background:var(--surface);border-radius:var(--r);font-size:12px;color:var(--text3);text-align:center;border:1px solid var(--border)}
-.hint-bar{margin-top:10px;padding:10px 13px;background:rgba(37,99,235,.05);border:1px solid rgba(37,99,235,.15);border-radius:var(--r);font-size:12px;color:var(--text2);display:flex;gap:8px;line-height:1.6}
-.hint-bar .hi{color:var(--accent);flex-shrink:0;font-size:14px}
+.no-warrant{padding:16px;background:var(--surface);border-radius:var(--r);font-size:14px;color:var(--text3);text-align:center;border:1px solid var(--border)}
+.hint-bar{margin-top:10px;padding:12px 16px;background:rgba(37,99,235,.05);border:1px solid rgba(37,99,235,.15);border-radius:var(--r);font-size:14px;color:var(--text2);display:flex;gap:8px;line-height:1.7}
+.hint-bar .hi{color:var(--accent);flex-shrink:0;font-size:16px}
 
 /* ══ LIVE PANEL ══ */
 #live-panel{display:none}
-.live-notice{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;font-size:11px;color:var(--text2);margin-bottom:16px;line-height:1.7;box-shadow:var(--shadow-sm)}
-.err-banner{background:rgba(224,58,58,.06);border:1px solid rgba(224,58,58,.2);border-radius:var(--r);padding:10px 14px;font-size:11px;color:#c0392b;margin-bottom:14px;display:none}
+.live-notice{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.8;box-shadow:var(--shadow-sm)}
+.err-banner{background:rgba(224,58,58,.06);border:1px solid rgba(224,58,58,.2);border-radius:var(--r);padding:12px 16px;font-size:13px;color:#c0392b;margin-bottom:14px;display:none}
 .err-banner.show{display:block}
 .live-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-.live-header h2{font-size:15px;font-weight:700;color:var(--text)}
+.live-header h2{font-size:18px;font-weight:700;color:var(--text)}
 .live-time{font-family:var(--mono);font-size:11px;color:var(--text2)}
 
 /* 盤中卡片：更大、更清晰 */
 .live-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:20px}
-.live-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:16px;box-shadow:var(--shadow-sm);transition:box-shadow .2s}
+.live-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:20px;box-shadow:var(--shadow-sm);transition:box-shadow .2s}
 .live-card:hover{box-shadow:var(--shadow)}
 .live-card.up{border-top:3px solid var(--danger)}
 .live-card.down{border-top:3px solid var(--ok)}
 
 /* 卡片頭：股名 + 現價 */
 .lc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
-.lc-name{font-size:15px;font-weight:700;color:var(--text)}
-.lc-sid{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.lc-name{font-size:18px;font-weight:800;color:var(--text)}
+.lc-sid{font-size:13px;color:var(--text3);font-family:var(--mono);margin-top:3px}
 .lc-price-block{text-align:right}
-.lc-price{font-family:var(--mono);font-size:22px;font-weight:800;line-height:1}
+.lc-price{font-family:var(--mono);font-size:28px;font-weight:800;line-height:1}
 .lc-price.up{color:var(--danger)} .lc-price.down{color:var(--ok)}
-.lc-chg{font-family:var(--mono);font-size:12px;margin-top:2px;font-weight:600}
+.lc-chg{font-family:var(--mono);font-size:15px;margin-top:3px;font-weight:700}
 .lc-chg.up{color:var(--danger)} .lc-chg.down{color:var(--ok)}
 
 /* 四格數據 */
 .lc-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}
 .lc-cell{background:var(--surface2);border-radius:6px;padding:6px 8px}
-.lc-cell .lci-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:2px}
-.lc-cell .lci-val{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text)}
+.lc-cell .lci-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:3px}
+.lc-cell .lci-val{font-family:var(--mono);font-size:16px;font-weight:800;color:var(--text)}
 
 /* 開盤信號 */
-.open-signal{display:flex;align-items:center;gap:7px;padding:7px 11px;border-radius:7px;font-size:12px;font-weight:600;margin-top:8px}
+.open-signal{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;font-size:15px;font-weight:700;margin-top:10px}
 .open-signal.bullish{background:rgba(5,150,105,.1);color:var(--ok);border:1px solid rgba(5,150,105,.2)}
 .open-signal.bearish{background:rgba(224,58,58,.08);color:var(--danger);border:1px solid rgba(224,58,58,.18)}
 .open-signal.neutral{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
 .open-signal.loading{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
 
 /* ══ MISC ══ */
-.loading{text-align:center;padding:50px 20px;color:var(--text3);font-family:var(--mono);font-size:13px}
+.loading{text-align:center;padding:50px 20px;color:var(--text3);font-family:var(--mono);font-size:15px}
 .spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .err{text-align:center;padding:40px;color:var(--danger);font-size:13px}
 .freshness-ok{color:var(--ok)} .freshness-warn{color:var(--warn)} .freshness-stale{color:var(--danger)}
-.disc{margin-top:24px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);font-size:11px;color:var(--text3);line-height:1.7;box-shadow:var(--shadow-sm)}
+.disc{margin-top:24px;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);font-size:13px;color:var(--text3);line-height:1.8;box-shadow:var(--shadow-sm)}
 .disc strong{color:var(--text2)}
 
 /* ══ FOOTER ══ */
@@ -293,16 +293,77 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 
 /* ══ RESPONSIVE ══ */
 @media(max-width:640px){
+  /* 卡片 */
   .stats{grid-template-columns:repeat(2,1fr)}
-  .card-main{flex-direction:column;align-items:flex-start;gap:8px}
-  .key-metrics{gap:8px}
+  .stat{padding:16px 14px}
+  .stat .val{font-size:28px}
+  .stat .lbl{font-size:11px}
+
+  /* hero 標題 */
+  .hero{padding:20px 12px 16px}
+  .hero-desc{font-size:13px}
+
+  /* 卡片主體 */
+  .card-top{
+    grid-template-columns: 28px 1fr auto;
+    padding:14px 12px;
+    gap:10px;
+  }
+  .rank-num{font-size:18px}
+  .card-main{flex-direction:column;align-items:flex-start;gap:10px}
+
+  /* 股名區：手機上要夠大 */
+  .nb-name{font-size:22px}
+  .nb-sid{font-size:14px}
+
+  /* 關鍵數字：手機橫向排列，字更大 */
+  .key-metrics{gap:10px;flex-wrap:wrap}
+  .km-lbl{font-size:12px}
+  .km-val{font-size:18px}
   .km-divider{display:none}
+
+  /* 機率pill */
+  .prob-pill{font-size:14px;padding:6px 14px}
+  .score-num{font-size:15px}
+
+  /* 詳細區 */
   .detail-grid{grid-template-columns:1fr}
-  .live-grid{grid-template-columns:1fr 1fr}
-  .lc-price{font-size:18px}
-}
-@media(max-width:400px){
+  .chip{font-size:14px;padding:8px 12px}
+  .chip .cl{font-size:12px}
+  .inst-item .iv{font-size:16px}
+  .tag{font-size:14px;padding:6px 12px}
+
+  /* 權證表格：手機允許橫向捲動 */
+  .warrant-section{overflow-x:auto}
+  .w-table th{font-size:12px;padding:8px 8px}
+  .w-table td{font-size:13px;padding:10px 8px}
+
+  /* 盤中 */
   .live-grid{grid-template-columns:1fr}
+  .live-card{padding:18px 16px}
+  .lc-name{font-size:20px}
+  .lc-sid{font-size:14px}
+  .lc-price{font-size:32px}
+  .lc-chg{font-size:17px}
+  .lc-cell .lci-lbl{font-size:12px}
+  .lc-cell .lci-val{font-size:18px}
+  .open-signal{font-size:16px;padding:12px 14px}
+
+  /* footer */
+  .footer-meta{flex-direction:column;gap:2px;align-items:flex-end}
+  .footer-dot{display:none}
+}
+
+/* 超小手機 (380px) */
+@media(max-width:400px){
+  .stats{grid-template-columns:1fr 1fr}
+  .stat .val{font-size:26px}
+  .live-grid{grid-template-columns:1fr}
+  .nb-name{font-size:20px}
+  .km-val{font-size:16px}
+  .lc-price{font-size:28px}
+  .tabs{width:100%}
+  .tab{flex:1;text-align:center;padding:10px 12px}
 }
 </style>
 </head>
@@ -320,7 +381,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
       <span class="screw bl"></span><span class="screw br"></span>
     </div>
   </div>
-  <div class="nameplate-version">V14</div>
+  <div class="nameplate-version">V15</div>
 </div>
 
 <!-- ══ HERO ══ -->
@@ -394,7 +455,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
   <div class="footer-inner">
     <div class="footer-brand">程式設計 Elvis Liu｜版權所有</div>
     <div class="footer-meta">
-      <span>MOUP V14</span><span class="footer-dot">·</span>
+      <span>MOUP V15</span><span class="footer-dot">·</span>
       <span>Taiwan Warrant Intelligence System</span><span class="footer-dot">·</span>
       <span>最後更新：<span id="footer-update-time">--</span></span>
     </div>
