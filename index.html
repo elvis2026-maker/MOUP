@@ -3,437 +3,347 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>權證標的精選｜續漲機率分析 V13</title>
+<title>權證標的精選｜續漲機率分析 V14</title>
 <style>
-/* ══ GOOGLE FONTS ══ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
-/* ══ LIGHT THEME OVERRIDES ══ */
-body{background:var(--bg);}
-.app{max-width:1200px;margin:0 auto;padding:0 14px 60px;}
+/* ══ ROOT ══ */
+:root{
+  --bg:       #f4f6fb;
+  --surface:  #ffffff;
+  --surface2: #f8f9fd;
+  --border:   #e4e9f2;
+  --border2:  #d0d8ec;
+  --accent:   #2563eb;
+  --accent-l: #eff3fe;
+  --text:     #0f1724;
+  --text2:    #4b5a72;
+  --text3:    #8e9cba;
+  --danger:   #e03a3a;
+  --ok:       #059669;
+  --warn:     #d97706;
+  --high:     #059669;
+  --mh:       #2563eb;
+  --med:      #d97706;
+  --font:     'Inter','Noto Sans TC',system-ui,sans-serif;
+  --mono:     'JetBrains Mono','Fira Code',monospace;
+  --r:6px; --r2:12px; --r3:16px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow:    0 2px 8px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.05);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,.1),0 2px 6px rgba(0,0,0,.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6;min-height:100vh}
 
-/* ══════════════════════════════════
-   金屬銘排 METAL NAMEPLATE
-══════════════════════════════════ */
-.nameplate-wrap{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  padding:18px 0 0;
-}
-.nameplate-version{
-  font-family:'JetBrains Mono','Fira Code',monospace;
-  font-size:10px;
-  font-weight:700;
-  letter-spacing:0.12em;
-  padding:2px 8px;
-  border-radius:3px;
-  background:linear-gradient(135deg,#1a6ef5,#6ee7ff);
-  color:#fff;
-  box-shadow:0 1px 4px rgba(26,110,245,0.28);
-  user-select:none;
-  align-self:center;
-}
-.nameplate{
-  position:relative;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:5px 22px;
-  border-radius:3px;
-  background:linear-gradient(180deg,
-    #e2e5ec 0%,
-    #f6f7fa 30%,
-    #ffffff 50%,
-    #eaecf1 75%,
-    #d6d9e2 100%
-  );
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.95) inset,
-    0 -1px 0 rgba(0,0,0,0.1) inset,
-    0 2px 5px rgba(0,0,0,0.18),
-    0 1px 2px rgba(0,0,0,0.1),
-    0 0 0 1px rgba(0,0,0,0.08);
-}
-.nameplate-inner{
-  position:relative;
-  z-index:1;
-  padding:3px 10px;
-  border-top:1px solid rgba(255,255,255,0.9);
-  border-bottom:1px solid rgba(0,0,0,0.08);
-  border-left:1px solid rgba(255,255,255,0.5);
-  border-right:1px solid rgba(0,0,0,0.05);
-  border-radius:1px;
-}
-.nameplate-text{
-  font-family:'Inter','Noto Sans TC',system-ui,sans-serif;
-  font-size:12px;
-  font-weight:500;
-  letter-spacing:0.08em;
-  color:#3a3f4e;
-  white-space:nowrap;
-  user-select:none;
-}
-.nameplate-text .sep{
-  color:#9ba8be;
-  margin:0 6px;
-  font-weight:300;
-}
-/* 四角螺絲 */
-.nameplate-screws{position:absolute;inset:0;pointer-events:none;}
-.screw{
-  position:absolute;
-  width:6px;height:6px;
-  border-radius:50%;
-  background:radial-gradient(circle at 33% 33%,
-    #dde0e8 0%,
-    #a8adb9 50%,
-    #7a7f8e 100%
-  );
-  box-shadow:
-    0 0 0 0.5px rgba(0,0,0,0.2),
-    0 1px 1px rgba(0,0,0,0.2),
-    inset 0 1px 0 rgba(255,255,255,0.5);
-}
-.screw::after{
-  content:'';
-  position:absolute;
-  top:50%;left:50%;
-  transform:translate(-50%,-50%) rotate(45deg);
-  width:3.5px;height:0.8px;
-  background:rgba(0,0,0,0.25);
-}
-.screw.tl{top:5px;left:7px}
-.screw.tr{top:5px;right:7px}
-.screw.bl{bottom:5px;left:7px}
-.screw.br{bottom:5px;right:7px}
+/* ══ LAYOUT ══ */
+.app{max-width:1080px;margin:0 auto;padding:0 14px 60px}
 
-/* ══════════════════════════════════
-   HERO 主標題
-══════════════════════════════════ */
-.hero{
-  text-align:center;
-  padding:36px 20px 28px;
-  position:relative;
-}
-.hero::after{
-  content:'';
-  display:block;
-  width:80px;height:3px;
-  margin:20px auto 0;
-  background:linear-gradient(90deg, transparent, #1a6ef5, transparent);
-  border-radius:2px;
-}
-.hero-eyebrow{
-  font-size:11px;
-  font-weight:700;
-  letter-spacing:0.25em;
-  color:#9ba8be;
-  text-transform:uppercase;
-  margin-bottom:14px;
-  font-family:'JetBrains Mono',monospace;
-}
-.hero-title{
-  display:flex;
-  align-items:baseline;
-  justify-content:center;
-  gap:12px;
-  flex-wrap:wrap;
-  line-height:1.1;
-  margin-bottom:14px;
-}
-.hero-cn{
-  font-family:'Noto Sans TC','Inter',sans-serif;
-  font-size:clamp(32px,6vw,56px);
-  font-weight:900;
-  letter-spacing:-0.02em;
-  color:#0f1724;
-  position:relative;
-}
-.hero-cn::after{
-  content:'';
-  position:absolute;
-  bottom:-4px; left:0; right:0;
-  height:3px;
-  background:linear-gradient(90deg,#1a6ef5,#6ee7ff);
-  border-radius:2px;
-}
-.hero-slash{
-  font-family:'JetBrains Mono',monospace;
-  font-size:clamp(22px,4vw,40px);
-  font-weight:400;
-  color:#dde3ee;
-}
-.hero-sub-title{
-  font-family:'Noto Sans TC','Inter',sans-serif;
-  font-size:clamp(22px,4vw,40px);
-  font-weight:700;
-  color:#2563eb;
-  letter-spacing:-0.01em;
-}
-.hero-desc{
-  font-size:14px;
-  color:#4b5a72;
-  margin-top:6px;
-  letter-spacing:0.02em;
-  line-height:1.6;
-}
-/* ══ HEADER (slim, below hero) ══ */
-.hdr{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:10px 0 14px;
-  border-bottom:1px solid var(--border);
-  margin-bottom:20px;
-  flex-wrap:wrap;
-  gap:8px;
-}
-.hdr h1{display:none;}
-.hdr .sub{font-size:11px;color:var(--text2);font-family:var(--mono);}
-.hdr-right{display:flex;align-items:center;gap:10px;}
-.live-badge{
-  font-family:var(--mono);font-size:11px;
-  color:var(--text2);
-  background:#fff;
-  border:1px solid var(--border);
-  padding:4px 10px;border-radius:20px;
-  display:flex;align-items:center;gap:6px;
-  box-shadow:0 1px 3px rgba(0,0,0,0.06);
-}
+/* ══ NAMEPLATE ══ */
+.nameplate-wrap{display:flex;align-items:center;justify-content:center;gap:8px;padding:20px 0 0}
+.nameplate-version{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em;padding:2px 8px;border-radius:3px;background:linear-gradient(135deg,#2563eb,#60a5fa);color:#fff;box-shadow:0 1px 4px rgba(37,99,235,.3)}
+.nameplate{position:relative;display:inline-flex;align-items:center;justify-content:center;padding:5px 22px;border-radius:3px;background:linear-gradient(180deg,#e2e5ec 0%,#f6f7fa 30%,#fff 50%,#eaecf1 75%,#d6d9e2 100%);box-shadow:0 1px 0 rgba(255,255,255,.95) inset,0 -1px 0 rgba(0,0,0,.1) inset,0 2px 5px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.08)}
+.nameplate-inner{position:relative;z-index:1;padding:3px 10px;border-top:1px solid rgba(255,255,255,.9);border-bottom:1px solid rgba(0,0,0,.08);border-left:1px solid rgba(255,255,255,.5);border-right:1px solid rgba(0,0,0,.05)}
+.nameplate-text{font-size:12px;font-weight:500;letter-spacing:.08em;color:#3a3f4e;white-space:nowrap}
+.nameplate-text .sep{color:#9ba8be;margin:0 6px;font-weight:300}
+.nameplate-screws{position:absolute;inset:0;pointer-events:none}
+.screw{position:absolute;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 33% 33%,#dde0e8 0%,#a8adb9 50%,#7a7f8e 100%);box-shadow:0 0 0 .5px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.5)}
+.screw::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(45deg);width:3.5px;height:.8px;background:rgba(0,0,0,.25)}
+.screw.tl{top:5px;left:7px}.screw.tr{top:5px;right:7px}.screw.bl{bottom:5px;left:7px}.screw.br{bottom:5px;right:7px}
+
+/* ══ HERO ══ */
+.hero{text-align:center;padding:28px 20px 20px}
+.hero::after{content:'';display:block;width:80px;height:3px;margin:16px auto 0;background:linear-gradient(90deg,transparent,#2563eb,transparent);border-radius:2px}
+.hero-eyebrow{font-size:10px;font-weight:700;letter-spacing:.25em;color:var(--text3);text-transform:uppercase;margin-bottom:12px;font-family:var(--mono)}
+.hero-title{display:flex;align-items:baseline;justify-content:center;gap:10px;flex-wrap:wrap;line-height:1.1;margin-bottom:10px}
+.hero-cn{font-family:'Noto Sans TC',sans-serif;font-size:clamp(28px,5vw,48px);font-weight:900;letter-spacing:-.02em;color:var(--text);position:relative}
+.hero-cn::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:3px;background:linear-gradient(90deg,#2563eb,#60a5fa);border-radius:2px}
+.hero-slash{font-family:var(--mono);font-size:clamp(18px,3vw,32px);font-weight:400;color:#dde3ee}
+.hero-sub{font-family:'Noto Sans TC',sans-serif;font-size:clamp(18px,3vw,32px);font-weight:700;color:var(--accent)}
+.hero-desc{font-size:13px;color:var(--text2);margin-top:6px;letter-spacing:.02em}
+
+/* ══ HEADER ══ */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 0 14px;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap;gap:8px}
+.hdr .sub{font-size:11px;color:var(--text2);font-family:var(--mono)}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.live-badge{font-family:var(--mono);font-size:11px;color:var(--text2);background:var(--surface);border:1px solid var(--border);padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:6px;box-shadow:var(--shadow-sm)}
 .live-dot{width:6px;height:6px;border-radius:50%;background:#059669;animation:pulse 2s infinite}
-.live-dot.off{background:#9ba8be;animation:none}
-.btn{
-  background:#fff;
-  border:1px solid var(--border);
-  color:var(--text2);
-  padding:5px 14px;
-  border-radius:var(--r);
-  cursor:pointer;
-  font-size:12px;
-  font-family:var(--font);
-  transition:all .15s;
-  box-shadow:0 1px 3px rgba(0,0,0,0.06);
-}
-.btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 6px rgba(26,110,245,0.15);}
+.live-dot.off{background:var(--text3);animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.btn{background:var(--surface);border:1px solid var(--border);color:var(--text2);padding:5px 14px;border-radius:var(--r);cursor:pointer;font-size:12px;font-family:var(--font);transition:all .15s;box-shadow:var(--shadow-sm)}
+.btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 6px rgba(37,99,235,.15)}
 
 /* ══ STATS ══ */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
-.stat{
-  background:#fff;
-  border:1px solid var(--border);
-  border-radius:var(--r2);
-  padding:14px 16px;
-  box-shadow:0 1px 4px rgba(0,0,0,0.05);
-}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;box-shadow:var(--shadow-sm)}
 .stat .lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
-.stat .val{font-size:24px;font-weight:700;font-family:var(--mono);color:var(--text)}
-.stat .val.green{color:#059669}
-.stat .val.blue{color:#2563eb}
+.stat .val{font-size:26px;font-weight:800;font-family:var(--mono);color:var(--text);line-height:1}
+.stat .val.green{color:var(--ok)} .stat .val.blue{color:var(--accent)}
 
 /* ══ TABS ══ */
-.tabs{
-  display:flex;gap:2px;margin-bottom:20px;
-  background:#eff2f8;
-  border:1px solid var(--border);
-  border-radius:var(--r2);padding:3px;width:fit-content;
-}
-.tab{padding:6px 20px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;white-space:nowrap}
-.tab.active{background:#fff;color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.1)}
-
-/* ══ LIVE PANEL ══ */
-#live-panel{display:none}
-.live-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-.live-header h2{font-size:15px;font-weight:700;color:var(--text)}
-.live-time{font-family:var(--mono);font-size:11px;color:var(--text2)}
-.live-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:20px}
-.live-card{background:#fff;border:1px solid var(--border);border-radius:var(--r2);padding:14px;transition:border-color .2s;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
-.live-card.up{border-left:3px solid var(--danger)}
-.live-card.down{border-left:3px solid var(--ok)}
-.live-card .lc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-.live-card .lc-name{font-size:13px;font-weight:600;color:var(--text)}
-.live-card .lc-sid{font-size:10px;color:var(--text3);font-family:var(--mono)}
-.live-card .lc-price{font-family:var(--mono);font-size:18px;font-weight:700;text-align:right}
-.live-card .lc-price.up{color:var(--danger)}
-.live-card .lc-price.down{color:var(--ok)}
-.live-card .lc-chg{font-family:var(--mono);font-size:11px;text-align:right}
-.live-card .lc-chg.up{color:var(--danger)}
-.live-card .lc-chg.down{color:var(--ok)}
-.lc-bars{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
-.lc-bar-item .lci-lbl{font-size:10px;color:var(--text3)}
-.lc-bar-item .lci-val{font-family:var(--mono);font-size:12px;color:var(--text);font-weight:600}
-.open-signal{display:flex;align-items:center;gap:6px;margin-top:10px;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:600}
-.open-signal.bullish{background:rgba(5,150,105,.08);color:#059669;border:1px solid rgba(5,150,105,.2)}
-.open-signal.bearish{background:rgba(224,58,58,.07);color:var(--danger);border:1px solid rgba(224,58,58,.15)}
-.open-signal.neutral{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
-.open-signal.loading{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
-.live-notice{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;font-size:11px;color:var(--text2);margin-bottom:16px}
-.err-banner{background:rgba(224,58,58,.06);border:1px solid rgba(224,58,58,.2);border-radius:var(--r);padding:10px 14px;font-size:11px;color:#c0392b;margin-bottom:14px;display:none}
-.err-banner.show{display:block}
+.tabs{display:flex;gap:2px;margin-bottom:18px;background:#eef1f8;border:1px solid var(--border);border-radius:var(--r2);padding:3px;width:fit-content}
+.tab{padding:7px 22px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);transition:all .15s;white-space:nowrap}
+.tab.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:var(--shadow-sm)}
 
 /* ══ FILTER BAR ══ */
 .filter-bar{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
-.flt{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--font);transition:all .15s;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
-.flt.on,.flt:hover{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;box-shadow:0 2px 6px rgba(26,110,245,0.2)}
+.flt{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font);transition:all .15s;box-shadow:var(--shadow-sm)}
+.flt.on,.flt:hover{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
 
 /* ══ STOCK CARDS ══ */
-.cards{display:grid;gap:12px}
-.card{background:#fff;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;transition:border-color .15s,transform .1s,box-shadow .15s;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
-.card:hover{transform:translateY(-1px);border-color:var(--prob-color,var(--border));box-shadow:0 4px 12px rgba(0,0,0,0.08)}
-.card.open{border-color:var(--prob-color,var(--accent))}
-.card-stripe{height:3px;background:var(--prob-color,var(--border))}
-.card-top{display:grid;grid-template-columns:24px 1fr auto auto;align-items:center;gap:14px;padding:14px 16px}
-.rank{font-family:var(--mono);font-size:11px;color:var(--text3);text-align:center}
-.nb .sid{font-family:var(--mono);font-size:10px;color:var(--text3)}
-.nb .name{font-size:15px;font-weight:700;color:var(--text)}
-.mkt-badge{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-family:var(--mono);margin-left:5px;vertical-align:middle}
+.cards{display:grid;gap:10px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;cursor:pointer;box-shadow:var(--shadow-sm);transition:box-shadow .15s,transform .1s,border-color .15s}
+.card:hover{box-shadow:var(--shadow);transform:translateY(-1px);border-color:var(--prob-color,var(--border))}
+.card.open{border-color:var(--prob-color,var(--accent));box-shadow:var(--shadow)}
+
+/* ── 卡片頂部 ── */
+.card-top{
+  display:grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items:center;
+  gap:12px;
+  padding:14px 16px;
+  position:relative;
+}
+/* 左側彩色條 */
+.card-top::before{
+  content:'';
+  position:absolute;
+  left:0;top:0;bottom:0;
+  width:4px;
+  background:var(--prob-color,var(--border));
+  border-radius:var(--r3) 0 0 var(--r3);
+}
+
+/* 排名 */
+.rank-block{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:3px;
+  padding-left:6px;
+}
+.rank-num{font-family:var(--mono);font-size:18px;font-weight:800;color:var(--text3);line-height:1}
+.rank-bar{width:24px;height:3px;border-radius:2px;background:var(--border);overflow:hidden}
+.rank-bar-fill{height:100%;border-radius:2px;background:var(--prob-color,var(--border))}
+
+/* 中段：名稱 + 關鍵數字 */
+.card-main{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-wrap:wrap;
+  min-width:0;
+}
+.name-block{}
+.nb-sid{font-family:var(--mono);font-size:10px;color:var(--text3);display:flex;align-items:center;gap:5px}
+.nb-name{font-size:16px;font-weight:700;color:var(--text)}
+.mkt-badge{padding:1px 5px;border-radius:3px;font-size:9px;font-family:var(--mono)}
 .mkt-badge.tse{background:rgba(37,99,235,.1);color:#2563eb}
 .mkt-badge.otc{background:rgba(217,119,6,.1);color:#d97706}
-.pb{text-align:right}
-.pb .price{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--danger)}
-.pb .chg{font-family:var(--mono);font-size:11px;color:var(--danger)}
-.sb{text-align:center;min-width:88px}
-.prob-tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;margin-bottom:4px}
-.high .prob-tag{background:rgba(5,150,105,.1);color:#059669}
-.medium-high .prob-tag{background:rgba(37,99,235,.1);color:#2563eb}
-.medium .prob-tag{background:rgba(217,119,6,.1);color:#d97706}
-.bar-row{display:flex;align-items:center;gap:5px}
-.bar{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
-.bar-fill{height:100%;border-radius:2px}
-.score-n{font-family:var(--mono);font-size:10px;color:var(--text2);min-width:24px;text-align:right}
-.card-body{display:none;padding:0 16px 16px;border-top:1px solid var(--border);margin-top:0}
+
+/* 關鍵數字行（直接展示在卡片頂部，不用展開） */
+.key-metrics{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:6px;
+}
+.km-item{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  min-width:52px;
+}
+.km-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.km-val{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text);line-height:1.2}
+.km-val.up{color:var(--danger)}
+.km-val.ok{color:var(--ok)}
+.km-val.warn{color:var(--warn)}
+.km-divider{width:1px;height:28px;background:var(--border);flex-shrink:0}
+
+/* 右側：機率 + 評分 */
+.card-right{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:6px;
+  flex-shrink:0;
+}
+.prob-pill{
+  padding:3px 10px;
+  border-radius:20px;
+  font-size:11px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.high .prob-pill{background:rgba(5,150,105,.12);color:var(--ok)}
+.medium-high .prob-pill{background:rgba(37,99,235,.12);color:var(--accent)}
+.medium .prob-pill{background:rgba(217,119,6,.12);color:var(--warn)}
+.low .prob-pill{background:rgba(224,58,58,.1);color:var(--danger)}
+.score-row{display:flex;align-items:center;gap:6px}
+.score-bar-wrap{width:72px;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:3px}
+.score-num{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text2);min-width:24px;text-align:right}
+
+/* 展開提示箭頭 */
+.expand-hint{
+  font-size:10px;
+  color:var(--text3);
+  text-align:right;
+  padding:2px 16px 6px;
+  letter-spacing:.03em;
+}
+
+/* ── 卡片展開詳細 ── */
+.card-body{display:none;padding:14px 16px 16px;border-top:1px solid var(--border);background:var(--surface2)}
 .card.open .card-body{display:block}
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-.d-section h4{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.card.open .expand-hint{display:none}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.d-section h4{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;font-weight:600}
 .chip-row{display:flex;gap:6px;flex-wrap:wrap}
-.chip{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:5px 9px;font-family:var(--mono);font-size:11px;color:var(--text)}
-.chip .cl{font-size:9px;color:var(--text3);display:block}
+.chip{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:5px 10px;font-family:var(--mono);font-size:11px;color:var(--text);box-shadow:var(--shadow-sm)}
+.chip .cl{font-size:9px;color:var(--text3);display:block;margin-bottom:1px}
 .inst-row{display:flex;gap:6px;flex-wrap:wrap}
-.inst-item{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:5px 9px;flex:1;min-width:60px}
+.inst-item{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 10px;flex:1;min-width:64px;box-shadow:var(--shadow-sm)}
 .inst-item .il{font-size:9px;color:var(--text3);display:block;margin-bottom:2px}
-.inst-item .iv{font-family:var(--mono);font-size:12px;font-weight:600}
-.iv.pos{color:var(--danger)}
-.iv.neg{color:var(--ok)}
+.inst-item .iv{font-family:var(--mono);font-size:13px;font-weight:700}
+.iv.pos{color:var(--danger)} .iv.neg{color:var(--ok)}
 .tag-row{display:flex;flex-wrap:wrap;gap:5px}
-.tag{font-size:10px;padding:2px 7px;border-radius:4px}
-.tag.g{background:rgba(5,150,105,.08);color:#059669;border:1px solid rgba(5,150,105,.18)}
-.tag.w{background:rgba(217,119,6,.08);color:#d97706;border:1px solid rgba(217,119,6,.18)}
+.tag{font-size:11px;padding:3px 8px;border-radius:5px}
+.tag.g{background:rgba(5,150,105,.08);color:#059669;border:1px solid rgba(5,150,105,.2)}
+.tag.w{background:rgba(217,119,6,.08);color:#d97706;border:1px solid rgba(217,119,6,.2)}
 
-/* ══ WARRANT SECTION ══ */
+/* ── 認購權證 ── */
 .warrant-section{margin-top:14px;grid-column:1/-1;border-top:1px solid var(--border);padding-top:14px}
-.warrant-section h4{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.w-count{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1px 8px;font-size:10px;color:#2563eb}
+.warrant-section h4{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-weight:600}
+.w-count{background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.2);border-radius:10px;padding:1px 8px;font-size:10px;color:var(--accent)}
 .w-table{width:100%;border-collapse:collapse;font-size:12px}
-.w-table th{text-align:left;padding:5px 8px;font-size:10px;color:var(--text3);font-weight:500;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.05em;background:var(--surface2)}
-.w-table td{padding:6px 8px;border-bottom:1px solid rgba(221,227,238,0.7);color:var(--text)}
+.w-table th{text-align:left;padding:6px 8px;font-size:10px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border);background:var(--surface);letter-spacing:.04em}
+.w-table td{padding:7px 8px;border-bottom:1px solid var(--border);color:var(--text)}
 .w-table tr:last-child td{border-bottom:none}
-.w-table tr:hover td{background:var(--surface2)}
-.w-code{font-family:var(--mono);font-weight:600;color:#2563eb}
+.w-table tr:hover td{background:var(--accent-l)}
+.w-code{font-family:var(--mono);font-weight:700;color:var(--accent)}
 .w-mono{font-family:var(--mono)}
-.w-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px}
+.w-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600}
 .w-badge.pi{background:rgba(5,150,105,.1);color:#059669}
-.w-badge.pp{background:rgba(37,99,235,.1);color:#2563eb}
+.w-badge.pp{background:rgba(37,99,235,.1);color:var(--accent)}
 .w-badge.po{background:rgba(217,119,6,.1);color:#d97706}
-.w-badge.dpo{background:rgba(224,58,58,.07);color:var(--danger)}
-.w-ok{color:#059669}
-.w-warn{color:#d97706}
-.no-warrant{padding:10px;background:var(--surface2);border-radius:var(--r);font-size:12px;color:var(--text3);text-align:center}
-.hint-bar{margin-top:10px;padding:8px 12px;background:rgba(37,99,235,.05);border:1px solid rgba(37,99,235,.15);border-radius:var(--r);font-size:11px;color:var(--text2);display:flex;gap:8px}
-.hint-bar .hi{color:#2563eb;flex-shrink:0;font-size:13px}
+.w-badge.dpo{background:rgba(224,58,58,.08);color:var(--danger)}
+.w-ok{color:var(--ok)} .w-warn{color:var(--warn)}
+.no-warrant{padding:12px;background:var(--surface);border-radius:var(--r);font-size:12px;color:var(--text3);text-align:center;border:1px solid var(--border)}
+.hint-bar{margin-top:10px;padding:10px 13px;background:rgba(37,99,235,.05);border:1px solid rgba(37,99,235,.15);border-radius:var(--r);font-size:12px;color:var(--text2);display:flex;gap:8px;line-height:1.6}
+.hint-bar .hi{color:var(--accent);flex-shrink:0;font-size:14px}
 
-/* ══ LOADING / ERROR ══ */
+/* ══ LIVE PANEL ══ */
+#live-panel{display:none}
+.live-notice{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;font-size:11px;color:var(--text2);margin-bottom:16px;line-height:1.7;box-shadow:var(--shadow-sm)}
+.err-banner{background:rgba(224,58,58,.06);border:1px solid rgba(224,58,58,.2);border-radius:var(--r);padding:10px 14px;font-size:11px;color:#c0392b;margin-bottom:14px;display:none}
+.err-banner.show{display:block}
+.live-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.live-header h2{font-size:15px;font-weight:700;color:var(--text)}
+.live-time{font-family:var(--mono);font-size:11px;color:var(--text2)}
+
+/* 盤中卡片：更大、更清晰 */
+.live-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:20px}
+.live-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:16px;box-shadow:var(--shadow-sm);transition:box-shadow .2s}
+.live-card:hover{box-shadow:var(--shadow)}
+.live-card.up{border-top:3px solid var(--danger)}
+.live-card.down{border-top:3px solid var(--ok)}
+
+/* 卡片頭：股名 + 現價 */
+.lc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.lc-name{font-size:15px;font-weight:700;color:var(--text)}
+.lc-sid{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.lc-price-block{text-align:right}
+.lc-price{font-family:var(--mono);font-size:22px;font-weight:800;line-height:1}
+.lc-price.up{color:var(--danger)} .lc-price.down{color:var(--ok)}
+.lc-chg{font-family:var(--mono);font-size:12px;margin-top:2px;font-weight:600}
+.lc-chg.up{color:var(--danger)} .lc-chg.down{color:var(--ok)}
+
+/* 四格數據 */
+.lc-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}
+.lc-cell{background:var(--surface2);border-radius:6px;padding:6px 8px}
+.lc-cell .lci-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:2px}
+.lc-cell .lci-val{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text)}
+
+/* 開盤信號 */
+.open-signal{display:flex;align-items:center;gap:7px;padding:7px 11px;border-radius:7px;font-size:12px;font-weight:600;margin-top:8px}
+.open-signal.bullish{background:rgba(5,150,105,.1);color:var(--ok);border:1px solid rgba(5,150,105,.2)}
+.open-signal.bearish{background:rgba(224,58,58,.08);color:var(--danger);border:1px solid rgba(224,58,58,.18)}
+.open-signal.neutral{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.open-signal.loading{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+
+/* ══ MISC ══ */
 .loading{text-align:center;padding:50px 20px;color:var(--text3);font-family:var(--mono);font-size:13px}
 .spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .err{text-align:center;padding:40px;color:var(--danger);font-size:13px}
-.freshness-ok{color:#059669}
-.freshness-warn{color:#d97706}
-.freshness-stale{color:var(--danger)}
-
-/* ══ DISCLAIMER ══ */
-.disc{margin-top:28px;padding:12px 14px;background:#fff;border:1px solid var(--border);border-radius:var(--r);font-size:11px;color:var(--text3);line-height:1.7;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.freshness-ok{color:var(--ok)} .freshness-warn{color:var(--warn)} .freshness-stale{color:var(--danger)}
+.disc{margin-top:24px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);font-size:11px;color:var(--text3);line-height:1.7;box-shadow:var(--shadow-sm)}
 .disc strong{color:var(--text2)}
 
 /* ══ FOOTER ══ */
-.site-footer{
-  margin-top:32px;
-  padding:20px 0;
-  border-top:1px solid var(--border);
-}
-.footer-inner{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  flex-wrap:wrap;
-  gap:8px;
-}
-.footer-brand{
-  font-size:12px;
-  font-weight:600;
-  color:var(--text2);
-  letter-spacing:0.05em;
-}
-.footer-meta{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-size:11px;
-  color:var(--text3);
-  font-family:var(--mono);
-}
+.site-footer{margin-top:28px;padding:18px 0;border-top:1px solid var(--border)}
+.footer-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.footer-brand{font-size:12px;font-weight:600;color:var(--text2);letter-spacing:.05em}
+.footer-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);font-family:var(--mono)}
 .footer-dot{color:var(--border)}
 
+/* ══ RESPONSIVE ══ */
 @media(max-width:640px){
   .stats{grid-template-columns:repeat(2,1fr)}
-  .card-top{grid-template-columns:20px 1fr auto}
-  .sb{display:none}
+  .card-main{flex-direction:column;align-items:flex-start;gap:8px}
+  .key-metrics{gap:8px}
+  .km-divider{display:none}
   .detail-grid{grid-template-columns:1fr}
   .live-grid{grid-template-columns:1fr 1fr}
-  .footer-inner{flex-direction:column;align-items:flex-start}
+  .lc-price{font-size:18px}
+}
+@media(max-width:400px){
+  .live-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 <div class="app">
 
-<!-- ══ 金屬銘排 ══ -->
+<!-- ══ 銘牌 ══ -->
 <div class="nameplate-wrap">
   <div class="nameplate">
     <div class="nameplate-inner">
       <span class="nameplate-text">✦ 程式設計 Elvis Liu <span class="sep">|</span> 版權所有</span>
     </div>
     <div class="nameplate-screws">
-      <span class="screw tl"></span>
-      <span class="screw tr"></span>
-      <span class="screw bl"></span>
-      <span class="screw br"></span>
+      <span class="screw tl"></span><span class="screw tr"></span>
+      <span class="screw bl"></span><span class="screw br"></span>
     </div>
   </div>
-  <div class="nameplate-version">V13</div>
+  <div class="nameplate-version">V14</div>
 </div>
 
-<!-- ══ 主標題 Hero ══ -->
+<!-- ══ HERO ══ -->
 <div class="hero">
   <div class="hero-eyebrow">TAIWAN WARRANT INTELLIGENCE SYSTEM</div>
   <h1 class="hero-title">
     <span class="hero-cn">權證標的精選</span>
     <span class="hero-slash">//</span>
-    <span class="hero-sub-title">續漲機率分析</span>
+    <span class="hero-sub">續漲機率分析</span>
   </h1>
   <div class="hero-desc">每日自動篩選台股中最具續漲潛力的 Top 10 標的，精準推薦可投資的認購權證</div>
 </div>
 
+<!-- ══ HEADER ══ -->
 <header class="hdr">
-  <div>
-    <div class="sub" id="sub-info">載入中...</div>
-  </div>
+  <div><div class="sub" id="sub-info">載入中...</div></div>
   <div class="hdr-right">
     <span class="live-badge"><span class="live-dot" id="live-dot"></span><span id="live-clock">--:--:--</span></span>
     <button class="btn" onclick="loadData()">↺ 更新資料</button>
   </div>
 </header>
 
+<!-- ══ STATS ══ -->
 <div class="stats">
   <div class="stat"><div class="lbl">掃描股票</div><div class="val green" id="s-scan">--</div></div>
   <div class="stat"><div class="lbl">通過門檻</div><div class="val blue" id="s-cand">--</div></div>
@@ -441,12 +351,13 @@ body{background:var(--bg);}
   <div class="stat"><div class="lbl">高機率標的</div><div class="val green" id="s-high">--</div></div>
 </div>
 
+<!-- ══ TABS ══ -->
 <div class="tabs">
   <div class="tab active" onclick="switchTab('list',this)">📋 精選清單</div>
   <div class="tab" onclick="switchTab('live',this)">⚡ 盤中即時確認</div>
 </div>
 
-<!-- 清單 TAB -->
+<!-- ══ 清單 TAB ══ -->
 <div id="list-panel">
   <div class="filter-bar">
     <button class="flt on"  onclick="setFilter('all',this)">全部</button>
@@ -457,41 +368,34 @@ body{background:var(--bg);}
   <div class="cards" id="cards"></div>
 </div>
 
-<!-- 即時 TAB -->
+<!-- ══ 即時 TAB ══ -->
 <div id="live-panel">
   <div class="live-notice">
     ℹ 資料由 <strong>GitHub Actions 每30分鐘</strong>（09:05、09:35、10:05...13:25）自動透過 FinMind API 抓取並寫入 <code>data/live.json</code>。
     開盤後確認精選股是否延續強勢，<strong>「開高走高」綠燈才是最佳進場時機。</strong>
-    <br><small style="color:var(--text3)">⚠ V13 全面改用 FinMind 免費 tier（境外 IP 可用）；V13 升級：掃描母體從 200 支擴增至 600 支（含兩階段粗篩精篩），涵蓋全台有認購權證標的；盤中卡片顯示昨收為正常現象（FinMind 日K 17:30 更新）；盤後 17:30 後才更新今日收盤；若超過 60 分鐘未更新，表示 Actions 可能異常</small>
+    <br><small style="color:var(--text3)">⚠ 盤中卡片顯示昨收為正常現象（FinMind 日K 17:30 更新）；若超過 60 分鐘未更新，表示 Actions 可能異常</small>
   </div>
-  <!-- V4：錯誤提示 -->
   <div class="err-banner" id="err-banner"></div>
   <div class="live-header">
     <h2>盤中即時報價</h2>
     <span class="live-time">最後更新：<span id="live-update">--</span></span>
   </div>
   <div class="live-grid" id="live-grid">
-    <div class="loading" style="padding:30px;grid-column:1/-1">
-      <div class="spinner"></div>
-      載入中... 若長時間無資料，請切換至「精選清單」確認資料是否正常
-    </div>
+    <div class="loading" style="grid-column:1/-1"><div class="spinner"></div>載入中...</div>
   </div>
 </div>
 
 <div class="disc">
   <strong>⚠ 風險聲明：</strong>本工具所有資料及評分僅供參考，不構成任何投資建議。
-  權證具有時間價值損耗，且存在隱含波動率風險。開盤行情確認後方建議進場。
-  請務必設定停損，獨立判斷，自行承擔投資損益。
+  權證具有時間價值損耗，且存在隱含波動率風險。開盤行情確認後方建議進場。請務必設定停損，獨立判斷，自行承擔投資損益。
 </div>
 
 <footer class="site-footer">
   <div class="footer-inner">
     <div class="footer-brand">程式設計 Elvis Liu｜版權所有</div>
     <div class="footer-meta">
-      <span>MOUP V13</span>
-      <span class="footer-dot">·</span>
-      <span>Taiwan Warrant Intelligence System</span>
-      <span class="footer-dot">·</span>
+      <span>MOUP V14</span><span class="footer-dot">·</span>
+      <span>Taiwan Warrant Intelligence System</span><span class="footer-dot">·</span>
       <span>最後更新：<span id="footer-update-time">--</span></span>
     </div>
   </div>
@@ -502,88 +406,64 @@ body{background:var(--bg);}
 // ════════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════════
-let allStocks   = [];
-let curFilter   = 'all';
-let curTab      = 'list';
-let liveTimer   = null;
-let liveRunning = false;
+let allStocks = [], curFilter = 'all', curTab = 'list';
+let liveTimer = null, liveRunning = false;
 
 // ════════════════════════════════════════════
 //  CLOCK
 // ════════════════════════════════════════════
 function startClock(){
   setInterval(()=>{
-    // V4修正：用台灣時區顯示時鐘
     const now = new Date();
-    // 轉台灣時間顯示
-    const twStr = now.toLocaleTimeString('zh-TW', {
-      hour12: false,
-      timeZone: 'Asia/Taipei'
-    });
-    document.getElementById('live-clock').textContent = twStr;
-
-    // 判斷盤中（09:00~13:30 台灣時間）
-    const twNow = new Date(now.toLocaleString('en-US', {timeZone:'Asia/Taipei'}));
-    const h = twNow.getHours(), m = twNow.getMinutes();
-    const total = h * 60 + m;
-    const trading = (total >= 9*60) && (total <= 13*60+30);
-    document.getElementById('live-dot').className = 'live-dot' + (trading ? '' : ' off');
-  }, 1000);
+    document.getElementById('live-clock').textContent =
+      now.toLocaleTimeString('zh-TW',{hour12:false,timeZone:'Asia/Taipei'});
+    const tw = new Date(now.toLocaleString('en-US',{timeZone:'Asia/Taipei'}));
+    const tot = tw.getHours()*60+tw.getMinutes();
+    const trading = tw.getDay()>0&&tw.getDay()<6&&tot>=540&&tot<=810;
+    document.getElementById('live-dot').className='live-dot'+(trading?'':' off');
+  },1000);
 }
 
 // ════════════════════════════════════════════
-//  LOAD DAILY DATA
+//  LOAD DATA
 // ════════════════════════════════════════════
 async function loadData(){
-  document.getElementById('cards').innerHTML = '<div class="loading"><div class="spinner"></div>載入選股資料...</div>';
+  document.getElementById('cards').innerHTML='<div class="loading"><div class="spinner"></div>載入選股資料...</div>';
   try{
-    // V4修正：加 cache-busting 參數確保不讀舊快取
-    const r = await fetch(`data/stocks.json?t=${Date.now()}`, {
-      cache: 'no-store'
-    });
+    const r = await fetch(`data/stocks.json?t=${Date.now()}`,{cache:'no-store'});
     if(!r.ok) throw new Error(`HTTP ${r.status}`);
     const d = await r.json();
-    allStocks = d.stocks || [];
+    allStocks = d.stocks||[];
 
-    // V7修正：加上 +08:00 台灣時區，避免把 14:00 台灣時間誤算成 UTC 14:00（差 8 小時）
-    const updatedAt = d.updated_at || '--';
-    let freshnessHtml = '';
+    const updatedAt = d.updated_at||'--';
+    let fresh='';
     try{
-      const normalized = updatedAt.replace(/\//g,'-').replace(' ','T');
-      const withSec = /T\d{2}:\d{2}$/.test(normalized) ? normalized + ':00' : normalized;
-      const upd = new Date(withSec + '+08:00');
-      const diffHr = (Date.now() - upd.getTime()) / 3600000;
-      if(isNaN(diffHr)){
-        freshnessHtml = '';
-      } else if(diffHr < 1){
-        freshnessHtml = ' <span class="freshness-ok">✓ 最新</span>';
-      } else if(diffHr < 12){
-        freshnessHtml = ` <span class="freshness-warn">↻ ${Math.floor(diffHr)}小時前</span>`;
-      } else {
-        freshnessHtml = ` <span class="freshness-stale">⚠ ${Math.floor(diffHr)}小時未更新</span>`;
+      const norm = updatedAt.replace(/\//g,'-').replace(' ','T');
+      const upd  = new Date((/T\d{2}:\d{2}$/.test(norm)?norm+':00':norm)+'+08:00');
+      const dh   = (Date.now()-upd.getTime())/3600000;
+      if(!isNaN(dh)){
+        if(dh<1) fresh=' <span class="freshness-ok">✓ 最新</span>';
+        else if(dh<12) fresh=` <span class="freshness-warn">↻ ${Math.floor(dh)}小時前</span>`;
+        else fresh=` <span class="freshness-stale">⚠ ${Math.floor(dh)}小時未更新</span>`;
       }
     }catch(e){}
 
-    document.getElementById('sub-info').innerHTML =
-      `交易日 ${fmtDate(d.trade_date)} ／ 更新 ${updatedAt}${freshnessHtml}`;
-    document.getElementById('s-scan').textContent = (d.total_scanned||'--').toLocaleString?.() || d.total_scanned;
-    document.getElementById('s-cand').textContent = d.candidates_count || '--';
-    document.getElementById('s-sel').textContent  = allStocks.length;
-    document.getElementById('s-high').textContent = allStocks.filter(s=>s.prob_level==='high').length;
+    document.getElementById('sub-info').innerHTML=
+      `交易日 ${fmtDate(d.trade_date)} ／ 更新 ${updatedAt}${fresh}`;
+    document.getElementById('s-scan').textContent=(d.total_scanned||0).toLocaleString();
+    document.getElementById('s-cand').textContent=d.candidates_count||0;
+    document.getElementById('s-sel').textContent=allStocks.length;
+    document.getElementById('s-high').textContent=allStocks.filter(s=>s.prob_level==='high').length;
 
-    // V13修正：stocks 為空時顯示引導訊息（首次部署尚未執行 Actions）
-    if(allStocks.length === 0){
-      document.getElementById('cards').innerHTML = `
+    if(allStocks.length===0){
+      document.getElementById('cards').innerHTML=`
         <div style="text-align:center;padding:50px 20px;color:var(--text2)">
           <div style="font-size:32px;margin-bottom:16px">🚀</div>
-          <div style="font-size:15px;font-weight:600;margin-bottom:8px">尚未有選股資料</div>
-          <div style="font-size:12px;color:var(--text3);line-height:1.8">
-            請至 GitHub Actions 頁面<br>
-            手動觸發「每日盤後抓資料」workflow<br>
-            執行完成後重新整理此頁面
+          <div style="font-size:15px;font-weight:700;margin-bottom:8px">尚未有選股資料</div>
+          <div style="font-size:12px;color:var(--text3);line-height:1.9">
+            請至 GitHub Actions 頁面<br>手動觸發「每日盤後抓資料」workflow<br>執行完成後重新整理此頁面
           </div>
         </div>`;
-      // V13新增：stocks 為空時，嘗試從 live.json 的 stocks_meta 補充（供 live tab 使用）
       await tryLoadStocksFromLive();
       if(curTab==='live') startLive();
       return;
@@ -591,90 +471,66 @@ async function loadData(){
     renderCards();
     if(curTab==='live') startLive();
   }catch(e){
-    document.getElementById('cards').innerHTML = `<div class="err">⚠ 資料載入失敗：${e.message}<br><small style="color:var(--text3)">請確認 GitHub Actions 是否正常執行</small></div>`;
+    document.getElementById('cards').innerHTML=
+      `<div class="err">⚠ 資料載入失敗：${e.message}</div>`;
   }
 }
 
-// V13新增：當 stocks.json 為空時，嘗試從 live.json 的 stocks_meta 載入基本股票清單
-// 讓 live tab 至少能顯示卡片，而非「選股資料載入失敗」
 async function tryLoadStocksFromLive(){
   try{
-    const r = await fetch(`data/live.json?t=${Date.now()}`, { cache: 'no-store' });
+    const r=await fetch(`data/live.json?t=${Date.now()}`,{cache:'no-store'});
     if(!r.ok) return;
-    const liveData = await r.json();
-    const meta = liveData.stocks_meta || [];
-    if(meta.length > 0 && allStocks.length === 0){
-      // 轉成 allStocks 需要的格式（最低限度）
-      allStocks = meta.map(m => ({
-        sid:        m.sid,
-        name:       m.name,
-        close:      m.close || 0,
-        prob:       m.prob || '--',
-        prob_level: m.prob_level || 'medium',
-        score:      m.score || 0,
-        change_pct: 0,
-        volume:     0,
-        market:     'tse',
-        reasons:    [],
-        warnings:   [],
-        inst:       {},
-        warrants:   [],
+    const ld=await r.json();
+    const meta=ld.stocks_meta||[];
+    if(meta.length>0&&allStocks.length===0){
+      allStocks=meta.map(m=>({
+        sid:m.sid,name:m.name,close:m.close||0,
+        prob:m.prob||'--',prob_level:m.prob_level||'medium',score:m.score||0,
+        change_pct:0,volume:0,market:'tse',reasons:[],warnings:[],inst:{},warrants:[]
       }));
-      console.log(`V13：從 live.json stocks_meta 補充 ${allStocks.length} 支股票`);
     }
-  }catch(e){
-    console.warn('tryLoadStocksFromLive 失敗：', e.message);
-  }
+  }catch(e){}
 }
 
-function fmtDate(s){
-  if(!s||s.length<8) return s||'--';
-  return `${s.slice(0,4)}/${s.slice(4,6)}/${s.slice(6,8)}`;
-}
+function fmtDate(s){ return (!s||s.length<8)?s||'--':`${s.slice(0,4)}/${s.slice(4,6)}/${s.slice(6,8)}`; }
 
 // ════════════════════════════════════════════
-//  TAB SWITCH
+//  TABS / FILTER
 // ════════════════════════════════════════════
-function switchTab(tab, el){
-  curTab = tab;
+function switchTab(tab,el){
+  curTab=tab;
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('list-panel').style.display = tab==='list'?'block':'none';
-  document.getElementById('live-panel').style.display = tab==='live'?'block':'none';
-  if(tab==='live'){ startLive(); }
-  else { stopLive(); }
+  document.getElementById('list-panel').style.display=tab==='list'?'block':'none';
+  document.getElementById('live-panel').style.display=tab==='live'?'block':'none';
+  if(tab==='live') startLive(); else stopLive();
 }
-
-// ════════════════════════════════════════════
-//  FILTER
-// ════════════════════════════════════════════
-function setFilter(f, el){
-  curFilter = f;
+function setFilter(f,el){
+  curFilter=f;
   document.querySelectorAll('.flt').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
   renderCards();
 }
 
 // ════════════════════════════════════════════
-//  RENDER STOCK CARDS
+//  RENDER CARDS
 // ════════════════════════════════════════════
 function renderCards(){
-  const list = curFilter==='all' ? allStocks
-    : allStocks.filter(s=>s.prob_level===curFilter);
-  const el = document.getElementById('cards');
+  const list = curFilter==='all'?allStocks:allStocks.filter(s=>s.prob_level===curFilter);
+  const el   = document.getElementById('cards');
   if(!list.length){ el.innerHTML='<div class="loading" style="padding:30px">此篩選條件無資料</div>'; return; }
   el.innerHTML = list.map((s,i)=>cardHTML(s,i+1)).join('');
 }
 
 function probColor(lv){
-  return {high:'#00e5b4','medium-high':'#4d8ef5',medium:'#f5a623',low:'#ff4d6d'}[lv]||'#384560';
+  return {high:'#059669','medium-high':'#2563eb',medium:'#d97706',low:'#e03a3a'}[lv]||'#8e9cba';
 }
 function probLabel(lv){
   return {high:'高機率','medium-high':'中高機率',medium:'中等機率',low:'偏低'}[lv]||'--';
 }
 function instVal(v){
   if(v===undefined||v===null) return '<span style="color:var(--text3)">--</span>';
-  const n=parseInt(v), cls=n>0?'pos':n<0?'neg':'', sg=n>0?'+':'';
+  const n=parseInt(v),cls=n>0?'pos':n<0?'neg':'',sg=n>0?'+':'';
   return `<span class="iv ${cls}">${sg}${n.toLocaleString()}</span>`;
 }
 function moneynessClass(m){
@@ -685,21 +541,25 @@ function moneynessClass(m){
 }
 
 function cardHTML(s, rank){
-  const color = probColor(s.prob_level);
-  const pct   = s.change_pct >= 0 ? `+${s.change_pct}%` : `${s.change_pct}%`;
-  // V4：上市/上櫃 badge
-  const mkt = s.market || 'tse';
-  const mktLabel = mkt === 'otc' ? '上櫃' : '上市';
+  const color  = probColor(s.prob_level);
+  const pct    = s.change_pct>=0?`+${s.change_pct}%`:`${s.change_pct}%`;
+  const pctCls = s.change_pct>=0?'up':'ok';
+  const mkt    = s.market||'tse';
+
+  // 三大法人合計
+  const instTotal = s.inst?.total_net;
+  const instHtml  = instTotal!==undefined&&instTotal!==null
+    ? `<div class="km-item"><div class="km-lbl">法人合計</div><div class="km-val ${instTotal>0?'up':instTotal<0?'ok':''}">${instTotal>0?'+':''}${instTotal}張</div></div>`
+    : '';
 
   const mas = [
     s.ma5  ? `<div class="chip"><span class="cl">MA5</span>${s.ma5}</div>` : '',
     s.ma10 ? `<div class="chip"><span class="cl">MA10</span>${s.ma10}</div>` : '',
     s.ma20 ? `<div class="chip"><span class="cl">MA20</span>${s.ma20}</div>` : '',
-    `<div class="chip"><span class="cl">今日漲幅</span>${pct}</div>`,
     `<div class="chip"><span class="cl">成交量</span>${(s.volume/10000).toFixed(0)}萬</div>`,
   ].join('');
 
-  const inst = s.inst;
+  const inst=s.inst;
   const instBlock = inst ? `
     <div class="inst-item"><span class="il">外資</span>${instVal(inst.foreign_net)}</div>
     <div class="inst-item"><span class="il">投信</span>${instVal(inst.trust_net)}</div>
@@ -707,57 +567,74 @@ function cardHTML(s, rank){
     <div class="inst-item"><span class="il">合計</span>${instVal(inst.total_net)}</div>
   ` : '<span style="color:var(--text3);font-size:11px">無資料</span>';
 
-  const rTags = (s.reasons||[]).map(r=>`<span class="tag g">${r}</span>`).join('');
-  const wTags = (s.warnings||[]).map(w=>`<span class="tag w">⚠ ${w}</span>`).join('');
+  const rTags=(s.reasons||[]).map(r=>`<span class="tag g">${r}</span>`).join('');
+  const wTags=(s.warnings||[]).map(w=>`<span class="tag w">⚠ ${w}</span>`).join('');
 
-  const warrants = s.warrants || [];
-  let wBlock = '';
-  if(warrants.length === 0){
-    wBlock = `<div class="no-warrant">目前無符合條件的認購權證（到期≥20天、槓桿5~12倍）</div>`;
+  const warrants=s.warrants||[];
+  let wBlock='';
+  if(warrants.length===0){
+    wBlock=`<div class="no-warrant">目前無符合條件的認購權證（到期≥20天、槓桿5~12倍）</div>`;
   } else {
-    const rows = warrants.map(w=>`
+    const rows=warrants.map(w=>`
       <tr>
         <td class="w-code">${w.code}</td>
         <td>${w.issuer}</td>
-        <td class="w-mono">${w.expire}<br><small style="color:var(--text3)">${w.days_left||'?'}天</small></td>
+        <td class="w-mono">${w.expire} <small style="color:var(--text3)">${w.days_left||'?'}天</small></td>
         <td class="w-mono ${w.leverage>=5&&w.leverage<=10?'w-ok':'w-warn'}">${w.leverage}x</td>
         <td class="w-mono">${w.iv}%</td>
         <td><span class="w-badge ${moneynessClass(w.moneyness)}">${w.moneyness}</span></td>
         <td class="w-mono">${w.bid} / ${w.ask}</td>
         <td class="w-mono">${(w.volume||0).toLocaleString()}</td>
-      </tr>
-    `).join('');
-    wBlock = `
-      <table class="w-table">
-        <tr><th>代號</th><th>發行</th><th>到期日</th><th>槓桿</th><th>隱波</th><th>價內外</th><th>買/賣</th><th>量</th></tr>
-        ${rows}
-      </table>
-    `;
+      </tr>`).join('');
+    wBlock=`<table class="w-table">
+      <tr><th>代號</th><th>發行商</th><th>到期日</th><th>槓桿</th><th>隱波</th><th>價內外</th><th>買/賣</th><th>量</th></tr>
+      ${rows}</table>`;
   }
-
-  const hint = genHint(s);
 
   return `
 <div class="card ${s.prob_level}" style="--prob-color:${color}" onclick="toggleCard(this)">
-  <div class="card-stripe"></div>
   <div class="card-top">
-    <div class="rank">#${rank}</div>
-    <div class="nb">
-      <div class="sid">${s.sid} <span class="mkt-badge ${mkt}">${mktLabel}</span></div>
-      <div class="name">${s.name}</div>
+    <div class="rank-block">
+      <div class="rank-num">${rank}</div>
+      <div class="rank-bar"><div class="rank-bar-fill" style="width:${s.score}%"></div></div>
     </div>
-    <div class="pb">
-      <div class="price">${s.close?.toFixed(1)}</div>
-      <div class="chg">${pct}</div>
+    <div class="card-main">
+      <div class="name-block">
+        <div class="nb-sid">${s.sid} <span class="mkt-badge ${mkt}">${mkt==='otc'?'上櫃':'上市'}</span></div>
+        <div class="nb-name">${s.name}</div>
+      </div>
+      <!-- V14核心改進：關鍵數字直接顯示，不需展開 -->
+      <div class="key-metrics">
+        <div class="km-item">
+          <div class="km-lbl">昨收</div>
+          <div class="km-val">${s.close?.toFixed(1)}</div>
+        </div>
+        <div class="km-item">
+          <div class="km-lbl">漲幅</div>
+          <div class="km-val ${pctCls}">${pct}</div>
+        </div>
+        ${s.ma20?`<div class="km-divider"></div>
+        <div class="km-item">
+          <div class="km-lbl">MA20</div>
+          <div class="km-val ${s.close>s.ma20?'ok':'warn'}">${s.ma20}</div>
+        </div>`:''}
+        ${instHtml?`<div class="km-divider"></div>${instHtml}`:''}
+        <div class="km-divider"></div>
+        <div class="km-item">
+          <div class="km-lbl">認購權證</div>
+          <div class="km-val ${warrants.length>0?'ok':'warn'}">${warrants.length>0?warrants.length+'支':'--'}</div>
+        </div>
+      </div>
     </div>
-    <div class="sb">
-      <div class="prob-tag">${probLabel(s.prob_level)}</div>
-      <div class="bar-row">
-        <div class="bar"><div class="bar-fill" style="width:${s.score}%;background:${color}"></div></div>
-        <span class="score-n">${s.score}</span>
+    <div class="card-right">
+      <div class="prob-pill">${probLabel(s.prob_level)}</div>
+      <div class="score-row">
+        <div class="score-bar-wrap"><div class="score-bar-fill" style="width:${s.score}%;background:${color}"></div></div>
+        <span class="score-num">${s.score}</span>
       </div>
     </div>
   </div>
+  <div class="expand-hint">▼ 展開查看均線、籌碼、認購權證詳細</div>
   <div class="card-body">
     <div class="detail-grid">
       <div class="d-section">
@@ -771,20 +648,19 @@ function cardHTML(s, rank){
       <div class="d-section">
         <h4>多頭訊號</h4>
         <div class="tag-row">${rTags||'<span style="color:var(--text3);font-size:11px">無</span>'}</div>
-        ${wTags?`<div class="tag-row" style="margin-top:5px">${wTags}</div>`:''}
+        ${wTags?`<div class="tag-row" style="margin-top:6px">${wTags}</div>`:''}
       </div>
       <div class="d-section">
         <h4>綜合評估</h4>
         <div class="chip-row">
-          <div class="chip"><span class="cl">續漲機率</span><span style="color:${color}">${s.prob}</span></div>
+          <div class="chip"><span class="cl">續漲機率</span><span style="color:${color};font-weight:700">${s.prob}</span></div>
           <div class="chip"><span class="cl">評分</span>${s.score} / 100</div>
-          <div class="chip"><span class="cl">認購權證</span>${warrants.length} 支可選</div>
         </div>
       </div>
       <div class="warrant-section">
         <h4>認購權證推薦 <span class="w-count">${warrants.length} 支</span></h4>
         ${wBlock}
-        <div class="hint-bar"><span class="hi">ℹ</span><span>${hint}</span></div>
+        <div class="hint-bar"><span class="hi">ℹ</span><span>${genHint(s)}</span></div>
       </div>
     </div>
   </div>
@@ -792,201 +668,137 @@ function cardHTML(s, rank){
 }
 
 function genHint(s){
-  const wc = (s.warrants||[]).length;
-  if(s.prob_level==='high'){
-    return `<strong>建議積極操作認購權證。</strong>優先選槓桿 5~8x、到期≥20天、輕度價外或價平的權證。${wc>0?`上方列出 ${wc} 支符合條件，注意買賣價差勿過大（<0.05）。`:'目前無符合條件的權證，可查詢公開資訊觀測站。'}`;
-  } else if(s.prob_level==='medium-high'){
-    return `<strong>可小量試單。</strong>建議部位控制在總資金 5% 以內，確認開盤前30分鐘量能跟上後再進場。`;
-  }
+  const wc=(s.warrants||[]).length;
+  if(s.prob_level==='high')
+    return `<strong>建議積極操作認購權證。</strong>優先選槓桿 5~8x、到期≥20天、輕度價外或價平。${wc>0?`上方 ${wc} 支符合條件，注意買賣價差<0.05。`:'可至公開資訊觀測站查詢。'}`;
+  if(s.prob_level==='medium-high')
+    return `<strong>可小量試單。</strong>部位控制在資金 5% 以內，開盤30分鐘確認量能跟上後再進場。`;
   return `訊號未完全確立，建議<strong>開盤觀察15分鐘</strong>確認是否延續強勢，再決定是否進場。`;
 }
 
-function toggleCard(el){
-  el.classList.toggle('open');
-}
+function toggleCard(el){ el.classList.toggle('open'); }
 
 // ════════════════════════════════════════════
 //  LIVE PANEL
 // ════════════════════════════════════════════
 function startLive(){
   if(liveRunning) return;
-  // V7修正：若 allStocks 尚未載入，最多重試 10 次（8 秒），超過則顯示錯誤，避免 spinner 永遠轉
   if(!allStocks.length){
-    const grid = document.getElementById('live-grid');
-    if(typeof startLive._retries === 'undefined') startLive._retries = 0;
-    if(startLive._retries < 10){
-      startLive._retries++;
-      grid.innerHTML = '<div class="loading" style="padding:30px;grid-column:1/-1"><div class="spinner"></div>等待選股清單載入...</div>';
-      setTimeout(()=>{ if(allStocks.length){ startLive._retries=0; startLive(); } else { startLive(); } }, 800);
+    const grid=document.getElementById('live-grid');
+    if(typeof startLive._r==='undefined') startLive._r=0;
+    if(startLive._r<10){
+      startLive._r++;
+      grid.innerHTML='<div class="loading" style="grid-column:1/-1"><div class="spinner"></div>等待選股清單...</div>';
+      setTimeout(()=>{ if(allStocks.length){startLive._r=0;startLive();}else startLive(); },800);
     } else {
-      startLive._retries = 0;
-      grid.innerHTML = '<div class="err" style="grid-column:1/-1">⚠ 選股資料載入失敗，請重新整理頁面或確認 stocks.json 是否正常部署。</div>';
+      startLive._r=0;
+      grid.innerHTML='<div class="err" style="grid-column:1/-1">⚠ 選股資料載入失敗，請重新整理頁面。</div>';
     }
     return;
   }
-  startLive._retries = 0;
-  liveRunning = true;
+  startLive._r=0;
+  liveRunning=true;
   fetchLive();
-  // V4：每60秒重新讀取
-  liveTimer = setInterval(fetchLive, 60000);
+  liveTimer=setInterval(fetchLive,60000);
 }
 function stopLive(){
-  liveRunning = false;
-  if(liveTimer){ clearInterval(liveTimer); liveTimer=null; }
+  liveRunning=false;
+  if(liveTimer){clearInterval(liveTimer);liveTimer=null;}
 }
 
 async function fetchLive(){
   if(!allStocks.length) return;
-  const grid = document.getElementById('live-grid');
-  const errBanner = document.getElementById('err-banner');
-
-  // V4修正：加 cache: 'no-store' 確保拿到最新 live.json
+  const grid=document.getElementById('live-grid');
+  const errBanner=document.getElementById('err-banner');
   try{
-    const r = await fetch(`data/live.json?t=${Date.now()}`, {
-      cache: 'no-store'
-    });
+    const r=await fetch(`data/live.json?t=${Date.now()}`,{cache:'no-store'});
     if(!r.ok) throw new Error(`HTTP ${r.status}`);
-    const liveData = await r.json();
+    const ld=await r.json();
+    const prices=ld.prices||{}, updatedAt=ld.updated_at||'--', isTrading=ld.is_trading||false;
+    const errors=ld.fetch_errors||[];
 
-    const prices    = liveData.prices || {};
-    const updatedAt = liveData.updated_at || '--';
-    const isTrading = liveData.is_trading || false;
-    // V4：顯示 fetch_errors
-    const errors    = liveData.fetch_errors || [];
+    if(errors.length>0){ errBanner.textContent='⚠ 抓取警告：'+errors.join('；'); errBanner.classList.add('show'); }
+    else errBanner.classList.remove('show');
 
-    if(errors.length > 0){
-      errBanner.textContent = '⚠ 抓取警告：' + errors.join('；');
-      errBanner.classList.add('show');
-    } else {
-      errBanner.classList.remove('show');
-    }
-
-    // V4修正：資料新鮮度判斷（每30分鐘更新，60分鐘以上才警告）
-    // updated_at 格式可能是 "2026/06/26 10:05:30" 或 "2026/06/26 10:05"，兩種都能解析
-    let freshnessHtml = updatedAt;
+    let fresh=updatedAt;
     try{
-      // 統一格式：把 "/" 換 "-"、空格換 "T"、補上台灣時區
-      const normalized = updatedAt.replace(/\//g,'-').replace(' ','T');
-      // 若只有 HH:MM 補上 :00
-      const withSec = /T\d{2}:\d{2}$/.test(normalized) ? normalized + ':00' : normalized;
-      const liveTime = new Date(withSec + '+08:00');
-      const diffMin  = (Date.now() - liveTime.getTime()) / 60000;
-      if(isNaN(diffMin)){
-        freshnessHtml = updatedAt;
-      } else if(diffMin > 60){
-        freshnessHtml = `${updatedAt} <span class="freshness-stale">⚠ 逾${Math.floor(diffMin)}分鐘未更新</span>`;
-      } else if(diffMin > 30){
-        freshnessHtml = `${updatedAt} <span class="freshness-warn">（${Math.floor(diffMin)}分鐘前）</span>`;
-      } else {
-        freshnessHtml = `${updatedAt} <span class="freshness-ok">✓</span>`;
+      const norm=updatedAt.replace(/\//g,'-').replace(' ','T');
+      const lt=new Date((/T\d{2}:\d{2}$/.test(norm)?norm+':00':norm)+'+08:00');
+      const dm=(Date.now()-lt.getTime())/60000;
+      if(!isNaN(dm)){
+        if(dm>60) fresh=`${updatedAt} <span class="freshness-stale">⚠ 逾${Math.floor(dm)}分鐘未更新</span>`;
+        else if(dm>30) fresh=`${updatedAt} <span class="freshness-warn">（${Math.floor(dm)}分鐘前）</span>`;
+        else fresh=`${updatedAt} <span class="freshness-ok">✓</span>`;
       }
-    }catch(e){ console.warn('freshness parse error', e); }
+    }catch(e){}
+    document.getElementById('live-update').innerHTML=fresh;
 
-    document.getElementById('live-update').innerHTML = freshnessHtml;
+    const map={};
+    let hasAny=false;
+    Object.entries(prices).forEach(([sid,p])=>{
+      const raw=p.price??p.z??null;
+      const price=(raw&&raw!=='-'&&raw!=='--')?raw:null;
+      map[sid]=price?{z:raw,y:p.prev??p.y??'-',o:p.open??p.o??'-',h:p.high??p.h??'-',l:p.low??p.l??'-',v:p.vol??p.v??'0'}:null;
+      if(price) hasAny=true;
+    });
 
-  // V7修正：prices 為空 {} 時，顯示提示訊息而非永遠轉圈
-  // V7修正：fetch_live.py 寫入的格式為 {price,prev,open,high,low,vol}
-  // 前端 liveCardHTML 讀取的是 mis.twse 原始格式 {z,y,o,h,l,v}，需要轉換
-  const map = {};
-  let hasAnyPrice = false;
-  Object.entries(prices).forEach(([sid, p]) => {
-    // 相容兩種格式：新格式(price/prev) 或 mis.twse 原始格式(z/y)
-    const rawPrice = p.price ?? p.z ?? null;
-    const price = (rawPrice && rawPrice !== '-' && rawPrice !== '--') ? rawPrice : null;
-    map[sid] = price ? {
-      z: rawPrice,
-      y: p.prev  ?? p.y ?? '-',
-      o: p.open  ?? p.o ?? '-',
-      h: p.high  ?? p.h ?? '-',
-      l: p.low   ?? p.l ?? '-',
-      v: p.vol   ?? p.v ?? '0',
-    } : null;
-    if(price) hasAnyPrice = true;
-  });
-
-  if(allStocks.length === 0){
-    grid.innerHTML = '<div class="loading" style="padding:30px">等待選股清單載入...</div>';
-    return;
-  }
-
-  // V7修正：無論有無報價，一律渲染卡片；有即時報價則套用，無則顯示靜態等待狀態
-  grid.innerHTML = allStocks.map(s => liveCardHTML(s, map[s.sid]||null, isTrading)).join('');
-
+    grid.innerHTML=allStocks.map(s=>liveCardHTML(s,map[s.sid]||null,isTrading)).join('');
   }catch(e){
-    console.warn('live.json 讀取失敗：', e.message);
-    document.getElementById('live-update').innerHTML =
-      new Date().toLocaleTimeString('zh-TW',{hour12:false,timeZone:'Asia/Taipei'}) +
+    document.getElementById('live-update').innerHTML=
+      new Date().toLocaleTimeString('zh-TW',{hour12:false,timeZone:'Asia/Taipei'})+
       ' <span class="freshness-stale">(讀取失敗)</span>';
-    errBanner.textContent = '⚠ live.json 讀取失敗：' + e.message;
+    errBanner.textContent='⚠ live.json 讀取失敗：'+e.message;
     errBanner.classList.add('show');
-    // V7修正：失敗時顯示靜態卡片（等待狀態），而非讓 spinner 卡住
-    if(allStocks.length > 0){
-      grid.innerHTML = allStocks.map(s => liveCardHTML(s, null, false)).join('');
-    } else {
-      grid.innerHTML = '<div class="err">⚠ live.json 讀取失敗：' + e.message + '</div>';
-    }
+    if(allStocks.length>0) grid.innerHTML=allStocks.map(s=>liveCardHTML(s,null,false)).join('');
   }
 }
 
-function liveCardHTML(s, live, isTrading){
-  const color = probColor(s.prob_level);
-  const safeNum = v => {
-    if(v===undefined||v===null) return NaN;
-    const n = parseFloat(String(v).replace(/,/g,''));
-    return isNaN(n) || n===0 ? NaN : n;
-  };
+function liveCardHTML(s,live,isTrading){
+  const color=probColor(s.prob_level);
+  const safeNum=v=>{ const n=parseFloat(String(v||'').replace(/,/g,'')); return isNaN(n)||n===0?NaN:n; };
+  const price=live?safeNum(live.z):NaN;
+  const prevCls=live?(safeNum(live.y)||s.close):s.close;
 
-  const price   = live ? safeNum(live.z) : NaN;
-  const prevCls = live ? (safeNum(live.y) || s.close) : s.close;
-
-  if(!live || isNaN(price)){
+  if(!live||isNaN(price)){
     return `
-    <div class="live-card" style="opacity:.6">
-      <div class="lc-top">
+    <div class="live-card">
+      <div class="lc-head">
         <div><div class="lc-name">${s.name}</div><div class="lc-sid">${s.sid} · 昨收 ${s.close}</div></div>
-        <div><div class="lc-price" style="color:var(--text3)">--</div></div>
+        <div class="lc-price-block"><div class="lc-price" style="color:var(--text3);font-size:18px">--</div></div>
       </div>
-      <div class="open-signal neutral">${isTrading ? "⏳ 尚無成交 / 集合競價中" : "⏸ 非交易時段 / 等待下次更新"}</div>
+      <div class="open-signal neutral">${isTrading?'⏳ 尚無成交 / 集合競價中':'⏸ 非交易時段 / 等待更新'}</div>
     </div>`;
   }
 
-  const open   = safeNum(live.o) || price;
-  const high   = safeNum(live.h) || price;
-  const low    = safeNum(live.l) || price;
-  const chg    = price - prevCls;
-  const chgPct = prevCls ? (chg / prevCls * 100).toFixed(2) : '0.00';
-  const up     = chg >= 0;
-  const rawVol = live.v ? parseInt(String(live.v).replace(/,/g,'')) : 0;
-  const vol    = rawVol > 0 ? rawVol.toLocaleString() + '張' : '--';
+  const open=safeNum(live.o)||price, high=safeNum(live.h)||price, low=safeNum(live.l)||price;
+  const chg=price-prevCls, chgPct=prevCls?(chg/prevCls*100).toFixed(2):'0.00';
+  const up=chg>=0;
+  const rawVol=live.v?parseInt(String(live.v).replace(/,/g,'')):0;
+  const vol=rawVol>0?rawVol.toLocaleString()+'張':'--';
 
-  let signal, sigClass;
-  if(price > open && price > prevCls * 1.005 && up){
-    signal = '✅ 開高走高 ／ 續漲確認'; sigClass = 'bullish';
-  } else if(price >= prevCls * 1.003){
-    signal = '📈 溫和上漲 ／ 觀察量能'; sigClass = 'bullish';
-  } else if(price < prevCls * 0.997){
-    signal = '❌ 開低走弱 ／ 暫緩進場'; sigClass = 'bearish';
-  } else {
-    signal = '➡ 盤整中 ／ 等待方向'; sigClass = 'neutral';
-  }
+  let signal,sigClass;
+  if(price>open&&price>prevCls*1.005&&up){ signal='✅ 開高走高 ／ 續漲確認'; sigClass='bullish'; }
+  else if(price>=prevCls*1.003){ signal='📈 溫和上漲 ／ 觀察量能'; sigClass='bullish'; }
+  else if(price<prevCls*0.997){ signal='❌ 開低走弱 ／ 暫緩進場'; sigClass='bearish'; }
+  else { signal='➡ 盤整中 ／ 等待方向'; sigClass='neutral'; }
 
   return `
-  <div class="live-card ${up?'up':'down'}" style="border-left-color:${color}">
-    <div class="lc-top">
+  <div class="live-card ${up?'up':'down'}">
+    <div class="lc-head">
       <div>
         <div class="lc-name">${s.name}</div>
         <div class="lc-sid">${s.sid} · 昨收 ${prevCls.toFixed(1)}</div>
       </div>
-      <div>
+      <div class="lc-price-block">
         <div class="lc-price ${up?'up':'down'}">${price.toFixed(1)}</div>
-        <div class="lc-chg  ${up?'up':'down'}">${up?'+':''}${chgPct}%</div>
+        <div class="lc-chg ${up?'up':'down'}">${up?'+':''}${chgPct}%</div>
       </div>
     </div>
-    <div class="lc-bars">
-      <div class="lc-bar-item"><div class="lci-lbl">開盤</div><div class="lci-val">${open.toFixed(1)}</div></div>
-      <div class="lc-bar-item"><div class="lci-lbl">最高</div><div class="lci-val">${high.toFixed(1)}</div></div>
-      <div class="lc-bar-item"><div class="lci-lbl">最低</div><div class="lci-val">${low.toFixed(1)}</div></div>
-      <div class="lc-bar-item"><div class="lci-lbl">成交量</div><div class="lci-val">${vol}</div></div>
+    <div class="lc-grid">
+      <div class="lc-cell"><span class="lci-lbl">開盤</span><span class="lci-val">${open.toFixed(1)}</span></div>
+      <div class="lc-cell"><span class="lci-lbl">最高</span><span class="lci-val">${high.toFixed(1)}</span></div>
+      <div class="lc-cell"><span class="lci-lbl">最低</span><span class="lci-val">${low.toFixed(1)}</span></div>
+      <div class="lc-cell"><span class="lci-lbl">成交量</span><span class="lci-val">${vol}</span></div>
     </div>
     <div class="open-signal ${sigClass}">${signal}</div>
   </div>`;
@@ -995,25 +807,14 @@ function liveCardHTML(s, live, isTrading){
 // ════════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════════
-document.getElementById('list-panel').style.display = 'block';
-document.getElementById('live-panel').style.display = 'none';
+document.getElementById('list-panel').style.display='block';
+document.getElementById('live-panel').style.display='none';
 startClock();
 loadData();
-
-// ══ Footer 更新時間 ══
-function updateFooterTime(){
-  const now = new Date();
-  const tw = now.toLocaleString('zh-TW', {
-    timeZone:'Asia/Taipei',
-    year:'numeric', month:'2-digit', day:'2-digit',
-    hour:'2-digit', minute:'2-digit', second:'2-digit',
-    hour12:false
-  });
-  const el = document.getElementById('footer-update-time');
-  if(el) el.textContent = tw;
-}
-updateFooterTime();
-setInterval(updateFooterTime, 1000);
+setInterval(()=>{
+  const el=document.getElementById('footer-update-time');
+  if(el) el.textContent=new Date().toLocaleString('zh-TW',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+},1000);
 </script>
 </body>
 </html>
