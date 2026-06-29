@@ -2,11 +2,9 @@ name: 每日盤後抓資料
 
 on:
   schedule:
-    # TWSE openapi 盤後資料約 15:30~16:00 更新完畢
-    # UTC 08:00 = 台灣 16:00（主要）
-    - cron: "0 8 * * 1-5"
-    # UTC 08:30 = 台灣 16:30（備援，確保資料已更新）
-    - cron: "30 8 * * 1-5"
+    - cron: "0 6 * * 1-5"    # 台灣 14:00
+    - cron: "30 6 * * 1-5"   # 台灣 14:30
+    - cron: "0 8 * * 1-5"    # 台灣 16:00（保底）
   workflow_dispatch:
 
 permissions:
@@ -31,8 +29,8 @@ jobs:
 
       - name: Run fetch script
         env:
-          # 選填：至 finmindtrade.com 免費申請 token（僅權證 fallback 用到）
-          # 到 repo Settings > Secrets and variables > Actions 新增 FINMIND_TOKEN
+          # 可選：至 finmindtrade.com 免費申請 token 提高 API 上限（600/hr）
+          # 至 repo Settings > Secrets and variables > Actions 新增 FINMIND_TOKEN
           FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
         run: python scripts/fetch_twse.py
 
