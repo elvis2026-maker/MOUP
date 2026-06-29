@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-台股盤中即時報價抓取腳本 V12
+台股盤中即時報價抓取腳本 V13
 ==============================
 V12 修正（沿用 V11）：
 
@@ -85,7 +85,7 @@ def main():
     trading = is_trading_now()
     errors  = []
 
-    print(f"[{now_str} 台灣時間] fetch_live V12 (交易中: {trading})")
+    print(f"[{now_str} 台灣時間] fetch_live V13 (交易中: {trading})")
     print(f"  FinMind token: {'已設定' if TOKEN else '未設定（匿名）'}")
 
     if not os.path.exists(STOCKS_PATH):
