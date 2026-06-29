@@ -1,9 +1,7 @@
 {
-  "updated_at": "2026/06/29 13:54:53",
-  "trade_date": "20260629",
+  "updated_at": "尚未執行",
+  "trade_date": "00000000",
   "is_trading": false,
   "prices": {},
-  "fetch_errors": [
-    "stocks.json 無候選股，請手動觸發「每日盤後抓資料」workflow"
-  ]
+  "fetch_errors": ["V10初始化：請先觸發「每日盤後抓資料」workflow"]
 }

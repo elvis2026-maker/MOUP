@@ -1,30 +1,25 @@
 #!/usr/bin/env python3
 """
-台股權證標的篩選腳本 V10.1
+台股權證標的篩選腳本 V11
 ==============================
-V10.1 修正 V10.0 的 402 爆量問題：
+V11 修正 V10.1 的問題：
 
-  根本原因：
-    TaiwanStockInfoWithWarrant 回傳 2172 支
-    V10.0 逐支查股價 → 2172 req >> 600/hr 上限 → 全部 402
+  問題①：TaiwanStockWarrant 回 422（Unprocessable Entity）
+    V10.1 的 fm() 只處理 400/404，422 被當成「正常但空資料」
+    → active_sids 永遠是 0，喪失活躍標的優先排序
 
-  V10.1 新策略（總請求數 < 200）：
-    ①  TaiwanStockInfoWithWarrant（免費，1 req）→ 2000+ 支標的
-    ②  用「代號數字大小」預篩：
-        - 台灣主力股多集中在 1000~6999
-        - 排除 7000+ 的 ETF/小型/興櫃
-        - 排除代號 < 1000 的老牌股中流動性差的（可用黑名單）
-        - 保留有意義的上市上櫃，約 400 支
-    ③  再依「近期熱門權證標的」進一步縮小
-        - 查 TaiwanStockWarrant（免費，1 req，近 7 天）
-        - 有現貨認購權證 且 成交量大的標的
-        - 通常只有 100~200 支「活躍」標的
-    ④  對這 ≤200 支逐支查 TaiwanStockPrice（免費，帶 data_id）
-        → 200 req，遠低於 600/hr 上限 ✅
-    ⑤  評分取 Top20 → 查法人/融資（≤ 40 req）
-    ⑥  Top10 → 查權證細節（≤ 10 req）
+  問題②：TaiwanStockInstitutionalInvestors 部分股票回 422
+    同上，應視為「無此資料」而非 API 錯誤
 
-  總 API 請求：1 + 1 + 200 + 40 + 10 = ~252 req  ✅ 安全
+  V11 修正：
+    - fm() 將 422 加入「視為無資料」的 status code（非限額）
+    - 只有 402 才是真正的限額
+    - 422 可能代表：查詢區間無資料、data_id 不合規等，正常跳過
+
+  問題③：盤中 live panel 顯示「選股資料載入失敗」
+    → 見 fetch_live.py V11 修正（stocks.json 空時的處理）
+
+  總 API 請求：同 V10.1，約 252 req，安全
 """
 
 import requests, json, time, os, statistics
@@ -65,10 +60,14 @@ def fm(dataset, data_id=None, start_date=None, end_date=None, retries=3):
     for i in range(retries):
         try:
             r = requests.get(FM_URL, params=params, headers=hdrs(), timeout=25)
+            # V11修正：只有 402 是真正的限額
             if r.status_code == 402:
                 print("  ! FinMind 402：API 次數超限！停止後續請求")
                 return [], True   # (data, hit_limit)
-            if r.status_code in (400, 404):
+            # V11修正：400/404/422 均視為「無此資料」，正常跳過
+            if r.status_code in (400, 404, 422):
+                if r.status_code == 422:
+                    print(f"  ! fm {dataset}/{data_id} → 422（無此資料/查詢區間無交易，跳過）")
                 return [], False
             r.raise_for_status()
             d = r.json()
@@ -98,36 +97,18 @@ def fetch_warrant_targets():
     return result
 
 # ── Step②：預篩 → 排除 ETF、低流動性，保留主力股 ────────────
-# 台灣股票代號規律：
-#   1101~1999  傳統產業（水泥、食品、紡織、紙業、化工、鋼鐵）
-#   2000~2999  金融/電子大廠（台積電2330、鴻海2317等）
-#   3000~3999  電子中型股
-#   4000~4999  傳統/化工/生技
-#   5000~6999  金融/電子/OTC
-#   8000~8999  科技新創/生技
-#   9000~9999  橡膠/汽車/觀光/貿易
-#   00開頭     ETF（0050, 0056 等）→ 排除
-#   5碼以上    期貨/選擇權/特殊商品 → 已被 len==4 過濾
-EXCLUDE_SIDS = {
-    # 主要 ETF 代號（000x 和 006x 系列）已被 isdigit+len4 規則排除
-    # 排除特定低流動性或特殊工具
-    "9999", "0000",
-}
+EXCLUDE_SIDS = {"9999", "0000"}
 
 def prefilter_sids(warrant_targets, active_warrant_sids):
     """
     兩層篩選：
-    1. 排除明顯的 ETF/低流動性（代號 00xx 開頭等）
+    1. 排除明顯的 ETF/低流動性
     2. 優先保留有「活躍認購權證」的標的
     上限 200 支，以控制 API 次數
     """
-    # 活躍標的（有近期成交量較大的認購權證）→ 優先掃描
     priority = [s for s in active_warrant_sids if s in warrant_targets]
-    # 其餘有權證的標的
     rest = [s for s in warrant_targets if s not in active_warrant_sids and s not in EXCLUDE_SIDS]
-    # 合併，活躍的排前面
     combined = priority + rest
-    # 上限：有 token 200 支；無 token 150 支
     limit = 200 if TOKEN else 150
     return combined[:limit]
 
@@ -135,11 +116,17 @@ def prefilter_sids(warrant_targets, active_warrant_sids):
 def fetch_active_warrant_targets():
     """
     查 TaiwanStockWarrant 近 7 天，找有成交量的認購權證標的
-    回傳 {sid: max_vol}，按成交量排序
+    V11修正：422 已在 fm() 中正確處理為「無資料」，不再擋住流程
+    回傳 sorted sid list，按成交量排序
     """
     start = date_back(7)
     today = tw_now().strftime("%Y-%m-%d")
     data, _ = fm1("TaiwanStockWarrant", start_date=start, end_date=today)
+    
+    if not data:
+        print("  ! TaiwanStockWarrant 無資料（可能是假日或 422），使用全部標的排序")
+        return []
+    
     vol_map = {}
     for row in data:
         call_put = str(row.get("PutCall",""))
@@ -148,14 +135,15 @@ def fetch_active_warrant_targets():
         if not (sid.isdigit() and len(sid) == 4): continue
         vol = si(row.get("TradingVolume", 0))
         vol_map[sid] = vol_map.get(sid, 0) + vol
-    # 按成交量排序，取前 150 支（有活躍認購權證）
+    
     sorted_sids = sorted(vol_map.keys(), key=lambda s: -vol_map[s])
+    print(f"  → TaiwanStockWarrant 取得 {len(sorted_sids)} 支活躍標的")
     return sorted_sids[:150]
 
 # ── Step④：逐支查股價 ────────────────────────────────────────
 def fetch_price(sid, start_date, end_date):
     data, hit = fm1("TaiwanStockPrice", sid, start_date, end_date)
-    if hit: return None, True  # 觸發限額
+    if hit: return None, True
     result = []
     for row in data:
         try:
@@ -177,6 +165,7 @@ def fetch_price(sid, start_date, end_date):
 def fetch_inst(sid, start_date, end_date):
     data, hit = fm1("TaiwanStockInstitutionalInvestors", sid, start_date, end_date)
     if hit: return {}, True
+    # V11：422 已在 fm() 處理，data 為空時正常返回 {}
     by_date = {}
     for row in data:
         date = str(row.get("date",""))
@@ -323,9 +312,9 @@ def main():
     now    = tw_now()
     today  = now.strftime("%Y-%m-%d")
     today8 = now.strftime("%Y%m%d")
-    req    = 0  # API 請求計數
+    req    = 0
 
-    print(f"[{now.strftime('%H:%M:%S')} 台灣時間] fetch_twse V10.1 開始 {today}")
+    print(f"[{now.strftime('%H:%M:%S')} 台灣時間] fetch_twse V11 開始 {today}")
     print(f"  FinMind token: {'已設定（600req/hr）' if TOKEN else '未設定（匿名300req/hr）'}")
 
     # ── ① 有認購權證的全部標的（1 req）─────────────────────────
@@ -369,7 +358,7 @@ def main():
 
         today_p = hist_rows[-1]
         last_dt = datetime.strptime(today_p["date"], "%Y-%m-%d").date()
-        if (now.date() - last_dt).days > 5: continue  # 資料太舊
+        if (now.date() - last_dt).days > 5: continue
 
         close  = today_p["close"]
         volume = today_p["volume"]
@@ -379,7 +368,7 @@ def main():
         if close < 10 or close > 5000: continue
         if volume < (150000 if market == "otc" else 400000): continue
 
-        hist = hist_rows[:-1]  # 不含今日
+        hist = hist_rows[:-1]
         if len(hist) < 5: continue
 
         _, _, _, chg = calc_score(today_p, hist, {}, {})
@@ -393,12 +382,10 @@ def main():
 
     print(f"  → ④ 完成：{len(candidates)} 支候選（req={req}）")
 
-    # 無候選（資料未更新）→ 放寬條件取最近有資料
     if not candidates:
         print("  ! 無候選，可能今日資料尚未更新（FinMind 17:30 後更新）")
         _write_empty(now, today8, req); return
 
-    # 確定實際資料日期
     date_votes = Counter(c["data_date"] for c in candidates)
     actual_date  = date_votes.most_common(1)[0][0]
     actual_date8 = actual_date.replace("-","")

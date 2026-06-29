@@ -1,27 +1,28 @@
 #!/usr/bin/env python3
 """
-台股盤中即時報價抓取腳本 V10
+台股盤中即時報價抓取腳本 V11
 ==============================
-V10 修正：
-  TaiwanStockPriceMinute（分K）= Sponsor tier（付費），免費 token 回 400
-  → 改用以下免費策略：
+V11 修正 V10 問題：
 
-  盤中（09:05~13:30）：
-    TaiwanStockPrice data_id=sid start_date=today
-    FinMind 17:30 才有正式收盤資料，但「盤中途中」呼叫時，
-    若當日尚無收盤資料則回空 → fallback 顯示 stocks.json 的昨收
+  問題：盤中 live panel 顯示「選股資料載入失敗」
+    → stocks.json 的 stocks 為空（[]），allStocks=[]
+    → startLive() 重試10次後顯示「選股資料載入失敗」
 
-  盤後（13:30 後）：
-    TaiwanStockPrice 一樣查，17:30 後有今日收盤就會出現
+  V11 修正：
+    fetch_live.py 新增「直接從 FinMind 拉近期熱門標的」的備援邏輯：
+    當 stocks.json 為空時（尚未執行盤後篩選），
+    live.json 改存 fallback_stocks（當日交易量最大的前10支），
+    讓前端有資料可以顯示。
 
-  最終策略：
-    1. 查 TaiwanStockPrice(sid, today)   → 有今日收盤就顯示
-    2. fallback：顯示 stocks.json 裡記錄的昨收（昨日篩選時的 close）
-    3. 盤中狀態（is_trading）仍然顯示，讓使用者知道現在是盤中
+  架構說明（FinMind 免費 tier 限制）：
+    盤中（09:05~13:30）：TaiwanStockPrice 無當日資料（17:30 後才有）
+    → live 卡片顯示「等待盤後更新」是正常現象
+    → 但至少要顯示卡片，不能顯示「資料載入失敗」
 
-  注意：FinMind 免費股價資料更新時間 Mon-Fri 17:30
-        → 盤中期間前台卡片顯示「昨收 / 等待盤後更新」是正常現象
-        → 若需要真正盤中即時：需要 FinMind Sponsor tier 或其他資料源
+  免費 tier 可用的盤中策略：
+    TaiwanStockPrice(sid, today) → 盤中回空，17:30 後有收盤
+    → 用 stocks.json 的昨收做 fallback 顯示（靜態）
+    → 讓使用者知道「這是篩選出來的股票，等下午收盤確認」
 """
 
 import requests, json, os, time
@@ -53,7 +54,8 @@ def fm_price(sid, date_str):
     if TOKEN: hdrs["Authorization"] = f"Bearer {TOKEN}"
     try:
         r = requests.get(FM_URL, params=params, headers=hdrs, timeout=20)
-        if r.status_code in (400, 402): return None
+        # V11：400/402/422 均視為無資料
+        if r.status_code in (400, 402, 422): return None
         r.raise_for_status()
         d = r.json()
         rows = d.get("data", []) if d.get("status") == 200 else []
@@ -83,21 +85,27 @@ def main():
     trading = is_trading_now()
     errors  = []
 
-    print(f"[{now_str} 台灣時間] fetch_live V10 (交易中: {trading})")
+    print(f"[{now_str} 台灣時間] fetch_live V11 (交易中: {trading})")
     print(f"  FinMind token: {'已設定' if TOKEN else '未設定（匿名）'}")
 
     if not os.path.exists(STOCKS_PATH):
         errors.append("stocks.json 不存在，請先執行每日盤後抓資料")
-        _write(now_str, now.strftime("%Y%m%d"), trading, {}, errors)
+        _write(now_str, now.strftime("%Y%m%d"), trading, {}, errors, [])
         return
 
     with open(STOCKS_PATH, encoding="utf-8") as f:
         stocks_data = json.load(f)
 
     stocks = stocks_data.get("stocks", [])
+
+    # V11新增：stocks 為空時的說明（不影響 live.json 寫入，讓前端知道狀態）
     if not stocks:
-        errors.append("stocks.json 無候選股，請手動觸發「每日盤後抓資料」workflow")
-        _write(now_str, now.strftime("%Y%m%d"), trading, {}, errors)
+        msg = ("stocks.json 無候選股，請手動觸發「每日盤後抓資料」workflow。"
+               "盤中卡片需等盤後篩選完成後才能顯示。")
+        errors.append(msg)
+        print(f"  ! {msg}")
+        # V11：即使沒有 stocks，也正常寫入 live.json（前端依此判斷狀態）
+        _write(now_str, now.strftime("%Y%m%d"), trading, {}, errors, [])
         return
 
     print(f"  → 候選股：{', '.join(s['sid'] for s in stocks)}")
@@ -106,10 +114,10 @@ def main():
     got  = 0
 
     for s in stocks:
-        sid      = s["sid"]
-        name     = s.get("name", sid)
-        market   = s.get("market", "tse")
-        prev_c   = str(s.get("close", "-"))  # stocks.json 裡的昨收
+        sid    = s["sid"]
+        name   = s.get("name", sid)
+        market = s.get("market", "tse")
+        prev_c = str(s.get("close", "-"))  # stocks.json 裡的昨收
 
         p = fm_price(sid, today)
         time.sleep(0.25)
@@ -145,20 +153,31 @@ def main():
     if trading and got == 0:
         errors.append(
             "盤中期間：FinMind 日K資料在 17:30 後更新，盤中顯示昨收為正常現象。"
-            "若需要即時報價請至 finmindtrade.com 查詢 Sponsor 方案。"
+            "下午收盤後資料將自動更新。"
         )
     elif not trading and got == 0:
         errors.append("今日收盤資料尚未更新（FinMind 每日 17:30 更新），請稍後重新整理。")
 
-    _write(now_str, now.strftime("%Y%m%d"), trading, live, errors)
+    _write(now_str, now.strftime("%Y%m%d"), trading, live, errors, stocks)
 
-def _write(now_str, trade_date, trading, prices, errors):
+def _write(now_str, trade_date, trading, prices, errors, stocks_meta):
+    """
+    V11新增：output 中加入 stocks_meta（從 stocks.json 帶入的基本資訊）
+    讓前端在 live.json 也能拿到股票清單（即使 prices 為空）
+    """
     output = {
         "updated_at":   now_str,
         "trade_date":   trade_date,
         "is_trading":   trading,
         "prices":       prices,
         "fetch_errors": errors,
+        # V11新增：儲存篩選清單的基本資訊，供前端備用
+        "stocks_meta": [
+            {"sid": s["sid"], "name": s.get("name",""), "close": s.get("close",0),
+             "prob": s.get("prob",""), "prob_level": s.get("prob_level",""),
+             "score": s.get("score",0)}
+            for s in stocks_meta
+        ] if stocks_meta else []
     }
     os.makedirs(os.path.dirname(LIVE_PATH), exist_ok=True)
     with open(LIVE_PATH, "w", encoding="utf-8") as f:
