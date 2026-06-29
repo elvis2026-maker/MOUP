@@ -1,7 +1,9 @@
 {
-  "updated_at": "尚未執行",
-  "trade_date": "00000000",
+  "updated_at": "2026/06/29 09:47:10",
+  "trade_date": "20260629",
   "is_trading": false,
   "prices": {},
-  "fetch_errors": ["請先手動觸發 GitHub Actions「每日盤後抓資料」取得選股清單"]
+  "fetch_errors": [
+    "盤後重置（2026/06/29 09:47:10），盤中資料將於次日 09:05 後更新"
+  ]
 }
