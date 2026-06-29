@@ -1,34 +1,84 @@
 {
-  "updated_at": "2026/06/29 16:06",
-  "trade_date": "20260626",
-  "data_date": "2026-06-26",
+  "updated_at": "2026/06/29 20:29",
+  "trade_date": "20260629",
+  "data_date": "2026-06-29",
   "total_scanned": 420,
-  "candidates_count": 7,
-  "total_api_req": 486,
+  "candidates_count": 14,
+  "total_api_req": 640,
   "stocks": [
     {
-      "sid": "1718",
-      "name": "中纖",
-      "close": 11.15,
-      "change_pct": 9.85,
-      "volume": 153432821,
+      "sid": "2012",
+      "name": "春雨",
+      "close": 16.65,
+      "change_pct": 8.82,
+      "volume": 755808,
+      "market": "tse",
+      "score": 67,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 3.4x",
+        "均線多頭排列",
+        "站上月線 MA20=14.58",
+        "突破近10日高點"
+      ],
+      "warnings": [
+        "融資追價明顯"
+      ],
+      "inst": {},
+      "ma5": 15.13,
+      "ma10": 14.75,
+      "ma20": 14.58,
+      "warrants": [],
+      "prob": "中（60%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "1447",
+      "name": "力鵬",
+      "close": 6.84,
+      "change_pct": 9.97,
+      "volume": 4881834,
       "market": "tse",
       "score": 62,
       "reasons": [
         "強勢大漲 ≥5%",
         "收盤靠近最高點（買盤強）",
-        "均線多頭排列",
-        "站上月線 MA20=8.99",
+        "量能放大 3.0x",
+        "站上月線 MA20=6.3",
+        "突破近10日高點"
+      ],
+      "warnings": [],
+      "inst": {},
+      "ma5": 6.12,
+      "ma10": 6.12,
+      "ma20": 6.3,
+      "warrants": [],
+      "prob": "中（55%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "1710",
+      "name": "東聯",
+      "close": 15.25,
+      "change_pct": 8.16,
+      "volume": 15215158,
+      "market": "tse",
+      "score": 62,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 2.6x",
+        "站上月線 MA20=14.19",
         "突破近10日高點"
       ],
       "warnings": [
-        "量能過度放大",
         "融資追價明顯"
       ],
       "inst": {},
-      "ma5": 9.65,
-      "ma10": 9.48,
-      "ma20": 8.99,
+      "ma5": 13.9,
+      "ma10": 13.76,
+      "ma20": 14.19,
       "warrants": [],
       "prob": "中（55%）",
       "prob_level": "medium"
@@ -36,75 +86,125 @@
     {
       "sid": "1444",
       "name": "力麗",
-      "close": 7.41,
-      "change_pct": 6.93,
-      "volume": 5504724,
+      "close": 8.15,
+      "change_pct": 9.99,
+      "volume": 13365937,
       "market": "tse",
-      "score": 62,
+      "score": 57,
       "reasons": [
         "強勢大漲 ≥5%",
         "收盤靠近最高點（買盤強）",
-        "量能放大 3.6x",
-        "站上月線 MA20=6.93",
+        "站上月線 MA20=7.0",
+        "突破近10日高點"
+      ],
+      "warnings": [
+        "量能過度放大"
+      ],
+      "inst": {},
+      "ma5": 7.04,
+      "ma10": 7.08,
+      "ma20": 7.0,
+      "warrants": [],
+      "prob": "中（50%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "1736",
+      "name": "喬山",
+      "close": 129.5,
+      "change_pct": 9.28,
+      "volume": 1606692,
+      "market": "tse",
+      "score": 57,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 2.6x",
+        "站上月線 MA20=115.45",
+        "突破近10日高點"
+      ],
+      "warnings": [
+        "融資追價明顯"
+      ],
+      "inst": {},
+      "ma5": 117.0,
+      "ma10": 117.35,
+      "ma20": 115.45,
+      "warrants": [],
+      "prob": "中（50%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "1445",
+      "name": "大宇",
+      "close": 11.8,
+      "change_pct": 9.26,
+      "volume": 597075,
+      "market": "tse",
+      "score": 57,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "站上月線 MA20=11.19",
+        "突破近10日高點"
+      ],
+      "warnings": [
+        "量能過度放大"
+      ],
+      "inst": {},
+      "ma5": 10.74,
+      "ma10": 10.89,
+      "ma20": 11.19,
+      "warrants": [],
+      "prob": "中（50%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "1626",
+      "name": "艾美特-KY",
+      "close": 10.8,
+      "change_pct": 9.98,
+      "volume": 435457,
+      "market": "tse",
+      "score": 52,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "站上月線 MA20=9.98",
         "突破近10日高點"
       ],
       "warnings": [],
       "inst": {},
-      "ma5": 6.96,
-      "ma10": 7.04,
-      "ma20": 6.93,
-      "warrants": [],
-      "prob": "中（55%）",
-      "prob_level": "medium"
-    },
-    {
-      "sid": "1414",
-      "name": "東和",
-      "close": 17.6,
-      "change_pct": 1.73,
-      "volume": 843577,
-      "market": "tse",
-      "score": 53,
-      "reasons": [
-        "溫和上漲 ≥1%",
-        "收盤靠近最高點（買盤強）",
-        "均線多頭排列",
-        "站上月線 MA20=16.62",
-        "突破近10日高點"
-      ],
-      "warnings": [
-        "量能過度放大",
-        "融資追價明顯"
-      ],
-      "inst": {},
-      "ma5": 17.4,
-      "ma10": 17.24,
-      "ma20": 16.62,
+      "ma5": 9.81,
+      "ma10": 9.94,
+      "ma20": 9.98,
       "warrants": [],
       "prob": "偏低（<48%）",
       "prob_level": "low"
     },
     {
-      "sid": "2066",
-      "name": "世德",
-      "close": 73.0,
-      "change_pct": 5.64,
-      "volume": 343734,
-      "market": "otc",
-      "score": 51,
+      "sid": "1718",
+      "name": "中纖",
+      "close": 12.25,
+      "change_pct": 9.87,
+      "volume": 33754509,
+      "market": "tse",
+      "score": 52,
       "reasons": [
         "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
         "均線多頭排列",
-        "站上月線 MA20=62.13",
+        "站上月線 MA20=9.22",
         "突破近10日高點"
       ],
       "warnings": [
+        "量能萎縮",
         "融資追價明顯"
       ],
       "inst": {},
-      "ma5": 68.5,
-      "ma10": 64.99,
-      "ma20": 62.13,
+      "ma5": 9.91,
+      "ma10": 9.69,
+      "ma20": 9.22,
       "warrants": [],
       "prob": "偏低（<48%）",
       "prob_level": "low"
@@ -112,24 +212,24 @@
     {
       "sid": "2236",
       "name": "百達-KY",
-      "close": 141.5,
-      "change_pct": 4.43,
-      "volume": 988133,
+      "close": 147.0,
+      "change_pct": 3.89,
+      "volume": 864193,
       "market": "tse",
-      "score": 47,
+      "score": 52,
       "reasons": [
         "大漲 ≥3%",
-        "站上月線 MA20=135.9",
+        "量能放大 2.5x",
+        "站上月線 MA20=136.1",
         "突破近10日高點"
       ],
       "warnings": [
-        "量能過度放大",
         "融資追價明顯"
       ],
       "inst": {},
-      "ma5": 135.9,
-      "ma10": 134.7,
-      "ma20": 135.9,
+      "ma5": 136.9,
+      "ma10": 135.45,
+      "ma20": 136.1,
       "warrants": [],
       "prob": "偏低（<48%）",
       "prob_level": "low"
@@ -137,50 +237,25 @@
     {
       "sid": "1515",
       "name": "力山",
-      "close": 30.5,
-      "change_pct": 2.69,
-      "volume": 8162379,
+      "close": 31.45,
+      "change_pct": 3.11,
+      "volume": 5499347,
       "market": "tse",
-      "score": 36,
+      "score": 49,
       "reasons": [
-        "溫和上漲 ≥1%",
-        "量能放大 3.1x",
+        "大漲 ≥3%",
+        "量能放大 1.5x",
         "均線多頭排列",
-        "站上月線 MA20=24.46",
+        "站上月線 MA20=24.89",
         "突破近10日高點"
       ],
       "warnings": [
-        "長上影線（賣壓重）",
         "融資追價明顯"
       ],
       "inst": {},
-      "ma5": 27.36,
-      "ma10": 25.57,
-      "ma20": 24.46,
-      "warrants": [],
-      "prob": "偏低（<48%）",
-      "prob_level": "low"
-    },
-    {
-      "sid": "1447",
-      "name": "力鵬",
-      "close": 6.22,
-      "change_pct": 1.8,
-      "volume": 2473062,
-      "market": "tse",
-      "score": 36,
-      "reasons": [
-        "溫和上漲 ≥1%",
-        "量能放大 1.7x",
-        "突破近10日高點"
-      ],
-      "warnings": [
-        "跌破月線"
-      ],
-      "inst": {},
-      "ma5": 6.08,
-      "ma10": 6.12,
-      "ma20": 6.28,
+      "ma5": 28.28,
+      "ma10": 26.34,
+      "ma20": 24.89,
       "warrants": [],
       "prob": "偏低（<48%）",
       "prob_level": "low"
