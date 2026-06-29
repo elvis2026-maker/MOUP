@@ -1,8 +1,8 @@
-name: 每日盤後抓資料 V12
+name: 每日盤後抓資料 V13
 
 on:
   schedule:
-    - cron: "45 9 * * 1-5"   # 台灣 17:45（FinMind 17:30 更新後第一次）← 主要
+    - cron: "0 10 * * 1-5"   # 台灣 18:00（FinMind 17:30 更新後，多等 30 分鐘確保入庫）← 主要
     - cron: "30 10 * * 1-5"  # 台灣 18:30（備份）
     - cron: "0 8 * * 1-5"    # 台灣 16:00（盤中跑一次，用昨日資料先佔位）
   workflow_dispatch:
@@ -18,6 +18,8 @@ concurrency:
 jobs:
   fetch-and-update:
     runs-on: ubuntu-latest
+    # V13：全量掃描最多 600 支，預計耗時 3~5 分鐘，設定 timeout 保護
+    timeout-minutes: 15
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
