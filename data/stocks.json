@@ -1,8 +1,64 @@
 {
-  "updated_at": "尚未執行，請手動觸發 GitHub Actions「每日盤後抓資料」",
-  "trade_date": "00000000",
-  "data_date": null,
-  "total_scanned": 0,
-  "candidates_count": 0,
-  "stocks": []
+  "updated_at": "2026/06/29 14:50",
+  "trade_date": "20260626",
+  "data_date": "2026-06-26",
+  "total_scanned": 200,
+  "candidates_count": 2,
+  "total_api_req": 208,
+  "stocks": [
+    {
+      "sid": "1414",
+      "name": "東和",
+      "close": 17.6,
+      "change_pct": 1.73,
+      "volume": 843577,
+      "market": "tse",
+      "score": 53,
+      "reasons": [
+        "溫和上漲 ≥1%",
+        "收盤靠近最高點（買盤強）",
+        "均線多頭排列",
+        "站上月線 MA20=16.62",
+        "突破近10日高點"
+      ],
+      "warnings": [
+        "量能過度放大",
+        "融資追價明顯"
+      ],
+      "inst": {},
+      "ma5": 17.4,
+      "ma10": 17.24,
+      "ma20": 16.62,
+      "warrants": [],
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "1515",
+      "name": "力山",
+      "close": 30.5,
+      "change_pct": 2.69,
+      "volume": 8162379,
+      "market": "tse",
+      "score": 36,
+      "reasons": [
+        "溫和上漲 ≥1%",
+        "量能放大 3.1x",
+        "均線多頭排列",
+        "站上月線 MA20=24.46",
+        "突破近10日高點"
+      ],
+      "warnings": [
+        "長上影線（賣壓重）",
+        "融資追價明顯"
+      ],
+      "inst": {},
+      "ma5": 27.36,
+      "ma10": 25.57,
+      "ma20": 24.46,
+      "warrants": [],
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    }
+  ]
 }
