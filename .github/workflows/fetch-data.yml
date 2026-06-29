@@ -2,8 +2,8 @@ name: 每日盤後抓資料
 
 on:
   schedule:
-    - cron: "0 6 * * 1-5"    # 台灣 14:00
-    - cron: "30 6 * * 1-5"   # 台灣 14:30
+    - cron: "0 6 * * 1-5"    # 台灣 14:00（主要）
+    - cron: "30 6 * * 1-5"   # 台灣 14:30（備份）
     - cron: "0 8 * * 1-5"    # 台灣 16:00（保底）
   workflow_dispatch:
 
@@ -29,12 +29,12 @@ jobs:
 
       - name: Run fetch script
         env:
-          # 可選：至 finmindtrade.com 免費申請 token 提高 API 上限（600/hr）
-          # 至 repo Settings > Secrets and variables > Actions 新增 FINMIND_TOKEN
           FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
         run: python scripts/fetch_twse.py
 
       - name: Reset live.json
+        env:
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
         run: python scripts/init_live.py
 
       - name: Commit and push

@@ -36,6 +36,8 @@ jobs:
         run: pip install requests
 
       - name: Run live fetch
+        env:
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
         run: python scripts/fetch_live.py
 
       - name: Commit and push
