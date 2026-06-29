@@ -1,9 +1,9 @@
 {
-  "updated_at": "2026/06/29 09:20:38",
+  "updated_at": "2026/06/29 09:33:52",
   "trade_date": "20260629",
-  "is_trading": false,
+  "is_trading": true,
   "prices": {},
   "fetch_errors": [
-    "盤後重置（2026/06/29 09:20:38），盤中資料將於次日 09:05 後更新"
+    "stocks.json 無候選股，每日排程可能未正常執行"
   ]
 }
