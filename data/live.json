@@ -1,89 +1,87 @@
 {
-  "updated_at": "2026/06/29 17:02:41",
+  "updated_at": "2026/06/29 17:17:25",
   "trade_date": "20260629",
   "is_trading": false,
   "prices": {
     "1718": {
-      "price": "11.15",
+      "price": "12.25",
       "prev": "11.15",
-      "open": "-",
-      "high": "-",
-      "low": "-",
-      "vol": "0",
+      "open": "11.85",
+      "high": "12.25",
+      "low": "11.85",
+      "vol": "33754509",
+      "source": "finmind_daily",
       "name": "中纖",
-      "market": "tse",
-      "source": "fallback_yesterday"
+      "market": "tse"
     },
     "1444": {
-      "price": "7.41",
+      "price": "8.15",
       "prev": "7.41",
-      "open": "-",
-      "high": "-",
-      "low": "-",
-      "vol": "0",
+      "open": "7.59",
+      "high": "8.15",
+      "low": "7.59",
+      "vol": "13365937",
+      "source": "finmind_daily",
       "name": "力麗",
-      "market": "tse",
-      "source": "fallback_yesterday"
+      "market": "tse"
     },
     "1414": {
-      "price": "17.6",
+      "price": "18.3",
       "prev": "17.6",
-      "open": "-",
-      "high": "-",
-      "low": "-",
-      "vol": "0",
+      "open": "17.7",
+      "high": "18.5",
+      "low": "17.45",
+      "vol": "221702",
+      "source": "finmind_daily",
       "name": "東和",
-      "market": "tse",
-      "source": "fallback_yesterday"
+      "market": "tse"
     },
     "2066": {
-      "price": "73.0",
+      "price": "66.8",
       "prev": "73.0",
-      "open": "-",
-      "high": "-",
-      "low": "-",
-      "vol": "0",
+      "open": "74.8",
+      "high": "75.9",
+      "low": "66.6",
+      "vol": "373778",
+      "source": "finmind_daily",
       "name": "世德",
-      "market": "otc",
-      "source": "fallback_yesterday"
+      "market": "otc"
     },
     "2236": {
-      "price": "141.5",
+      "price": "147.0",
       "prev": "141.5",
-      "open": "-",
-      "high": "-",
-      "low": "-",
-      "vol": "0",
+      "open": "142.5",
+      "high": "150.0",
+      "low": "141.5",
+      "vol": "864193",
+      "source": "finmind_daily",
       "name": "百達-KY",
-      "market": "tse",
-      "source": "fallback_yesterday"
+      "market": "tse"
     },
     "1515": {
-      "price": "30.5",
+      "price": "31.45",
       "prev": "30.5",
-      "open": "-",
-      "high": "-",
-      "low": "-",
-      "vol": "0",
+      "open": "30.85",
+      "high": "33.55",
+      "low": "30.35",
+      "vol": "5499347",
+      "source": "finmind_daily",
       "name": "力山",
-      "market": "tse",
-      "source": "fallback_yesterday"
+      "market": "tse"
     },
     "1447": {
-      "price": "6.22",
+      "price": "6.84",
       "prev": "6.22",
-      "open": "-",
-      "high": "-",
-      "low": "-",
-      "vol": "0",
+      "open": "6.4",
+      "high": "6.84",
+      "low": "6.4",
+      "vol": "4881834",
+      "source": "finmind_daily",
       "name": "力鵬",
-      "market": "tse",
-      "source": "fallback_yesterday"
+      "market": "tse"
     }
   },
-  "fetch_errors": [
-    "今日收盤資料尚未更新（FinMind 每日 17:30 更新），請稍後重新整理。"
-  ],
+  "fetch_errors": [],
   "stocks_meta": [
     {
       "sid": "1718",
