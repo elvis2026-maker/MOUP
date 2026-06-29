@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>權證標的精選｜續漲機率分析 V11</title>
+<title>權證標的精選｜續漲機率分析 V12</title>
 <style>
 /* ══ GOOGLE FONTS ══ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
@@ -410,7 +410,7 @@ body{background:var(--bg);}
       <span class="screw br"></span>
     </div>
   </div>
-  <div class="nameplate-version">V11</div>
+  <div class="nameplate-version">V12</div>
 </div>
 
 <!-- ══ 主標題 Hero ══ -->
@@ -462,7 +462,7 @@ body{background:var(--bg);}
   <div class="live-notice">
     ℹ 資料由 <strong>GitHub Actions 每30分鐘</strong>（09:05、09:35、10:05...13:25）自動透過 FinMind API 抓取並寫入 <code>data/live.json</code>。
     開盤後確認精選股是否延續強勢，<strong>「開高走高」綠燈才是最佳進場時機。</strong>
-    <br><small style="color:var(--text3)">⚠ V11 全面改用 FinMind 免費 tier（境外 IP 可用）；盤中卡片顯示昨收為正常現象（FinMind 日K 17:30 更新）；盤後 17:30 後才更新今日收盤；若超過 60 分鐘未更新，表示 Actions 可能異常</small>
+    <br><small style="color:var(--text3)">⚠ V12 全面改用 FinMind 免費 tier（境外 IP 可用）；盤中卡片顯示昨收為正常現象（FinMind 日K 17:30 更新）；盤後 17:30 後才更新今日收盤；若超過 60 分鐘未更新，表示 Actions 可能異常</small>
   </div>
   <!-- V4：錯誤提示 -->
   <div class="err-banner" id="err-banner"></div>
@@ -488,7 +488,7 @@ body{background:var(--bg);}
   <div class="footer-inner">
     <div class="footer-brand">程式設計 Elvis Liu｜版權所有</div>
     <div class="footer-meta">
-      <span>MOUP V11</span>
+      <span>MOUP V12</span>
       <span class="footer-dot">·</span>
       <span>Taiwan Warrant Intelligence System</span>
       <span class="footer-dot">·</span>
@@ -571,7 +571,7 @@ async function loadData(){
     document.getElementById('s-sel').textContent  = allStocks.length;
     document.getElementById('s-high').textContent = allStocks.filter(s=>s.prob_level==='high').length;
 
-    // V11修正：stocks 為空時顯示引導訊息（首次部署尚未執行 Actions）
+    // V12修正：stocks 為空時顯示引導訊息（首次部署尚未執行 Actions）
     if(allStocks.length === 0){
       document.getElementById('cards').innerHTML = `
         <div style="text-align:center;padding:50px 20px;color:var(--text2)">
@@ -583,7 +583,7 @@ async function loadData(){
             執行完成後重新整理此頁面
           </div>
         </div>`;
-      // V11新增：stocks 為空時，嘗試從 live.json 的 stocks_meta 補充（供 live tab 使用）
+      // V12新增：stocks 為空時，嘗試從 live.json 的 stocks_meta 補充（供 live tab 使用）
       await tryLoadStocksFromLive();
       if(curTab==='live') startLive();
       return;
@@ -595,7 +595,7 @@ async function loadData(){
   }
 }
 
-// V11新增：當 stocks.json 為空時，嘗試從 live.json 的 stocks_meta 載入基本股票清單
+// V12新增：當 stocks.json 為空時，嘗試從 live.json 的 stocks_meta 載入基本股票清單
 // 讓 live tab 至少能顯示卡片，而非「選股資料載入失敗」
 async function tryLoadStocksFromLive(){
   try{
@@ -620,7 +620,7 @@ async function tryLoadStocksFromLive(){
         inst:       {},
         warrants:   [],
       }));
-      console.log(`V11：從 live.json stocks_meta 補充 ${allStocks.length} 支股票`);
+      console.log(`V12：從 live.json stocks_meta 補充 ${allStocks.length} 支股票`);
     }
   }catch(e){
     console.warn('tryLoadStocksFromLive 失敗：', e.message);

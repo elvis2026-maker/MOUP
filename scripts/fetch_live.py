@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-台股盤中即時報價抓取腳本 V11
+台股盤中即時報價抓取腳本 V12
 ==============================
-V11 修正 V10 問題：
+V12 修正（沿用 V11）：
 
   問題：盤中 live panel 顯示「選股資料載入失敗」
     → stocks.json 的 stocks 為空（[]），allStocks=[]
     → startLive() 重試10次後顯示「選股資料載入失敗」
 
-  V11 修正：
+  V12 修正：
     fetch_live.py 新增「直接從 FinMind 拉近期熱門標的」的備援邏輯：
     當 stocks.json 為空時（尚未執行盤後篩選），
     live.json 改存 fallback_stocks（當日交易量最大的前10支），
@@ -54,7 +54,7 @@ def fm_price(sid, date_str):
     if TOKEN: hdrs["Authorization"] = f"Bearer {TOKEN}"
     try:
         r = requests.get(FM_URL, params=params, headers=hdrs, timeout=20)
-        # V11：400/402/422 均視為無資料
+        # V12：400/402/422 均視為無資料
         if r.status_code in (400, 402, 422): return None
         r.raise_for_status()
         d = r.json()
@@ -85,7 +85,7 @@ def main():
     trading = is_trading_now()
     errors  = []
 
-    print(f"[{now_str} 台灣時間] fetch_live V11 (交易中: {trading})")
+    print(f"[{now_str} 台灣時間] fetch_live V12 (交易中: {trading})")
     print(f"  FinMind token: {'已設定' if TOKEN else '未設定（匿名）'}")
 
     if not os.path.exists(STOCKS_PATH):
@@ -98,13 +98,13 @@ def main():
 
     stocks = stocks_data.get("stocks", [])
 
-    # V11新增：stocks 為空時的說明（不影響 live.json 寫入，讓前端知道狀態）
+    # V12：stocks 為空時的說明（不影響 live.json 寫入，讓前端知道狀態）
     if not stocks:
         msg = ("stocks.json 無候選股，請手動觸發「每日盤後抓資料」workflow。"
                "盤中卡片需等盤後篩選完成後才能顯示。")
         errors.append(msg)
         print(f"  ! {msg}")
-        # V11：即使沒有 stocks，也正常寫入 live.json（前端依此判斷狀態）
+        # V12：即使沒有 stocks，也正常寫入 live.json（前端依此判斷狀態）
         _write(now_str, now.strftime("%Y%m%d"), trading, {}, errors, [])
         return
 
@@ -162,7 +162,7 @@ def main():
 
 def _write(now_str, trade_date, trading, prices, errors, stocks_meta):
     """
-    V11新增：output 中加入 stocks_meta（從 stocks.json 帶入的基本資訊）
+    V12：output 中加入 stocks_meta（從 stocks.json 帶入的基本資訊）
     讓前端在 live.json 也能拿到股票清單（即使 prices 為空）
     """
     output = {
@@ -171,7 +171,7 @@ def _write(now_str, trade_date, trading, prices, errors, stocks_meta):
         "is_trading":   trading,
         "prices":       prices,
         "fetch_errors": errors,
-        # V11新增：儲存篩選清單的基本資訊，供前端備用
+        # V12：儲存篩選清單的基本資訊，供前端備用
         "stocks_meta": [
             {"sid": s["sid"], "name": s.get("name",""), "close": s.get("close",0),
              "prob": s.get("prob",""), "prob_level": s.get("prob_level",""),

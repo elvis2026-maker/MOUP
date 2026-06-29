@@ -1,25 +1,36 @@
 #!/usr/bin/env python3
 """
-台股權證標的篩選腳本 V11
+台股權證標的篩選腳本 V12
 ==============================
-V11 修正 V10.1 的問題：
+V12 修正 V11 的問題：
 
-  問題①：TaiwanStockWarrant 回 422（Unprocessable Entity）
-    V10.1 的 fm() 只處理 400/404，422 被當成「正常但空資料」
-    → active_sids 永遠是 0，喪失活躍標的優先排序
+  問題：36 支候選但全部 score < 45，最終精選 = 0
+  根因：
+    ① 盤中跑（14:37）時，漲幅多為 0.3%~1%，calc_score 漲幅得分 = 0
+       （原本 <1% 完全沒分）
+    ② TaiwanStockInstitutionalInvestors 大量 422
+       → 法人得分 = 0，難以達到 45 門檻
 
-  問題②：TaiwanStockInstitutionalInvestors 部分股票回 422
-    同上，應視為「無此資料」而非 API 錯誤
+  V12 修正：
+    ① 改用「最近交易日（昨日或更早）」作為評分基準
+       → 用上個交易日的收盤資料判斷「昨天的強勢股」
+       → 更穩定，不受盤中資料波動影響
+       → actual_date = 最後有資料的日期（自動往前找）
 
-  V11 修正：
-    - fm() 將 422 加入「視為無資料」的 status code（非限額）
-    - 只有 402 才是真正的限額
-    - 422 可能代表：查詢區間無資料、data_id 不合規等，正常跳過
+    ② 評分調整：
+       - 漲幅 0.5%~1% 給基礎分 +4（原本 0 分）
+       - score < 45 → score < 35（降低門檻，讓更多股進入 Top10 再篩）
+       - score + 2 bonus 保留
 
-  問題③：盤中 live panel 顯示「選股資料載入失敗」
-    → 見 fetch_live.py V11 修正（stocks.json 空時的處理）
+    ③ 三大法人 422 改善：
+       - inst_start 從 date_back(10) 改為 date_back(20)
+       - 覆蓋更多交易日，提高取到法人資料的機率
 
-  總 API 請求：同 V10.1，約 252 req，安全
+    ④ 新增「排除今日資料」選項：
+       - 14:00 以前跑：end_date = 昨日（避免拿到不完整的盤中資料）
+       - 17:30 以後跑：end_date = 今日（正常）
+
+  總 API 請求：同 V11，約 252 req，安全
 """
 
 import requests, json, time, os, statistics
@@ -60,11 +71,10 @@ def fm(dataset, data_id=None, start_date=None, end_date=None, retries=3):
     for i in range(retries):
         try:
             r = requests.get(FM_URL, params=params, headers=hdrs(), timeout=25)
-            # V11修正：只有 402 是真正的限額
             if r.status_code == 402:
                 print("  ! FinMind 402：API 次數超限！停止後續請求")
-                return [], True   # (data, hit_limit)
-            # V11修正：400/404/422 均視為「無此資料」，正常跳過
+                return [], True
+            # V11+：400/404/422 均視為「無此資料」
             if r.status_code in (400, 404, 422):
                 if r.status_code == 422:
                     print(f"  ! fm {dataset}/{data_id} → 422（無此資料/查詢區間無交易，跳過）")
@@ -78,10 +88,9 @@ def fm(dataset, data_id=None, start_date=None, end_date=None, retries=3):
     return [], False
 
 def fm1(dataset, data_id=None, start_date=None, end_date=None):
-    """回傳 (data, hit_limit)"""
     return fm(dataset, data_id, start_date, end_date)
 
-# ── Step①：有認購權證的標的（全表，1 req）───────────────────
+# ── Step①：有認購權證的標的 ───────────────────────────────────
 def fetch_warrant_targets():
     data, _ = fm1("TaiwanStockInfoWithWarrant")
     result = {}
@@ -96,37 +105,23 @@ def fetch_warrant_targets():
         }
     return result
 
-# ── Step②：預篩 → 排除 ETF、低流動性，保留主力股 ────────────
 EXCLUDE_SIDS = {"9999", "0000"}
 
 def prefilter_sids(warrant_targets, active_warrant_sids):
-    """
-    兩層篩選：
-    1. 排除明顯的 ETF/低流動性
-    2. 優先保留有「活躍認購權證」的標的
-    上限 200 支，以控制 API 次數
-    """
     priority = [s for s in active_warrant_sids if s in warrant_targets]
     rest = [s for s in warrant_targets if s not in active_warrant_sids and s not in EXCLUDE_SIDS]
     combined = priority + rest
     limit = 200 if TOKEN else 150
     return combined[:limit]
 
-# ── Step③：近期活躍認購權證標的（1 req）─────────────────────
+# ── Step③：近期活躍認購權證標的 ───────────────────────────────
 def fetch_active_warrant_targets():
-    """
-    查 TaiwanStockWarrant 近 7 天，找有成交量的認購權證標的
-    V11修正：422 已在 fm() 中正確處理為「無資料」，不再擋住流程
-    回傳 sorted sid list，按成交量排序
-    """
     start = date_back(7)
     today = tw_now().strftime("%Y-%m-%d")
     data, _ = fm1("TaiwanStockWarrant", start_date=start, end_date=today)
-    
     if not data:
         print("  ! TaiwanStockWarrant 無資料（可能是假日或 422），使用全部標的排序")
         return []
-    
     vol_map = {}
     for row in data:
         call_put = str(row.get("PutCall",""))
@@ -135,12 +130,11 @@ def fetch_active_warrant_targets():
         if not (sid.isdigit() and len(sid) == 4): continue
         vol = si(row.get("TradingVolume", 0))
         vol_map[sid] = vol_map.get(sid, 0) + vol
-    
     sorted_sids = sorted(vol_map.keys(), key=lambda s: -vol_map[s])
     print(f"  → TaiwanStockWarrant 取得 {len(sorted_sids)} 支活躍標的")
     return sorted_sids[:150]
 
-# ── Step④：逐支查股價 ────────────────────────────────────────
+# ── Step④：逐支查股價 ─────────────────────────────────────────
 def fetch_price(sid, start_date, end_date):
     data, hit = fm1("TaiwanStockPrice", sid, start_date, end_date)
     if hit: return None, True
@@ -161,11 +155,10 @@ def fetch_price(sid, start_date, end_date):
         except: continue
     return sorted(result, key=lambda x: x["date"]), False
 
-# ── Step⑤：三大法人 & 融資 ───────────────────────────────────
+# ── Step⑤：三大法人 & 融資 ────────────────────────────────────
 def fetch_inst(sid, start_date, end_date):
     data, hit = fm1("TaiwanStockInstitutionalInvestors", sid, start_date, end_date)
     if hit: return {}, True
-    # V11：422 已在 fm() 處理，data 為空時正常返回 {}
     by_date = {}
     for row in data:
         date = str(row.get("date",""))
@@ -197,7 +190,7 @@ def fetch_margin(sid, start_date, end_date):
         "margin_bal": bal,
     }, False
 
-# ── Step⑥：Top10 權證細節 ─────────────────────────────────
+# ── Step⑥：Top10 權證細節 ──────────────────────────────────
 def fetch_warrant_detail(sid, data_date_str):
     dt    = datetime.strptime(data_date_str, "%Y-%m-%d")
     start = (dt - timedelta(days=3)).strftime("%Y-%m-%d")
@@ -241,7 +234,7 @@ def fetch_warrant_detail(sid, data_date_str):
     warrants.sort(key=lambda x:(0 if x["leverage_ok"] else 1,-x["volume"],abs(x["delta"]-0.55)))
     return warrants[:3]
 
-# ── 評分 ─────────────────────────────────────────────────────
+# ── 評分 ──────────────────────────────────────────────────────
 def calc_ma(closes, n):
     if len(closes) < n: return None
     return round(statistics.mean(closes[-n:]), 2)
@@ -255,10 +248,13 @@ def calc_score(today_p, hist, inst, margin):
     prev_c = round(close - spread, 2) if spread else (hist[-1]["close"] if hist else close)
     chg    = round(spread / prev_c * 100, 2) if prev_c > 0 else 0
 
-    if chg >= 5:   score += 16; reasons.append("強勢大漲 ≥5%")
-    elif chg >= 3: score += 12; reasons.append("大漲 ≥3%")
-    elif chg >= 1: score += 7;  reasons.append("溫和上漲")
-    elif chg < 0:  score -= 10; warnings.append("今日收跌")
+    # V12修正：0.5%~1% 補基礎分，讓溫和上漲股也能進 Top10
+    if chg >= 5:     score += 16; reasons.append("強勢大漲 ≥5%")
+    elif chg >= 3:   score += 12; reasons.append("大漲 ≥3%")
+    elif chg >= 1:   score += 7;  reasons.append("溫和上漲 ≥1%")
+    elif chg >= 0.5: score += 4;  reasons.append("小漲 0.5~1%")
+    elif chg >= 0:   score += 1   # 微漲
+    elif chg < 0:    score -= 10; warnings.append("今日收跌")
 
     if high > low_p:
         cp = (close - low_p) / (high - low_p)
@@ -307,36 +303,52 @@ def calc_score(today_p, hist, inst, margin):
 
     return max(0, min(100, score)), reasons, warnings, chg
 
-# ── 主程式 ────────────────────────────────────────────────────
+# ── 主程式 ─────────────────────────────────────────────────────
 def main():
     now    = tw_now()
     today  = now.strftime("%Y-%m-%d")
     today8 = now.strftime("%Y%m%d")
     req    = 0
 
-    print(f"[{now.strftime('%H:%M:%S')} 台灣時間] fetch_twse V11 開始 {today}")
+    # V12核心修正：判斷是否應該用「昨日（上個交易日）」作為基準
+    # 17:30 前跑 → FinMind 今日資料可能不完整/不準確 → end_date = 昨日
+    # 17:30 後跑 → 今日收盤資料已入庫 → end_date = 今日
+    hour_min = now.hour * 60 + now.minute
+    if hour_min < 17 * 60 + 30:
+        # 盤中或盤後未更新：用昨日（往前找到上個交易日）
+        end_date = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+        # 若昨天是週末，再往前
+        d = now - timedelta(days=1)
+        while d.weekday() >= 5:  # 5=Sat, 6=Sun
+            d -= timedelta(days=1)
+        end_date = d.strftime("%Y-%m-%d")
+        print(f"  ► 盤中模式：使用上個交易日資料（end_date={end_date}）")
+    else:
+        end_date = today
+        print(f"  ► 盤後模式：使用今日收盤資料（end_date={end_date}）")
+
+    print(f"[{now.strftime('%H:%M:%S')} 台灣時間] fetch_twse V12 開始 {today}")
     print(f"  FinMind token: {'已設定（600req/hr）' if TOKEN else '未設定（匿名300req/hr）'}")
 
-    # ── ① 有認購權證的全部標的（1 req）─────────────────────────
+    # ── ① 有認購權證的全部標的（1 req）──────────────────────────
     print("  ► ① 取有認購權證標的...")
     warrant_targets = fetch_warrant_targets(); req += 1
     if not warrant_targets: print("  ! ① 失敗，中止"); return
     print(f"  → {len(warrant_targets)} 支")
     time.sleep(0.3)
 
-    # ── ③ 近期活躍認購權證標的（1 req）─────────────────────────
+    # ── ③ 近期活躍認購權證標的（1 req）──────────────────────────
     print("  ► ③ 取近期活躍認購權證...")
     active_sids = fetch_active_warrant_targets(); req += 1
     print(f"  → {len(active_sids)} 支活躍標的")
     time.sleep(0.3)
 
-    # ── ② 預篩，控制總數 ≤ 200 ──────────────────────────────────
+    # ── ② 預篩 ────────────────────────────────────────────────
     scan_sids = prefilter_sids(warrant_targets, active_sids)
     print(f"  ► ② 預篩後掃描清單：{len(scan_sids)} 支（API 預算：{req}+{len(scan_sids)}+40+10={req+len(scan_sids)+50}）")
 
-    # ── ④ 逐支查股價 ────────────────────────────────────────────
-    start_date = date_back(30)
-    end_date   = today
+    # ── ④ 逐支查股價 ───────────────────────────────────────────
+    start_date = (datetime.strptime(end_date, "%Y-%m-%d") - timedelta(days=35)).strftime("%Y-%m-%d")
     print(f"  ► ④ 逐支查股價（{start_date}~{end_date}）...")
 
     candidates = []
@@ -358,7 +370,9 @@ def main():
 
         today_p = hist_rows[-1]
         last_dt = datetime.strptime(today_p["date"], "%Y-%m-%d").date()
-        if (now.date() - last_dt).days > 5: continue
+        ref_dt  = datetime.strptime(end_date, "%Y-%m-%d").date()
+        # V12：允許資料比 end_date 早最多 5 個日曆天（跨週末、假日）
+        if (ref_dt - last_dt).days > 5: continue
 
         close  = today_p["close"]
         volume = today_p["volume"]
@@ -372,7 +386,8 @@ def main():
         if len(hist) < 5: continue
 
         _, _, _, chg = calc_score(today_p, hist, {}, {})
-        if chg < 0.3: continue
+        # V12：放寬進入候選的漲幅門檻（0.1% 即可），交給評分篩選
+        if chg < 0.1: continue
 
         candidates.append({
             "sid": sid, "info": info,
@@ -383,10 +398,10 @@ def main():
     print(f"  → ④ 完成：{len(candidates)} 支候選（req={req}）")
 
     if not candidates:
-        print("  ! 無候選，可能今日資料尚未更新（FinMind 17:30 後更新）")
+        print("  ! 無候選，可能資料尚未更新")
         _write_empty(now, today8, req); return
 
-    date_votes = Counter(c["data_date"] for c in candidates)
+    date_votes   = Counter(c["data_date"] for c in candidates)
     actual_date  = date_votes.most_common(1)[0][0]
     actual_date8 = actual_date.replace("-","")
     print(f"  → 實際資料日期：{actual_date}")
@@ -394,19 +409,20 @@ def main():
     # ── ⑤ Top20：查三大法人 + 融資 ─────────────────────────────
     candidates.sort(key=lambda x: x["chg"], reverse=True)
     top20 = candidates[:20]
-    inst_start = date_back(10)
+    # V12：inst_start 延長到 20 天，提高法人資料命中率
+    inst_start = (datetime.strptime(actual_date, "%Y-%m-%d") - timedelta(days=20)).strftime("%Y-%m-%d")
 
-    print(f"  ► ⑤ 三大法人 + 融資（{len(top20)} 支）...")
+    print(f"  ► ⑤ 三大法人 + 融資（{len(top20)} 支，查詢區間 {inst_start}~{actual_date}）...")
     inst_map   = {}
     margin_map = {}
     for c in top20:
         if stop: break
         sid = c["sid"]
-        res, hit = fetch_inst(sid, inst_start, end_date); req += 1
+        res, hit = fetch_inst(sid, inst_start, actual_date); req += 1
         if hit: stop = True; break
         inst_map[sid] = res; time.sleep(0.12)
 
-        res, hit = fetch_margin(sid, inst_start, end_date); req += 1
+        res, hit = fetch_margin(sid, inst_start, actual_date); req += 1
         if hit: stop = True; break
         margin_map[sid] = res; time.sleep(0.10)
 
@@ -423,7 +439,8 @@ def main():
             inst_map.get(sid,{}), margin_map.get(sid,{})
         )
         score = min(100, score + 2)
-        if score < 45: continue
+        # V12：降低門檻 45→35，讓更多股進入 Top10
+        if score < 35: continue
         ma_c = [h["close"] for h in hist]
         scored.append({
             "sid":        sid,
@@ -445,7 +462,7 @@ def main():
     scored.sort(key=lambda x: x["score"], reverse=True)
     top10 = scored[:TOP_N]
 
-    # ── ⑥ Top10 查權證細節 ─────────────────────────────────────
+    # ── ⑥ Top10 查權證細節 ────────────────────────────────────
     if top10 and not stop:
         print(f"  ► ⑥ 權證細節（{len(top10)} 支）...")
         for c in top10:
@@ -453,7 +470,7 @@ def main():
             req += 1; time.sleep(0.15)
         print(f"  → ⑥ 完成（req={req}）")
 
-    # ── 機率標籤 ────────────────────────────────────────────────
+    # ── 機率標籤 ─────────────────────────────────────────────
     for c in top10:
         s = c["score"]
         if s >= 85:
