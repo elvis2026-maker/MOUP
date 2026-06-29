@@ -1,10 +1,10 @@
-name: 每日盤後抓資料 V11
+name: 每日盤後抓資料 V12
 
 on:
   schedule:
-    - cron: "0 6 * * 1-5"    # 台灣 14:00（主要）
-    - cron: "30 6 * * 1-5"   # 台灣 14:30（備份）
-    - cron: "0 8 * * 1-5"    # 台灣 16:00（保底）
+    - cron: "45 9 * * 1-5"   # 台灣 17:45（FinMind 17:30 更新後第一次）← 主要
+    - cron: "30 10 * * 1-5"  # 台灣 18:30（備份）
+    - cron: "0 8 * * 1-5"    # 台灣 16:00（盤中跑一次，用昨日資料先佔位）
   workflow_dispatch:
 
 permissions:
@@ -37,9 +37,6 @@ jobs:
           FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
         run: python scripts/fetch_twse.py
 
-      # ✅ V9核心修正：fetch-data 只 push stocks.json
-      # live.json 完全由 fetch-live workflow 負責
-      # 兩個 workflow 各寫各的檔案 → 永遠不會衝突
       - name: Commit and push stocks.json only
         run: |
           git config user.name "github-actions[bot]"
@@ -50,7 +47,6 @@ jobs:
             exit 0
           fi
           git commit -m "chore: 更新選股資料 $(TZ='Asia/Taipei' date +'%Y/%m/%d %H:%M')"
-          # 重試 push 最多3次（避免偶發的 remote 變更衝突）
           for i in 1 2 3; do
             git pull --ff-only origin main && git push origin main && echo "Push OK" && exit 0
             echo "Push attempt $i failed, retrying..."
