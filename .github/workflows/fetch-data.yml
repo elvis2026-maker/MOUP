@@ -1,4 +1,4 @@
-name: 每日盤後抓資料
+name: 每日盤後抓資料 V11
 
 on:
   schedule:

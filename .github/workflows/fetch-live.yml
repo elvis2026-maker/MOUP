@@ -1,4 +1,4 @@
-name: 盤中即時報價更新
+name: 盤中即時報價更新 V11
 
 on:
   schedule:
