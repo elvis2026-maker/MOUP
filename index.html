@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>權證標的精選｜續漲機率分析 V17</title>
+<title>權證標的精選｜續漲機率分析 V18</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -220,6 +220,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 .warrant-section h4{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-weight:600}
 .w-count{background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.2);border-radius:10px;padding:1px 8px;font-size:10px;color:var(--accent)}
 .w-table{width:100%;border-collapse:collapse;font-size:14px}
+.warrant-note{margin-top:10px;padding:8px 12px;font-size:12px;color:var(--text3);background:var(--surface);border-radius:8px;border:1px solid var(--border)}
 .w-table th{text-align:left;padding:8px 10px;font-size:12px;color:var(--text3);font-weight:700;border-bottom:1px solid var(--border);background:var(--surface);letter-spacing:.04em}
 .w-table td{padding:10px 10px;border-bottom:1px solid var(--border);color:var(--text);font-size:14px}
 .w-table tr:last-child td{border-bottom:none}
@@ -381,7 +382,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
       <span class="screw bl"></span><span class="screw br"></span>
     </div>
   </div>
-  <div class="nameplate-version">V17</div>
+  <div class="nameplate-version">V18</div>
 </div>
 
 <!-- ══ HERO ══ -->
@@ -429,7 +430,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
   <div class="cards" id="cards"></div>
 </div>
 
-<!-- ══ 即時 TAB（V17：改為盤中參考卡，非即時報價） ══ -->
+<!-- ══ 即時 TAB（V18：改為盤中參考卡，非即時報價） ══ -->
 <div id="live-panel">
   <div class="live-notice">
     ⚠ <strong>本頁不是即時報價</strong>，內容是昨日盤後數據（收盤價、漲幅、MA20、評分），整理成快速參考卡方便你開盤前複習精選名單。
@@ -455,7 +456,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
   <div class="footer-inner">
     <div class="footer-brand">程式設計 Elvis Liu｜版權所有</div>
     <div class="footer-meta">
-      <span>MOUP V17</span><span class="footer-dot">·</span>
+      <span>MOUP V18</span><span class="footer-dot">·</span>
       <span>Taiwan Warrant Intelligence System</span><span class="footer-dot">·</span>
       <span>最後更新：<span id="footer-update-time">--</span></span>
     </div>
@@ -634,22 +635,19 @@ function cardHTML(s, rank){
   const warrants=s.warrants||[];
   let wBlock='';
   if(warrants.length===0){
-    wBlock=`<div class="no-warrant">目前無符合條件的認購權證（到期≥20天、槓桿5~12倍）</div>`;
+    wBlock=`<div class="no-warrant">目前查無此標的的認購權證資料（到期≥20天）</div>`;
   } else {
     const rows=warrants.map(w=>`
       <tr>
         <td class="w-code">${w.code}</td>
-        <td>${w.issuer}</td>
         <td class="w-mono">${w.expire} <small style="color:var(--text3)">${w.days_left||'?'}天</small></td>
-        <td class="w-mono ${w.leverage>=5&&w.leverage<=10?'w-ok':'w-warn'}">${w.leverage}x</td>
-        <td class="w-mono">${w.iv}%</td>
-        <td><span class="w-badge ${moneynessClass(w.moneyness)}">${w.moneyness}</span></td>
-        <td class="w-mono">${w.bid} / ${w.ask}</td>
-        <td class="w-mono">${(w.volume||0).toLocaleString()}</td>
+        <td class="w-mono">${w.strike!=null?w.strike:'--'}</td>
+        <td class="w-mono">${w.ratio!=null?w.ratio:'--'}</td>
       </tr>`).join('');
     wBlock=`<table class="w-table">
-      <tr><th>代號</th><th>發行商</th><th>到期日</th><th>槓桿</th><th>隱波</th><th>價內外</th><th>買/賣</th><th>量</th></tr>
-      ${rows}</table>`;
+      <tr><th>代號</th><th>到期日</th><th>履約價</th><th>行使比例</th></tr>
+      ${rows}</table>
+      <div class="warrant-note">⚠ 槓桿倍數、Delta、買賣報價請至證券 APP 查詢（FinMind 免費版不提供權證即時盤口資料）</div>`;
   }
 
   return `
@@ -740,7 +738,7 @@ function genHint(s){
 function toggleCard(el){ el.classList.toggle('open'); }
 
 // ════════════════════════════════════════════
-//  盤中參考卡（V17：靜態昨收資料，非即時輪詢）
+//  盤中參考卡（V18：靜態昨收資料，非即時輪詢）
 // ════════════════════════════════════════════
 function startLive(){
   if(liveRunning) return;
@@ -760,7 +758,7 @@ function startLive(){
   startLive._r=0;
   liveRunning=true;
   fetchLive();
-  // V17：參考卡是靜態昨收資料，不需要每分鐘輪詢，拿掉 setInterval
+  // V18：參考卡是靜態昨收資料，不需要每分鐘輪詢，拿掉 setInterval
 }
 function stopLive(){
   liveRunning=false;
@@ -797,7 +795,7 @@ async function fetchLive(){
   }
 }
 
-// V17：參考卡只顯示盤後已確定的數據（昨收/漲幅/MA20/評分），
+// V18：參考卡只顯示盤後已確定的數據（昨收/漲幅/MA20/評分），
 // 不再計算「開高走高」之類需要即時報價才能判斷的訊號。
 function liveCardHTML(s,card){
   const color=probColor(s.prob_level);

@@ -1,40 +1,54 @@
 #!/usr/bin/env python3
 """
-台股權證標的篩選腳本 V17
+台股權證標的篩選腳本 V18
 ==============================
-V17 修正 V16 的權證查詢 bug：精選清單常顯示「0 支認購權證」。
+V18 修正三個「dataset/欄位名稱錯誤」造成的靜默失敗（這才是真正的根因）：
 
-  根因：
-    第一階段 fetch_active_warrant_targets() 已經抓過近7天「全市場」
-    權證明細（TaiwanStockWarrant 不帶 data_id），但只拿來算活躍度排序，
-    完整明細直接丟棄。
-    最後選股完成後，fetch_warrant_detail() 又對「單一個股」重新查一次，
-    且窗口只有3天 —— 中小型股、上櫃股的權證成交本來就不熱絡，
-    3天內常常剛好0筆，導致明明在 warrant_targets 名單裡的股票，
-    最後權證推薦卻顯示0支。
+  Bug①（最關鍵）：「TaiwanStockWarrant」這個 dataset 根本不存在於 FinMind！
+    V13~V17 一路沿用的欄位（PutCall / EffectiveLeverage / Delta / BidPrice /
+    AskPrice / TradingVolume / Issuer）對應的是一個查無此名的 dataset。
+    FinMind 對不存在的 dataset 名稱不會報錯，而是直接回空陣列 →
+    程式「看起來」執行成功，但 WARRANT_DETAIL_CACHE 永遠是空的，
+    所以精選清單裡任何股票的「認購權證推薦」永遠顯示 0 支
+    （即使像國巨 2327 這種有十幾檔權證的熱門標的也一樣）。
 
-  V17 解法：
-    ① fetch_active_warrant_targets() 抓取窗口從 7 天延長到 15 天，
-       並把完整權證明細（代號/槓桿/Delta/到期日/買賣價）快取到
-       WARRANT_DETAIL_CACHE，依標的分組。
-    ② fetch_warrant_detail() 優先查這份快取，不用重打 API；
-       只有快取沒命中的標的才 fallback 個股查詢（窗口也延長到15天）。
-    → 大幅降低「0支」的誤判機率，同時減少 API 呼叫次數。
+    FinMind 真正提供、且免費的權證資料集是 TaiwanStockInfoWithWarrantSummary：
+      欄位：stock_id(權證代碼), date, close, target_stock_id(標的股票代碼),
+            target_close, type(權證類型), fulfillment_method(履約方式),
+            end_date(最後交易日), fulfillment_start_date, fulfillment_end_date,
+            exercise_ratio(行使比例), fulfillment_price(履約價格)
+    這份資料「沒有」槓桿倍數、Delta、買賣報價、即時成交量這些欄位——
+    這些屬於權證即時交易盤口資訊，FinMind 並未提供免費 API（即時報價
+    需要券商 API 或付費資料源）。V18 因此調整功能定位：
+      - 可靠提供：「這支股票目前有哪些認購權證、權證代碼、履約價、到期日」
+      - 無法提供：槓桿倍數、Delta、買賣報價（這些請至證券 APP 查詢）
+
+  Bug②：三大法人 dataset 名稱錯誤
+    舊：TaiwanStockInstitutionalInvestors      ← 查無此 dataset，永遠回空
+    新：TaiwanStockInstitutionalInvestorsBuySell ← FinMind 官方正確名稱
+
+  Bug③：融資資料欄位名稱錯誤
+    舊：MarginPurchaseRemainAmount  ← 不存在，永遠回 1（fallback 預設值）
+    新：MarginPurchaseTodayBalance  ← 官方正確欄位（融資今日餘額）
+
+  這三個 bug 都是「打錯名字」而非邏輯錯誤，因為 FinMind 對未知 dataset/
+  欄位「靜默回空」而非報錯，所以過去 N 個版本一路執行「成功」，卻拿不到
+  真正的籌碼和權證資料 —— 這就是反覆出現「0支」「籌碼空白」的真正原因。
 
   沿用 V13 的兩階段掃描策略（避免母體只掃 200 支的問題）：
-    ① 第一階段（快速粗篩）：只取「近 2 天」資料，快速淘汰收跌/無量股
+    ① 第一階段（快速粗篩）：只取「近 4 天」資料，快速淘汰收跌/無量股
        → 粗篩上限：有 TOKEN → 420 支；無 TOKEN → 220 支
     ② 第二階段（精細評分）：存活候選取「近 35 天」歷史資料
-       → 計算 MA / 法人 / 融資完整評分，選出 Top10
+       → 計算 MA / 法人 / 融資完整評分，選出 TopN
 
-  API 預算（有 TOKEN 600 req/hr，V17 因權證快取化而降低）：
-    ① TaiwanStockInfoWithWarrant      1 req
-    ② TaiwanStockWarrant（近15天，快取）1 req
-    ③ 粗篩 420 支                     420 req
-    ④ 精篩存活 ~120 支                ~120 req
-    ⑤ 法人 + 融資 Top30 × 2           60 req
-    ⑥ 權證細節（多數查快取，僅少數fallback）  ~0-10 req
-    合計：~602-612 req → 跨小時執行，第二小時剩餘 300 req 絕對夠用
+  API 預算（有 TOKEN 600 req/hr）：
+    ① TaiwanStockInfoWithWarrant            1 req
+    ② TaiwanStockInfoWithWarrantSummary（全量+快取） 1 req
+    ③ 粗篩 420 支                            420 req
+    ④ 精篩存活 ~120 支                       ~120 req
+    ⑤ 法人 + 融資 Top30 × 2                  60 req
+    ⑥ 權證細節（全部查快取，0 req）           0 req
+    合計：~602 req → 跨小時執行，第二小時剩餘額度足夠
 """
 
 import requests, json, time, os, statistics
@@ -47,9 +61,9 @@ TOP_N       = 15
 FM_URL      = "https://api.finmindtrade.com/api/v4/data"
 TOKEN       = os.environ.get("FINMIND_TOKEN", "")
 
-# V13 掃描上限（依 TOKEN 決定）
-SCAN_LIMIT_TOKEN    = 420   # 有 TOKEN：420 支粗篩，總 req ≈ 612，安全跨兩個小時
-SCAN_LIMIT_NO_TOKEN = 220   # 無 TOKEN：220 支，總 req ≈ 343
+# 掃描上限（依 TOKEN 決定）
+SCAN_LIMIT_TOKEN    = 420
+SCAN_LIMIT_NO_TOKEN = 220
 
 def tw_now():
     return datetime.now(TZ_TW)
@@ -114,68 +128,75 @@ def fetch_warrant_targets():
 
 EXCLUDE_SIDS = {"9999", "0000"}
 
-# ── Step②：近期活躍認購權證標的（1 req）─────────────────────────
-# V17修正：抓取窗口從 7 天延長到 15 天，並把完整權證明細快取下來
-# （V16 bug：最後 fetch_warrant_detail() 對單一個股只查 3 天，
-#  中小型股、上櫃股權證成交不熱絡，3天內常常0筆，導致「精選清單」
-#  裡明明在 warrant_targets 名單內的股票，最後權證推薦卻顯示0支。
-#  其實這支函式已經抓過全市場權證明細了，V17 把它快取起來，
-#  最後直接查表，不用再對每支個股重打一次 API，
-#  同時用更長的窗口（15天）大幅降低「剛好沒交易」的機率。）
-WARRANT_DETAIL_CACHE = {}   # underlying_sid -> [warrant_dict, ...]（V17 新增）
+# ── Step②：權證明細（1 req，正確 dataset）───────────────────────
+# V18 修正：改用真實存在的 TaiwanStockInfoWithWarrantSummary
+# 注意：只有「標的、履約價、到期日、行使比例」，沒有槓桿/Delta/即時報價
+WARRANT_DETAIL_CACHE = {}   # underlying_sid -> {w_code: detail_dict}
 
 def fetch_active_warrant_targets():
-    start = date_back(15)   # V17: 7天 → 15天，降低中小型股查無資料的機率
-    today = tw_now().strftime("%Y-%m-%d")
-    data, _ = fm1("TaiwanStockWarrant", start_date=start, end_date=today)
+    """
+    抓 TaiwanStockInfoWithWarrantSummary 全表（1 req，免費）。
+    依 target_stock_id 分組，同時把每檔權證的基本資料快取下來。
+    回傳：(依「同標的權證檔數」排序的標的清單, 有權證的標的集合)
+    """
+    data, _ = fm1("TaiwanStockInfoWithWarrantSummary")
     if not data:
-        print("  ! TaiwanStockWarrant 無資料（可能是假日或 422），使用全部標的")
+        print("  ! TaiwanStockInfoWithWarrantSummary 無資料，使用全部標的")
         return [], set()
-    vol_map  = {}
+
+    today_dt = tw_now().date()
+    count_map  = {}
     active_set = set()
+
     for row in data:
-        call_put = str(row.get("PutCall",""))
-        if "C" not in call_put and "認購" not in call_put: continue
-        sid = str(row.get("underlying_stock","")).strip()
-        if not (sid.isdigit() and len(sid) == 4): continue
-        vol = si(row.get("TradingVolume", 0))
-        vol_map[sid] = vol_map.get(sid, 0) + vol
-        active_set.add(sid)
-
-        # V17：同時把這筆權證的完整明細存進快取，最後選股時直接查表
         try:
-            w_code     = str(row.get("stock_id","")).strip()
-            expire_str = str(row.get("ExpirationDate","")).strip()
-            leverage   = sf(row.get("EffectiveLeverage",0))
-            delta      = sf(row.get("Delta",0))
-            bid        = sf(row.get("BidPrice",0))
-            ask        = sf(row.get("AskPrice",0))
-            row_date   = str(row.get("date","")).strip()
-            if not w_code or not expire_str: continue
-            expire_dt = datetime.strptime(expire_str[:10], "%Y-%m-%d")
-            WARRANT_DETAIL_CACHE.setdefault(sid, {})
-            prev = WARRANT_DETAIL_CACHE[sid].get(w_code)
-            # 同一檔權證可能在窗口內出現多天資料，保留「日期最新」的一筆
-            if prev is None or row_date > prev.get("_row_date", ""):
-                WARRANT_DETAIL_CACHE[sid][w_code] = {
-                    "code": w_code, "expire_dt": expire_dt,
-                    "leverage": leverage, "delta": delta,
-                    "bid": bid, "ask": ask, "volume": vol,
-                    "issuer": str(row.get("Issuer",""))[:3],
-                    "_row_date": row_date,
-                }
-        except: pass
+            sid = str(row.get("target_stock_id","")).strip()
+            if not (sid.isdigit() and len(sid) == 4): continue
 
-    sorted_sids = sorted(vol_map.keys(), key=lambda s: -vol_map[s])
-    print(f"  → TaiwanStockWarrant 取得 {len(sorted_sids)} 支活躍標的（近 15 天有認購交易，快取 {sum(len(v) for v in WARRANT_DETAIL_CACHE.values())} 檔權證明細）")
+            w_code   = str(row.get("stock_id","")).strip()
+            end_date = str(row.get("end_date","")).strip()       # 最後交易日
+            fp       = sf(row.get("fulfillment_price", 0))       # 履約價格
+            ratio    = sf(row.get("exercise_ratio", 0))          # 行使比例
+            w_type   = str(row.get("type","")).strip()           # 權證類型
+            if not w_code or not end_date: continue
+
+            try:
+                expire_dt = datetime.strptime(end_date[:10], "%Y-%m-%d").date()
+            except: continue
+
+            days_left = (expire_dt - today_dt).days
+            if days_left < 20: continue  # 排除即將到期的權證
+
+            # type 欄位通常標示「認購/認售」，只保留認購
+            # （投資人預期股票續漲時，操作的是認購權證）
+            if w_type and ("售" in w_type or "put" in w_type.lower()):
+                continue
+
+            active_set.add(sid)
+            count_map[sid] = count_map.get(sid, 0) + 1
+
+            WARRANT_DETAIL_CACHE.setdefault(sid, {})
+            WARRANT_DETAIL_CACHE[sid][w_code] = {
+                "code":      w_code,
+                "expire_dt": expire_dt,
+                "days_left": days_left,
+                "strike":    fp,
+                "ratio":     ratio,
+                "type":      w_type,
+            }
+        except: continue
+
+    sorted_sids = sorted(count_map.keys(), key=lambda s: -count_map[s])
+    total_warrants = sum(len(v) for v in WARRANT_DETAIL_CACHE.values())
+    print(f"  → TaiwanStockInfoWithWarrantSummary 取得 {len(sorted_sids)} 支標的，{total_warrants} 檔有效認購權證（剩餘天數≥20天）")
     return sorted_sids, active_set
 
-# ── V13：建立全量掃描清單────────────────────────────────────────
+# ── 建立全量掃描清單────────────────────────────────────────────
 def build_scan_list(warrant_targets, active_sids_sorted, active_set):
     """
     排序：
-      1. 近期活躍（認購交易量大的優先） → 優先掃描
-      2. 有認購權證但近期不活躍         → 次要掃描
+      1. 權證檔數較多的標的（市場關注度較高） → 優先掃描
+      2. 有認購權證但檔數較少                  → 次要掃描
     上限：有 TOKEN → 420 支；無 TOKEN → 220 支
     """
     limit = SCAN_LIMIT_TOKEN if TOKEN else SCAN_LIMIT_NO_TOKEN
@@ -185,20 +206,20 @@ def build_scan_list(warrant_targets, active_sids_sorted, active_set):
 
     combined = priority + rest
     print(f"  → 全量標的：{len(warrant_targets)} 支")
-    print(f"     活躍優先（近 7 天有認購交易）：{len(priority)} 支")
-    print(f"     次要（有權證但近期不活躍）：{len(rest)} 支")
-    print(f"     V13 掃描上限：{limit} 支（{'有 TOKEN 600req/hr' if TOKEN else '匿名 300req/hr'}）")
+    print(f"     權證檔數較多優先：{len(priority)} 支")
+    print(f"     有權證但檔數較少：{len(rest)} 支")
+    print(f"     掃描上限：{limit} 支（{'有 TOKEN 600req/hr' if TOKEN else '匿名 300req/hr'}）")
     return combined[:limit]
 
-# ── V13 第一階段：快速粗篩（只取近 2 天，速度快）──────────────────
+# ── 第一階段：快速粗篩（只取近 4 天，速度快）──────────────────────
 def quick_filter(scan_sids, warrant_targets, quick_start, end_date):
     """
-    每 req 只取一支股票的近 2 天資料。
+    每 req 只取一支股票的近 4 天資料。
     淘汰條件（保守，寧可放行也不誤殺）：
       - 最新資料距 end_date > 5 天（停牌/下市）
       - 今日收跌（spread < 0）
       - 成交量嚴重不足
-      - 股價 <50 或 >3000（V16：低價股無認購權證，下限提高至50元）
+      - 股價 <50 或 >3000（低價股很少有認購權證）
     通常淘汰 60~70%，回傳 list[dict]
     """
     survivors = []
@@ -236,7 +257,6 @@ def quick_filter(scan_sids, warrant_targets, quick_start, end_date):
         rows.sort(key=lambda x: x["date"])
         today_p = rows[-1]
 
-        # 資料新鮮度檢查
         last_dt = datetime.strptime(today_p["date"], "%Y-%m-%d").date()
         ref_dt  = datetime.strptime(end_date, "%Y-%m-%d").date()
         if (ref_dt - last_dt).days > 5: continue
@@ -247,11 +267,9 @@ def quick_filter(scan_sids, warrant_targets, quick_start, end_date):
         volume = today_p["volume"]
         spread = today_p["spread"]
 
-        # V16：股價需 ≥50 元，低價股幾乎沒有認購權證
-        if close < 50 or close > 3000:                         continue
-        # 成交量門檻：股價高的股票成交量自然較低，但需有一定流動性
-        if volume < (50000 if market == "otc" else 100000):    continue
-        if spread < 0:                                          continue  # 收跌淘汰
+        if close < 50 or close > 3000:                        continue
+        if volume < (50000 if market == "otc" else 100000):   continue
+        if spread < 0:                                         continue
 
         survivors.append({
             "sid":       sid,
@@ -285,8 +303,11 @@ def fetch_price_full(sid, start_date, end_date):
     return sorted(result, key=lambda x: x["date"]), False
 
 # ── 三大法人 & 融資 ────────────────────────────────────────────
+# V18 修正：dataset 名稱錯誤！
+#   舊：TaiwanStockInstitutionalInvestors  ← FinMind 沒有這個 dataset，永遠回空
+#   新：TaiwanStockInstitutionalInvestorsBuySell  ← 正確名稱
 def fetch_inst(sid, start_date, end_date):
-    data, hit = fm1("TaiwanStockInstitutionalInvestors", sid, start_date, end_date)
+    data, hit = fm1("TaiwanStockInstitutionalInvestorsBuySell", sid, start_date, end_date)
     if hit: return {}, True
     by_date = {}
     for row in data:
@@ -295,6 +316,8 @@ def fetch_inst(sid, start_date, end_date):
         net  = si(row.get("buy",0)) - si(row.get("sell",0))
         if date not in by_date:
             by_date[date] = {"foreign_net":0,"trust_net":0,"dealer_net":0}
+        # FinMind 的 name 欄位常見值包含完整字串如「外資及陸資(不含外資自營商)」
+        # 「外資自營商」「投信」「自營商(自行買賣)」「自營商(避險)」等，用關鍵字比對即可涵蓋
         if   "外資" in name: by_date[date]["foreign_net"] += net
         elif "投信" in name: by_date[date]["trust_net"]   += net
         elif "自營" in name: by_date[date]["dealer_net"]  += net
@@ -313,91 +336,40 @@ def fetch_margin(sid, start_date, end_date):
     if hit: return {}, True
     if not data: return {}, False
     latest = sorted(data, key=lambda x: x.get("date",""))[-1]
-    bal = si(latest.get("MarginPurchaseRemainAmount",1)) or 1
+    # V18 修正：欄位名稱錯誤！
+    #   舊：MarginPurchaseRemainAmount  ← 不存在
+    #   新：MarginPurchaseTodayBalance  ← 正確欄位（融資今日餘額）
+    bal = si(latest.get("MarginPurchaseTodayBalance",1)) or 1
     return {
         "margin_buy": si(latest.get("MarginPurchaseBuy",0)),
         "margin_bal": bal,
     }, False
 
-# ── Top10 權證細節 ──────────────────────────────────────────────
-def fetch_warrant_detail(sid, data_date_str):
+# ── 權證細節（完全查快取，0 req）────────────────────────────────
+def fetch_warrant_detail(sid):
     """
-    V17修正：優先從 WARRANT_DETAIL_CACHE 查表（fetch_active_warrant_targets
-    已經抓過近15天全市場權證明細，直接用，不必重打 API）。
-    只有快取沒有該標的資料時，才 fallback 用個股查詢（窗口也從3天延長到15天）。
+    V18：直接查 WARRANT_DETAIL_CACHE（fetch_active_warrant_targets 已抓過
+    全市場權證明細），不需要再打任何 API。
+    回傳的權證只有「代碼、履約價、到期日、行使比例」，沒有槓桿/Delta/報價
+    （FinMind 免費版不提供這些即時盤口資訊）。
     """
-    dt = datetime.strptime(data_date_str, "%Y-%m-%d")
-    warrants = []
-
     cached = WARRANT_DETAIL_CACHE.get(sid)
-    if cached:
-        for w_code, w in cached.items():
-            try:
-                days_left = (w["expire_dt"] - dt).days
-                if days_left < 20:                          continue
-                if w["leverage"] <= 0 or w["leverage"] > 15: continue
-                delta = w["delta"]
-                if delta >= 0.70:    moneyness = "深度價內"
-                elif delta >= 0.55:  moneyness = "輕度價內"
-                elif delta >= 0.45:  moneyness = "價平"
-                elif delta >= 0.30:  moneyness = "輕度價外"
-                else:                moneyness = "價外"
-                warrants.append({
-                    "code":        w["code"],
-                    "issuer":      w["issuer"],
-                    "type":        "call",
-                    "expire":      w["expire_dt"].strftime("%Y/%m/%d"),
-                    "days_left":   days_left,
-                    "leverage":    round(w["leverage"], 1),
-                    "delta":       round(delta, 2),
-                    "moneyness":   moneyness,
-                    "bid":         w["bid"], "ask": w["ask"], "volume": w["volume"],
-                    "leverage_ok": 4 < w["leverage"] < 12,
-                })
-            except: continue
+    if not cached:
+        return []
 
-    if not warrants:
-        # V17：快取沒命中時的 fallback，窗口從3天延長到15天
-        start = (dt - timedelta(days=15)).strftime("%Y-%m-%d")
-        data, _ = fm1("TaiwanStockWarrant", sid, start, data_date_str)
-        for row in data:
-            try:
-                call_put = str(row.get("PutCall",""))
-                if "C" not in call_put and "認購" not in call_put: continue
-                w_code     = str(row.get("stock_id","")).strip()
-                expire_str = str(row.get("ExpirationDate","")).strip()
-                leverage   = sf(row.get("EffectiveLeverage",0))
-                delta      = sf(row.get("Delta",0))
-                bid        = sf(row.get("BidPrice",0))
-                ask        = sf(row.get("AskPrice",0))
-                vol        = si(row.get("TradingVolume",0))
-                if not w_code: continue
-                try: expire_dt = datetime.strptime(expire_str[:10], "%Y-%m-%d")
-                except: continue
-                days_left = (expire_dt - dt).days
-                if days_left < 20:                  continue
-                if leverage <= 0 or leverage > 15:  continue
-                if delta >= 0.70:    moneyness = "深度價內"
-                elif delta >= 0.55:  moneyness = "輕度價內"
-                elif delta >= 0.45:  moneyness = "價平"
-                elif delta >= 0.30:  moneyness = "輕度價外"
-                else:                moneyness = "價外"
-                warrants.append({
-                    "code":        w_code,
-                    "issuer":      str(row.get("Issuer",""))[:3],
-                    "type":        "call",
-                    "expire":      expire_dt.strftime("%Y/%m/%d"),
-                    "days_left":   days_left,
-                    "leverage":    round(leverage,1),
-                    "delta":       round(delta,2),
-                    "moneyness":   moneyness,
-                    "bid":         bid, "ask": ask, "volume": vol,
-                    "leverage_ok": 4 < leverage < 12,
-                })
-            except: continue
-
-    warrants.sort(key=lambda x:(0 if x["leverage_ok"] else 1,-x["volume"],abs(x["delta"]-0.55)))
-    return warrants[:3]
+    warrants = []
+    for w_code, w in cached.items():
+        warrants.append({
+            "code":      w["code"],
+            "type":      "call",
+            "expire":    w["expire_dt"].strftime("%Y/%m/%d"),
+            "days_left": w["days_left"],
+            "strike":    w["strike"],     # 履約價格
+            "ratio":     w["ratio"],      # 行使比例
+        })
+    # 排序：剩餘天數適中（不要太快到期，也不要太遠）優先
+    warrants.sort(key=lambda x: abs(x["days_left"] - 90))
+    return warrants[:5]
 
 # ── 評分 ──────────────────────────────────────────────────────
 def calc_ma(closes, n):
@@ -486,9 +458,9 @@ def main():
         end_date = today
         print(f"  ► 盤後模式：使用今日收盤資料（end_date={end_date}）")
 
-    print(f"[{now.strftime('%H:%M:%S')} 台灣時間] fetch_twse V17 開始 {today}")
+    print(f"[{now.strftime('%H:%M:%S')} 台灣時間] fetch_twse V18 開始 {today}")
     print(f"  FinMind token: {'已設定（600req/hr）' if TOKEN else '未設定（匿名300req/hr）'}")
-    print(f"  V13 掃描策略：兩階段（粗篩 {SCAN_LIMIT_TOKEN if TOKEN else SCAN_LIMIT_NO_TOKEN} 支 → 精篩存活）")
+    print(f"  掃描策略：兩階段（粗篩 {SCAN_LIMIT_TOKEN if TOKEN else SCAN_LIMIT_NO_TOKEN} 支 → 精篩存活）")
 
     # ── ① 有認購權證的全部標的（1 req）──────────────────────────
     print("  ► ① 取有認購權證標的（全量）...")
@@ -497,15 +469,15 @@ def main():
     print(f"  → {len(warrant_targets)} 支")
     time.sleep(0.3)
 
-    # ── ② 近期活躍認購權證標的（1 req）──────────────────────────
-    print("  ► ② 取近期活躍認購權證...")
+    # ── ② 權證明細全表（1 req，正確 dataset）────────────────────
+    print("  ► ② 取權證明細（TaiwanStockInfoWithWarrantSummary）...")
     active_sids_sorted, active_set = fetch_active_warrant_targets(); req += 1
     time.sleep(0.3)
 
-    # ── 建立掃描清單（V13：依 TOKEN 設上限）──────────────────────
+    # ── 建立掃描清單 ─────────────────────────────────────────────
     scan_sids = build_scan_list(warrant_targets, active_sids_sorted, active_set)
 
-    # ── ③ V13 第一階段：快速粗篩（近 2 天資料）─────────────────
+    # ── ③ 第一階段：快速粗篩（近 4 天資料）──────────────────────
     quick_start = (datetime.strptime(end_date, "%Y-%m-%d") - timedelta(days=4)).strftime("%Y-%m-%d")
     print(f"  ► ③ 第一階段粗篩（{quick_start}~{end_date}，共 {len(scan_sids)} 支）...")
     survivors, q_req, stop = quick_filter(scan_sids, warrant_targets, quick_start, end_date)
@@ -515,7 +487,6 @@ def main():
         print("  ! 粗篩後無存活標的，可能資料尚未更新")
         _write_empty(now, today8, req); return
 
-    # 判斷主流資料日期
     date_votes  = Counter(s["data_date"] for s in survivors)
     actual_date = date_votes.most_common(1)[0][0]
     print(f"  → 實際資料日期：{actual_date}")
@@ -587,7 +558,7 @@ def main():
 
     print(f"  → ⑤ 完成（req={req}）")
 
-    # ── 完整評分，取 Top10 ───────────────────────────────────────
+    # ── 完整評分，取 TopN ─────────────────────────────────────────
     scored = []
     for c in top30:
         sid  = c["sid"]
@@ -597,7 +568,10 @@ def main():
             c["today_p"], hist,
             inst_map.get(sid,{}), margin_map.get(sid,{})
         )
-        score = min(100, score + 2)
+        # 有認購權證加分（依快取檔數，檔數越多代表市場關注度越高）
+        warrant_count = len(WARRANT_DETAIL_CACHE.get(sid, {}))
+        bonus = min(5, warrant_count)  # 最多加5分
+        score = min(100, score + bonus)
         if score < 25: continue
         ma_c = [h["close"] for h in hist]
         scored.append({
@@ -618,18 +592,17 @@ def main():
         })
 
     scored.sort(key=lambda x: x["score"], reverse=True)
-    top15 = scored[:TOP_N]
+    top_n = scored[:TOP_N]
 
-    # ── ⑥ Top10 查權證細節 ────────────────────────────────────
-    if top15 and not stop:
-        print(f"  ► ⑥ 權證細節（{len(top15)} 支）...")
-        for c in top15:
-            c["warrants"] = fetch_warrant_detail(c["sid"], actual_date)
-            req += 1; time.sleep(0.15)
-        print(f"  → ⑥ 完成（req={req}）")
+    # ── ⑥ 權證細節（全部查快取，0 req）───────────────────────────
+    print(f"  ► ⑥ 權證細節（查快取，{len(top_n)} 支）...")
+    for c in top_n:
+        c["warrants"] = fetch_warrant_detail(c["sid"])
+    wc_total = sum(len(c["warrants"]) for c in top_n)
+    print(f"  → ⑥ 完成：{wc_total} 檔權證已附加到精選清單（0 req，全查快取）")
 
     # ── 機率標籤 ─────────────────────────────────────────────
-    for c in top15:
+    for c in top_n:
         s = c["score"]
         if s >= 85:
             c["prob"] = f"高（{min(82,60+(s-85)*2+15)}%）"; c["prob_level"] = "high"
@@ -647,15 +620,15 @@ def main():
         "total_scanned":    len(scan_sids),
         "candidates_count": len(scored),
         "total_api_req":    req,
-        "stocks":           top15,
+        "stocks":           top_n,
     }
 
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
-    print(f"\n✅ 完成！資料:{actual_date}  掃:{len(scan_sids)}  存活:{len(survivors)}  候選:{len(scored)}  精選:{len(top15)}  API:{req}")
-    for s in top15:
+    print(f"\n✅ 完成！資料:{actual_date}  掃:{len(scan_sids)}  存活:{len(survivors)}  候選:{len(scored)}  精選:{len(top_n)}  API:{req}")
+    for s in top_n:
         wc = len(s.get("warrants",[]))
         print(f"  [{s['score']:3d}] {s['sid']} {s['name'][:8]:8s} {s['change_pct']:+.2f}%  {s['prob']}  權證:{wc}支")
 
