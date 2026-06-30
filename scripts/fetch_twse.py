@@ -34,7 +34,7 @@ from collections import Counter
 
 TZ_TW       = timezone(timedelta(hours=8))
 OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "../data/stocks.json")
-TOP_N       = 10
+TOP_N       = 15
 FM_URL      = "https://api.finmindtrade.com/api/v4/data"
 TOKEN       = os.environ.get("FINMIND_TOKEN", "")
 
@@ -155,7 +155,7 @@ def quick_filter(scan_sids, warrant_targets, quick_start, end_date):
       - 最新資料距 end_date > 5 天（停牌/下市）
       - 今日收跌（spread < 0）
       - 成交量嚴重不足
-      - 股價 <5 或 >5000
+      - 股價 <50 或 >3000（V16：低價股無認購權證，下限提高至50元）
     通常淘汰 60~70%，回傳 list[dict]
     """
     survivors = []
@@ -204,8 +204,10 @@ def quick_filter(scan_sids, warrant_targets, quick_start, end_date):
         volume = today_p["volume"]
         spread = today_p["spread"]
 
-        if close < 5 or close > 5000:                          continue
-        if volume < (100000 if market == "otc" else 300000):   continue
+        # V16：股價需 ≥50 元，低價股幾乎沒有認購權證
+        if close < 50 or close > 3000:                         continue
+        # 成交量門檻：股價高的股票成交量自然較低，但需有一定流動性
+        if volume < (50000 if market == "otc" else 100000):    continue
         if spread < 0:                                          continue  # 收跌淘汰
 
         survivors.append({
@@ -517,7 +519,7 @@ def main():
             inst_map.get(sid,{}), margin_map.get(sid,{})
         )
         score = min(100, score + 2)
-        if score < 35: continue
+        if score < 25: continue
         ma_c = [h["close"] for h in hist]
         scored.append({
             "sid":        sid,
@@ -537,18 +539,18 @@ def main():
         })
 
     scored.sort(key=lambda x: x["score"], reverse=True)
-    top10 = scored[:TOP_N]
+    top15 = scored[:TOP_N]
 
     # ── ⑥ Top10 查權證細節 ────────────────────────────────────
-    if top10 and not stop:
-        print(f"  ► ⑥ 權證細節（{len(top10)} 支）...")
-        for c in top10:
+    if top15 and not stop:
+        print(f"  ► ⑥ 權證細節（{len(top15)} 支）...")
+        for c in top15:
             c["warrants"] = fetch_warrant_detail(c["sid"], actual_date)
             req += 1; time.sleep(0.15)
         print(f"  → ⑥ 完成（req={req}）")
 
     # ── 機率標籤 ─────────────────────────────────────────────
-    for c in top10:
+    for c in top15:
         s = c["score"]
         if s >= 85:
             c["prob"] = f"高（{min(82,60+(s-85)*2+15)}%）"; c["prob_level"] = "high"
@@ -566,15 +568,15 @@ def main():
         "total_scanned":    len(scan_sids),
         "candidates_count": len(scored),
         "total_api_req":    req,
-        "stocks":           top10,
+        "stocks":           top15,
     }
 
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
-    print(f"\n✅ 完成！資料:{actual_date}  掃:{len(scan_sids)}  存活:{len(survivors)}  候選:{len(scored)}  精選:{len(top10)}  API:{req}")
-    for s in top10:
+    print(f"\n✅ 完成！資料:{actual_date}  掃:{len(scan_sids)}  存活:{len(survivors)}  候選:{len(scored)}  精選:{len(top15)}  API:{req}")
+    for s in top15:
         wc = len(s.get("warrants",[]))
         print(f"  [{s['score']:3d}] {s['sid']} {s['name'][:8]:8s} {s['change_pct']:+.2f}%  {s['prob']}  權證:{wc}支")
 
