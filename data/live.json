@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026/06/30 13:05:24",
+  "updated_at": "2026/06/30 13:44:59",
   "trade_date": "20260630",
-  "is_trading": true,
+  "is_trading": false,
   "prices": {
     "1736": {
       "price": "129.5",
@@ -93,7 +93,7 @@
     }
   },
   "fetch_errors": [
-    "盤中期間：FinMind 日K資料在 17:30 後更新，盤中顯示昨收為正常現象。下午收盤後資料將自動更新。"
+    "今日收盤資料尚未更新（FinMind 每日 17:30 更新），請稍後重新整理。"
   ],
   "stocks_meta": [
     {
