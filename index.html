@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>權證標的精選｜續漲機率分析 V16</title>
+<title>權證標的精選｜續漲機率分析 V17</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -381,7 +381,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
       <span class="screw bl"></span><span class="screw br"></span>
     </div>
   </div>
-  <div class="nameplate-version">V16</div>
+  <div class="nameplate-version">V17</div>
 </div>
 
 <!-- ══ HERO ══ -->
@@ -415,7 +415,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 <!-- ══ TABS ══ -->
 <div class="tabs">
   <div class="tab active" onclick="switchTab('list',this)">📋 精選清單</div>
-  <div class="tab" onclick="switchTab('live',this)">⚡ 盤中即時確認</div>
+  <div class="tab" onclick="switchTab('live',this)">📑 盤中參考卡</div>
 </div>
 
 <!-- ══ 清單 TAB ══ -->
@@ -429,17 +429,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
   <div class="cards" id="cards"></div>
 </div>
 
-<!-- ══ 即時 TAB ══ -->
+<!-- ══ 即時 TAB（V17：改為盤中參考卡，非即時報價） ══ -->
 <div id="live-panel">
   <div class="live-notice">
-    ℹ 資料由 <strong>GitHub Actions 每30分鐘</strong>（09:05、09:35、10:05...13:25）自動透過 FinMind API 抓取並寫入 <code>data/live.json</code>。
-    開盤後確認精選股是否延續強勢，<strong>「開高走高」綠燈才是最佳進場時機。</strong>
-    <br><small style="color:var(--text3)">⚠ 盤中卡片顯示昨收為正常現象（FinMind 日K 17:30 更新）；若超過 60 分鐘未更新，表示 Actions 可能異常</small>
+    ⚠ <strong>本頁不是即時報價</strong>，內容是昨日盤後數據（收盤價、漲幅、MA20、評分），整理成快速參考卡方便你開盤前複習精選名單。
+    <strong>開盤後請改用你的證券 APP 查看即時走勢</strong>，確認是否「開高走高」延續強勢再決定進場。
+    <br><small style="color:var(--text3)">這個工具的定位是盤後選股分析，不提供盤中即時資料（FinMind 免費版盤中無資料，付費版才有，目前未串接）</small>
   </div>
   <div class="err-banner" id="err-banner"></div>
   <div class="live-header">
-    <h2>盤中即時報價</h2>
-    <span class="live-time">最後更新：<span id="live-update">--</span></span>
+    <h2>盤中參考卡</h2>
+    <span class="live-time">資料整理時間：<span id="live-update">--</span>（昨收，非即時）</span>
   </div>
   <div class="live-grid" id="live-grid">
     <div class="loading" style="grid-column:1/-1"><div class="spinner"></div>載入中...</div>
@@ -455,7 +455,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
   <div class="footer-inner">
     <div class="footer-brand">程式設計 Elvis Liu｜版權所有</div>
     <div class="footer-meta">
-      <span>MOUP V16</span><span class="footer-dot">·</span>
+      <span>MOUP V17</span><span class="footer-dot">·</span>
       <span>Taiwan Warrant Intelligence System</span><span class="footer-dot">·</span>
       <span>最後更新：<span id="footer-update-time">--</span></span>
     </div>
@@ -740,7 +740,7 @@ function genHint(s){
 function toggleCard(el){ el.classList.toggle('open'); }
 
 // ════════════════════════════════════════════
-//  LIVE PANEL
+//  盤中參考卡（V17：靜態昨收資料，非即時輪詢）
 // ════════════════════════════════════════════
 function startLive(){
   if(liveRunning) return;
@@ -760,11 +760,10 @@ function startLive(){
   startLive._r=0;
   liveRunning=true;
   fetchLive();
-  liveTimer=setInterval(fetchLive,60000);
+  // V17：參考卡是靜態昨收資料，不需要每分鐘輪詢，拿掉 setInterval
 }
 function stopLive(){
   liveRunning=false;
-  if(liveTimer){clearInterval(liveTimer);liveTimer=null;}
 }
 
 async function fetchLive(){
@@ -775,93 +774,53 @@ async function fetchLive(){
     const r=await fetch(`data/live.json?t=${Date.now()}`,{cache:'no-store'});
     if(!r.ok) throw new Error(`HTTP ${r.status}`);
     const ld=await r.json();
-    const prices=ld.prices||{}, updatedAt=ld.updated_at||'--', isTrading=ld.is_trading||false;
+    const refCards=ld.ref_cards||[], updatedAt=ld.updated_at||'--';
     const errors=ld.fetch_errors||[];
 
-    if(errors.length>0){ errBanner.textContent='⚠ 抓取警告：'+errors.join('；'); errBanner.classList.add('show'); }
+    if(errors.length>0){ errBanner.textContent='⚠ 提示：'+errors.join('；'); errBanner.classList.add('show'); }
     else errBanner.classList.remove('show');
 
-    let fresh=updatedAt;
-    try{
-      const norm=updatedAt.replace(/\//g,'-').replace(' ','T');
-      const lt=new Date((/T\d{2}:\d{2}$/.test(norm)?norm+':00':norm)+'+08:00');
-      const dm=(Date.now()-lt.getTime())/60000;
-      if(!isNaN(dm)){
-        if(dm>60) fresh=`${updatedAt} <span class="freshness-stale">⚠ 逾${Math.floor(dm)}分鐘未更新</span>`;
-        else if(dm>30) fresh=`${updatedAt} <span class="freshness-warn">（${Math.floor(dm)}分鐘前）</span>`;
-        else fresh=`${updatedAt} <span class="freshness-ok">✓</span>`;
-      }
-    }catch(e){}
-    document.getElementById('live-update').innerHTML=fresh;
+    document.getElementById('live-update').textContent = updatedAt;
 
-    const map={};
-    let hasAny=false;
-    Object.entries(prices).forEach(([sid,p])=>{
-      const raw=p.price??p.z??null;
-      const price=(raw&&raw!=='-'&&raw!=='--')?raw:null;
-      map[sid]=price?{z:raw,y:p.prev??p.y??'-',o:p.open??p.o??'-',h:p.high??p.h??'-',l:p.low??p.l??'-',v:p.vol??p.v??'0'}:null;
-      if(price) hasAny=true;
-    });
-
-    grid.innerHTML=allStocks.map(s=>liveCardHTML(s,map[s.sid]||null,isTrading)).join('');
+    if(refCards.length>0){
+      const map={};
+      refCards.forEach(c=>map[c.sid]=c);
+      grid.innerHTML=allStocks.map(s=>liveCardHTML(s,map[s.sid]||null)).join('');
+    } else {
+      grid.innerHTML=allStocks.map(s=>liveCardHTML(s,null)).join('');
+    }
   }catch(e){
-    document.getElementById('live-update').innerHTML=
-      new Date().toLocaleTimeString('zh-TW',{hour12:false,timeZone:'Asia/Taipei'})+
-      ' <span class="freshness-stale">(讀取失敗)</span>';
+    document.getElementById('live-update').textContent='讀取失敗';
     errBanner.textContent='⚠ live.json 讀取失敗：'+e.message;
     errBanner.classList.add('show');
-    if(allStocks.length>0) grid.innerHTML=allStocks.map(s=>liveCardHTML(s,null,false)).join('');
+    if(allStocks.length>0) grid.innerHTML=allStocks.map(s=>liveCardHTML(s,null)).join('');
   }
 }
 
-function liveCardHTML(s,live,isTrading){
+// V17：參考卡只顯示盤後已確定的數據（昨收/漲幅/MA20/評分），
+// 不再計算「開高走高」之類需要即時報價才能判斷的訊號。
+function liveCardHTML(s,card){
   const color=probColor(s.prob_level);
-  const safeNum=v=>{ const n=parseFloat(String(v||'').replace(/,/g,'')); return isNaN(n)||n===0?NaN:n; };
-  const price=live?safeNum(live.z):NaN;
-  const prevCls=live?(safeNum(live.y)||s.close):s.close;
-
-  if(!live||isNaN(price)){
-    return `
-    <div class="live-card">
-      <div class="lc-head">
-        <div><div class="lc-name">${s.name}</div><div class="lc-sid">${s.sid} · 昨收 ${s.close}</div></div>
-        <div class="lc-price-block"><div class="lc-price" style="color:var(--text3);font-size:18px">--</div></div>
-      </div>
-      <div class="open-signal neutral">${isTrading?'⏳ 尚無成交 / 集合競價中':'⏸ 非交易時段 / 等待更新'}</div>
-    </div>`;
-  }
-
-  const open=safeNum(live.o)||price, high=safeNum(live.h)||price, low=safeNum(live.l)||price;
-  const chg=price-prevCls, chgPct=prevCls?(chg/prevCls*100).toFixed(2):'0.00';
-  const up=chg>=0;
-  const rawVol=live.v?parseInt(String(live.v).replace(/,/g,'')):0;
-  const vol=rawVol>0?rawVol.toLocaleString()+'張':'--';
-
-  let signal,sigClass;
-  if(price>open&&price>prevCls*1.005&&up){ signal='✅ 開高走高 ／ 續漲確認'; sigClass='bullish'; }
-  else if(price>=prevCls*1.003){ signal='📈 溫和上漲 ／ 觀察量能'; sigClass='bullish'; }
-  else if(price<prevCls*0.997){ signal='❌ 開低走弱 ／ 暫緩進場'; sigClass='bearish'; }
-  else { signal='➡ 盤整中 ／ 等待方向'; sigClass='neutral'; }
+  const close = card?.close ?? s.close;
+  const chgPct = card?.change_pct ?? s.change_pct ?? 0;
+  const ma20 = card?.ma20 ?? s.ma20;
+  const up = chgPct >= 0;
+  const pctStr = (up?'+':'')+chgPct+'%';
 
   return `
-  <div class="live-card ${up?'up':'down'}">
+  <div class="live-card">
     <div class="lc-head">
-      <div>
-        <div class="lc-name">${s.name}</div>
-        <div class="lc-sid">${s.sid} · 昨收 ${prevCls.toFixed(1)}</div>
-      </div>
+      <div><div class="lc-name">${s.name}</div><div class="lc-sid">${s.sid}</div></div>
       <div class="lc-price-block">
-        <div class="lc-price ${up?'up':'down'}">${price.toFixed(1)}</div>
-        <div class="lc-chg ${up?'up':'down'}">${up?'+':''}${chgPct}%</div>
+        <div class="lc-price" style="color:${up?'var(--danger)':'var(--ok)'}">${close}</div>
+        <div class="lc-chg" style="color:${up?'var(--danger)':'var(--ok)'}">${pctStr}</div>
       </div>
     </div>
     <div class="lc-grid">
-      <div class="lc-cell"><span class="lci-lbl">開盤</span><span class="lci-val">${open.toFixed(1)}</span></div>
-      <div class="lc-cell"><span class="lci-lbl">最高</span><span class="lci-val">${high.toFixed(1)}</span></div>
-      <div class="lc-cell"><span class="lci-lbl">最低</span><span class="lci-val">${low.toFixed(1)}</span></div>
-      <div class="lc-cell"><span class="lci-lbl">成交量</span><span class="lci-val">${vol}</span></div>
+      <div class="lc-cell"><span class="lci-lbl">MA20</span><span class="lci-val">${ma20 ?? '--'}</span></div>
+      <div class="lc-cell"><span class="lci-lbl">評分</span><span class="lci-val">${s.score}</span></div>
     </div>
-    <div class="open-signal ${sigClass}">${signal}</div>
+    <div class="open-signal neutral">📱 請至證券 APP 查看今日即時走勢</div>
   </div>`;
 }
 
