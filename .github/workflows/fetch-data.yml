@@ -1,4 +1,4 @@
-name: 每日盤後抓資料 V17
+name: 每日盤後抓資料 V18
 
 on:
   schedule:
