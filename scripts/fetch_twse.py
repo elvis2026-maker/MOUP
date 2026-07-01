@@ -1,54 +1,36 @@
 #!/usr/bin/env python3
 """
-台股權證標的篩選腳本 V19
+台股權證標的篩選腳本 V20
 ==============================
-V19 修正三個「dataset/欄位名稱錯誤」造成的靜默失敗（這才是真正的根因）：
+V20 核心改動：只掃電子股
 
-  Bug①（最關鍵）：「TaiwanStockWarrant」這個 dataset 根本不存在於 FinMind！
-    V13~V17 一路沿用的欄位（PutCall / EffectiveLeverage / Delta / BidPrice /
-    AskPrice / TradingVolume / Issuer）對應的是一個查無此名的 dataset。
-    FinMind 對不存在的 dataset 名稱不會報錯，而是直接回空陣列 →
-    程式「看起來」執行成功，但 WARRANT_DETAIL_CACHE 永遠是空的，
-    所以精選清單裡任何股票的「認購權證推薦」永遠顯示 0 支
-    （即使像國巨 2327 這種有十幾檔權證的熱門標的也一樣）。
+  動機：
+    V19 依股票代碼數字排序取前 420 支，1000~2000 號傳產股先掃，
+    電子股（代碼多在 2300~6700）部分根本排不進前 420，造成遺漏。
+    使用者只操作電子股，掃傳產股完全是浪費 API 請求數。
 
-    FinMind 真正提供、且免費的權證資料集是 TaiwanStockInfoWithWarrantSummary：
-      欄位：stock_id(權證代碼), date, close, target_stock_id(標的股票代碼),
-            target_close, type(權證類型), fulfillment_method(履約方式),
-            end_date(最後交易日), fulfillment_start_date, fulfillment_end_date,
-            exercise_ratio(行使比例), fulfillment_price(履約價格)
-    這份資料「沒有」槓桿倍數、Delta、買賣報價、即時成交量這些欄位——
-    這些屬於權證即時交易盤口資訊，FinMind 並未提供免費 API（即時報價
-    需要券商 API 或付費資料源）。V19 因此調整功能定位：
-      - 可靠提供：「這支股票目前有哪些認購權證、權證代碼、履約價、到期日」
-      - 無法提供：槓桿倍數、Delta、買賣報價（這些請至證券 APP 查詢）
+  V20 改法：
+    ① fetch_warrant_targets() 取得有認購權證的全部標的（同 V19）
+    ② 新增 fetch_electronics_sids()：
+       查 FinMind TaiwanStockInfo，取 industry_category 屬於電子 8 大類的股票代碼集合
+    ③ build_scan_list() 改為：warrant_targets ∩ 電子股 → 全掃，無人工上限
+       預估有認購權證且屬電子股約 200~280 支，API 請求數反而更少
 
-  Bug②：三大法人 dataset 名稱錯誤
-    舊：TaiwanStockInstitutionalInvestors      ← 查無此 dataset，永遠回空
-    新：TaiwanStockInstitutionalInvestorsBuySell ← FinMind 官方正確名稱
+  電子 8 大產業類別（TWSE 官方分類）：
+    半導體業、電腦及週邊設備業、光電業、通信網路業、
+    電子零組件業、電子通路業、資訊服務業、其他電子業
 
-  Bug③：融資資料欄位名稱錯誤
-    舊：MarginPurchaseRemainAmount  ← 不存在，永遠回 1（fallback 預設值）
-    新：MarginPurchaseTodayBalance  ← 官方正確欄位（融資今日餘額）
-
-  這三個 bug 都是「打錯名字」而非邏輯錯誤，因為 FinMind 對未知 dataset/
-  欄位「靜默回空」而非報錯，所以過去 N 個版本一路執行「成功」，卻拿不到
-  真正的籌碼和權證資料 —— 這就是反覆出現「0支」「籌碼空白」的真正原因。
-
-  沿用 V13 的兩階段掃描策略（避免母體只掃 200 支的問題）：
-    ① 第一階段（快速粗篩）：只取「近 4 天」資料，快速淘汰收跌/無量股
-       → 粗篩上限：有 TOKEN → 420 支；無 TOKEN → 220 支
-    ② 第二階段（精細評分）：存活候選取「近 35 天」歷史資料
-       → 計算 MA / 法人 / 融資完整評分，選出 TopN
+  沿用 V19 的兩階段掃描策略：
+    ① 第一階段（快速粗篩）：只取近 4 天資料，快速淘汰收跌/無量股
+    ② 第二階段（精細評分）：存活候選取近 35 天歷史，計算完整評分
 
   API 預算（有 TOKEN 600 req/hr）：
-    ① TaiwanStockInfoWithWarrant            1 req
-    ② TaiwanStockInfoWithWarrantSummary（全量+快取） 1 req
-    ③ 粗篩 420 支                            420 req
-    ④ 精篩存活 ~120 支                       ~120 req
-    ⑤ 法人 + 融資 Top30 × 2                  60 req
-    ⑥ 權證細節（全部查快取，0 req）           0 req
-    合計：~602 req → 跨小時執行，第二小時剩餘額度足夠
+    ① TaiwanStockInfoWithWarrant   1 req
+    ② TaiwanStockInfo（電子股篩選）1 req
+    ③ 粗篩 ~250 支電子股           ~250 req
+    ④ 精篩存活 ~80 支              ~80 req
+    ⑤ 法人 + 融資 Top15 × 2        30 req
+    合計：~362 req，完全在 600/hr 上限內
 """
 
 import requests, json, time, os, statistics
@@ -61,9 +43,19 @@ TOP_N       = 15
 FM_URL      = "https://api.finmindtrade.com/api/v4/data"
 TOKEN       = os.environ.get("FINMIND_TOKEN", "")
 
-# 掃描上限（依 TOKEN 決定）
-SCAN_LIMIT_TOKEN    = 420
-SCAN_LIMIT_NO_TOKEN = 220
+# V20：電子 8 大產業類別（TWSE 官方 industry_category 值）
+ELECTRONICS_CATEGORIES = {
+    "半導體業",
+    "電腦及週邊設備業",
+    "光電業",
+    "通信網路業",
+    "電子零組件業",
+    "電子通路業",
+    "資訊服務業",
+    "其他電子業",
+}
+
+EXCLUDE_SIDS = {"9999", "0000"}
 
 def tw_now():
     return datetime.now(TZ_TW)
@@ -128,44 +120,48 @@ def fetch_warrant_targets():
 
 EXCLUDE_SIDS = {"9999", "0000"}
 
-# ── Step②：權證明細 ──────────────────────────────────────────
-# V19 再次修正：上一版改用的 TaiwanStockInfoWithWarrantSummary 經查證
-# 官方文件後確認是 **Sponsor tier（付費）**！免費 token 一樣拿不到資料，
-# 所以「0支」的症狀沒有真正解決，只是換了一個一樣會回空的 dataset。
-#
-# 誠實的結論：FinMind 免費版完全沒有提供「個別權證代碼/履約價/到期日/
-# 行使比例」這類完整權證明細表的 API（這類明細表都在 Backer/Sponsor）。
-# 免費版唯一能查的是 TaiwanStockInfoWithWarrant（已在 fetch_warrant_targets()
-# 抓過），這份資料只能告訴你「這支股票名下有沒有發行過權證」，
-# 不含任何到期日/履約價等細節。
-#
-# V19 因此調整功能定位為「誠實的二元標記」：
-#   - 可靠提供：「這支股票名下有認購權證」（是/否）
-#   - 無法提供：權證代碼、履約價、到期日、行使比例、槓桿、Delta、報價
-#     （這些細節全部需要 Backer/Sponsor 付費方案，或自行查券商 APP）
-# 不再產生看似精確但其實是空中樓閣的假權證清單。
-WARRANT_DETAIL_CACHE = {}   # 保留變數名稱相容，但 V19 起改存 bool 而非明細
+# ── V20新增：電子股代碼集合（1 req）────────────────────────────
+def fetch_electronics_sids():
+    """
+    查 FinMind TaiwanStockInfo，取 industry_category 屬電子 8 大類的代碼。
+    回傳 set[str]
+    """
+    data, _ = fm1("TaiwanStockInfo")
+    elec_sids = set()
+    cat_count = {}
+    for row in data:
+        sid = str(row.get("stock_id", "")).strip()
+        if not (sid.isdigit() and len(sid) == 4): continue
+        cat = str(row.get("industry_category", "")).strip()
+        t   = str(row.get("type", "")).strip()
+        if t not in ("twse", "tpex"): continue
+        cat_count[cat] = cat_count.get(cat, 0) + 1
+        if cat in ELECTRONICS_CATEGORIES:
+            elec_sids.add(sid)
+    print(f"  → 電子股（上市+上櫃）：{len(elec_sids)} 支")
+    for cat in ELECTRONICS_CATEGORIES:
+        n = cat_count.get(cat, 0)
+        if n > 0:
+            print(f"     {cat}：{n} 支")
+    return elec_sids
+
+WARRANT_DETAIL_CACHE = {}
 
 def fetch_active_warrant_targets():
-    """
-    V19：不再額外打 API。warrant_targets（已在 fetch_warrant_targets() 取得）
-    本身就是「有發行權證的股票清單」，這裡只是直接複用，不重複查詢。
-    回傳：(原始順序的標的清單, 與 warrant_targets 相同的標的集合)
-    """
-    return [], set()  # 不再需要額外排序資訊，由呼叫端直接用 warrant_targets
+    return [], set()
 
-# ── 建立全量掃描清單────────────────────────────────────────────
-def build_scan_list(warrant_targets, active_sids_sorted=None, active_set=None):
+# ── V20：建立掃描清單（電子股 ∩ 有認購權證）────────────────────
+def build_scan_list(warrant_targets, elec_sids):
     """
-    V19：active_sids_sorted/active_set 不再使用（見上方說明），
-    直接依股票代碼排序，取前 N 支掃描。
-    上限：有 TOKEN → 420 支；無 TOKEN → 220 支
+    V20：warrant_targets（有認購權證）與 elec_sids（電子股）取交集，全掃，不設人工上限。
+    預估約 200~280 支，API 請求數比 V19 的 420 支更省。
     """
-    limit = SCAN_LIMIT_TOKEN if TOKEN else SCAN_LIMIT_NO_TOKEN
-    all_sids = sorted([s for s in warrant_targets if s not in EXCLUDE_SIDS])
-    print(f"  → 全量有權證標的：{len(warrant_targets)} 支")
-    print(f"     掃描上限：{limit} 支（{'有 TOKEN 600req/hr' if TOKEN else '匿名 300req/hr'}）")
-    return all_sids[:limit]
+    all_sids = sorted([
+        s for s in warrant_targets
+        if s not in EXCLUDE_SIDS and s in elec_sids
+    ])
+    print(f"  → 電子股 ∩ 有認購權證：{len(all_sids)} 支（全部掃描，無上限）")
+    return all_sids
 
 # ── 第一階段：快速粗篩（只取近 4 天，速度快）──────────────────────
 def quick_filter(scan_sids, warrant_targets, quick_start, end_date):
@@ -417,8 +413,16 @@ def main():
     print(f"  → {len(warrant_targets)} 支")
     time.sleep(0.3)
 
-    # ── 建立掃描清單（V19：直接用 warrant_targets，不再額外查詢）──
-    scan_sids = build_scan_list(warrant_targets)
+    # ── V20新增：取電子股代碼集合（1 req）──────────────────────
+    print("  ► V20：取電子股代碼（TaiwanStockInfo）...")
+    elec_sids = fetch_electronics_sids(); req += 1
+    if not elec_sids:
+        print("  ! 電子股資料取得失敗，fallback 全量掃描")
+        elec_sids = set(warrant_targets.keys())
+    time.sleep(0.3)
+
+    # ── 建立掃描清單（V20：電子股 ∩ 有認購權證，全掃無上限）──
+    scan_sids = build_scan_list(warrant_targets, elec_sids)
 
     # ── ② 第一階段：快速粗篩（近 4 天資料）──────────────────────
     quick_start = (datetime.strptime(end_date, "%Y-%m-%d") - timedelta(days=4)).strftime("%Y-%m-%d")
