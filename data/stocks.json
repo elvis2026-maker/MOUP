@@ -1,9 +1,7 @@
 {
-  "updated_at": "2026/06/30 20:28",
-  "trade_date": "20260630",
-  "data_date": "2026-06-30",
+  "trade_date": "00000000",
+  "updated_at": "尚未執行，請手動觸發 GitHub Actions「每日盤後抓資料」",
   "total_scanned": 0,
   "candidates_count": 0,
-  "total_api_req": 60,
   "stocks": []
 }

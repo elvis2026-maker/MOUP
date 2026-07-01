@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-盤中參考清單產生腳本 V18
+盤中參考清單產生腳本 V19
 ==============================
-V18 重大簡化：放棄「盤中即時報價」這個功能定位。
+V19 重大簡化：放棄「盤中即時報價」這個功能定位。
 
   為什麼：
     FinMind 免費 tier 完全沒有可用的盤中資料源：
@@ -14,7 +14,7 @@ V18 重大簡化：放棄「盤中即時報價」這個功能定位。
     但本質上都只能顯示昨收價，卻包裝成「即時報價」，容易誤導使用者
     誤判進場時機。
 
-  V18 新定位：
+  V19 新定位：
     這支腳本不再嘗試呼叫任何「今日報價」API。
     它只做一件事：把 stocks.json 的精選清單整理成「盤中參考卡」，
     內容只有「昨收、漲幅、MA20、評分」這些盤後就已經確定的數據，
@@ -47,7 +47,7 @@ def main():
     now_str = now.strftime("%Y/%m/%d %H:%M:%S")
     trading = is_trading_now()
 
-    print(f"[{now_str} 台灣時間] fetch_live V18（盤中參考卡，非即時）")
+    print(f"[{now_str} 台灣時間] fetch_live V19（盤中參考卡，非即時）")
 
     if not os.path.exists(STOCKS_PATH):
         _write(now_str, now.strftime("%Y%m%d"), trading, [], ["stocks.json 不存在，請先執行每日盤後抓資料"])
@@ -63,7 +63,7 @@ def main():
                ["stocks.json 無候選股，請先執行每日盤後抓資料 workflow"])
         return
 
-    # V18：直接整理參考卡，不打任何「今日報價」API
+    # V19：直接整理參考卡，不打任何「今日報價」API
     ref_cards = []
     for s in stocks:
         ref_cards.append({
@@ -88,7 +88,7 @@ def _write(now_str, trade_date, trading, ref_cards, errors):
         "updated_at":  now_str,
         "trade_date":  trade_date,
         "is_trading":  trading,
-        "is_live_data": False,   # V18：明確標示這不是即時資料，前端依此決定文案
+        "is_live_data": False,   # V19：明確標示這不是即時資料，前端依此決定文案
         "ref_cards":   ref_cards,
         "fetch_errors": errors,
     }
