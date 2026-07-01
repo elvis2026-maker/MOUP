@@ -1,15 +1,33 @@
-name: 每日盤後抓資料 V18
+name: 每日盤後抓資料 V22
+
+# V22 排程說明：
+#   FinMind 股價日K 在台灣時間 17:30 更新。
+#   每小時跑一次（18:00~23:00），確保資料拿到。
+#   V22 每次約用 250~400 req，在 600/hr 上限內安全執行。
+#   週一至週五才跑，週末不跑。
+#
+#   台灣時間 → UTC（GitHub cron 用 UTC）：
+#     台灣 18:00 = UTC 10:00
+#     台灣 19:00 = UTC 11:00
+#     台灣 20:00 = UTC 12:00
+#     台灣 21:00 = UTC 13:00
+#     台灣 22:00 = UTC 14:00
+#     台灣 23:00 = UTC 15:00
 
 on:
   schedule:
-    - cron: "0 10 * * 1-5"   # 台灣 18:00（FinMind 17:30 更新後，多等 30 分鐘確保入庫）← 主要
-    - cron: "30 10 * * 1-5"  # 台灣 18:30（備份，主要失敗時的重試）
+    - cron: "0 10 * * 1-5"   # 台灣 18:00（主要，FinMind 17:30 更新後）
+    - cron: "0 11 * * 1-5"   # 台灣 19:00
+    - cron: "0 12 * * 1-5"   # 台灣 20:00
+    - cron: "0 13 * * 1-5"   # 台灣 21:00
+    - cron: "0 14 * * 1-5"   # 台灣 22:00
+    - cron: "0 15 * * 1-5"   # 台灣 23:00
   workflow_dispatch:
 
 permissions:
   contents: write
 
-# ✅ 同一時間只允許一個 fetch-data 執行，避免並發衝突
+# 同一時間只允許一個執行，避免並發衝突
 concurrency:
   group: data-update
   cancel-in-progress: false
@@ -17,7 +35,6 @@ concurrency:
 jobs:
   fetch-and-update:
     runs-on: ubuntu-latest
-    # V13：全量掃描最多 600 支，預計耗時 3~5 分鐘，設定 timeout 保護
     timeout-minutes: 15
     steps:
       - name: Checkout repo
