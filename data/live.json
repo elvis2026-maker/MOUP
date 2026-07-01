@@ -1,10 +1,174 @@
 {
-  "updated_at": "2026/07/01 12:03:51",
+  "updated_at": "2026/07/01 15:08:37",
   "trade_date": "20260701",
-  "is_trading": true,
+  "is_trading": false,
   "is_live_data": false,
-  "ref_cards": [],
-  "fetch_errors": [
-    "stocks.json 無候選股，請先執行每日盤後抓資料 workflow"
-  ]
+  "ref_cards": [
+    {
+      "sid": "1815",
+      "name": "富喬",
+      "market": "otc",
+      "close": 111.0,
+      "change_pct": 9.9,
+      "ma20": 100.28,
+      "score": 82,
+      "prob": "中高（74%）",
+      "prob_level": "medium-high"
+    },
+    {
+      "sid": "2466",
+      "name": "冠西電",
+      "market": "tse",
+      "close": 64.9,
+      "change_pct": 10.0,
+      "ma20": 49.74,
+      "score": 77,
+      "prob": "中高（69%）",
+      "prob_level": "medium-high"
+    },
+    {
+      "sid": "3594",
+      "name": "磐儀",
+      "market": "otc",
+      "close": 51.2,
+      "change_pct": 9.87,
+      "ma20": 47.54,
+      "score": 77,
+      "prob": "中高（69%）",
+      "prob_level": "medium-high"
+    },
+    {
+      "sid": "2472",
+      "name": "立隆電",
+      "market": "tse",
+      "close": 453.5,
+      "change_pct": 9.94,
+      "ma20": 370.85,
+      "score": 72,
+      "prob": "中高（64%）",
+      "prob_level": "medium-high"
+    },
+    {
+      "sid": "2493",
+      "name": "揚博",
+      "market": "tse",
+      "close": 292.5,
+      "change_pct": 9.96,
+      "ma20": 217.53,
+      "score": 62,
+      "prob": "中（55%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "3555",
+      "name": "博士旺",
+      "market": "otc",
+      "close": 201.5,
+      "change_pct": 9.81,
+      "ma20": 201.47,
+      "score": 62,
+      "prob": "中（55%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "2327",
+      "name": "國巨*",
+      "market": "tse",
+      "close": 1140.0,
+      "change_pct": 9.62,
+      "ma20": 916.5,
+      "score": 62,
+      "prob": "中（55%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "2449",
+      "name": "京元電子",
+      "market": "tse",
+      "close": 337.5,
+      "change_pct": 9.4,
+      "ma20": 304.25,
+      "score": 62,
+      "prob": "中（55%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "3189",
+      "name": "景碩",
+      "market": "tse",
+      "close": 891.0,
+      "change_pct": 10.0,
+      "ma20": 718.7,
+      "score": 57,
+      "prob": "中（50%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "3017",
+      "name": "奇鋐",
+      "market": "tse",
+      "close": 2525.0,
+      "change_pct": 9.78,
+      "ma20": 2492.25,
+      "score": 57,
+      "prob": "中（50%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "2492",
+      "name": "華新科",
+      "market": "tse",
+      "close": 565.0,
+      "change_pct": 9.92,
+      "ma20": 483.02,
+      "score": 52,
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "3037",
+      "name": "欣興",
+      "market": "tse",
+      "close": 1070.0,
+      "change_pct": 9.63,
+      "ma20": 961.35,
+      "score": 52,
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "3149",
+      "name": "正達",
+      "market": "tse",
+      "close": 101.5,
+      "change_pct": 9.49,
+      "ma20": 90.59,
+      "score": 52,
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "2467",
+      "name": "志聖",
+      "market": "tse",
+      "close": 620.0,
+      "change_pct": 8.96,
+      "ma20": 582.9,
+      "score": 52,
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "2478",
+      "name": "大毅",
+      "market": "tse",
+      "close": 225.5,
+      "change_pct": 10.0,
+      "ma20": 188.53,
+      "score": 48,
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    }
+  ],
+  "fetch_errors": []
 }
