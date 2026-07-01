@@ -237,12 +237,30 @@ def fetch_active_warrant_targets(elec_sids, today_dt):
     # V27：移除「方法二」的 30 支批次查詢
     # 原因：TaiwanStockWarrant 個股查詢在境外 IP 也是全部 422（log 可見），
     #       白白消耗 30 req，不如直接進 fallback，保留配額給粗篩和精篩用
-    print("  ! TaiwanStockWarrantDetail 無資料，直接 fallback 用限量電子股（max 400）")
-    fallback = sorted(
+    # V28：加入「日期輪替」
+    # 原因：境外 IP（GitHub Actions）長期抓不到 TaiwanStockWarrantDetail，
+    #       每次都會走到這個 fallback。若固定取 fallback[:400]，
+    #       代號較大（較後面）的電子股永遠不會被掃到。
+    #       改成依日期輪替起點，讓所有電子股平均每隔幾天都能被掃過一輪。
+    print("  ! TaiwanStockWarrantDetail 無資料，直接 fallback 用限量電子股（輪替 max 400）")
+    fallback_all = sorted(
         [s for s in elec_sids if s not in EXCLUDE_SIDS],
-        key=lambda s: s   # 按代號排序，確保結果穩定
+        key=lambda s: s   # 清單本身仍按代號排序，只用輪替 offset 移動起點
     )
-    return fallback[:400], set(fallback[:400])
+    total = len(fallback_all)
+    limit = 400
+    if total <= limit:
+        fallback = fallback_all
+        print(f"     電子股僅 {total} 支（≤{limit}），全部掃描，不需輪替")
+    else:
+        cycle_days = -(-total // limit)          # ceil，幾天輪完一圈
+        day_idx    = today_dt.toordinal() % cycle_days
+        start      = day_idx * limit
+        # 用「清單接自己一次」處理跨尾端接回頭的情況，取 limit 支
+        fallback = (fallback_all + fallback_all)[start:start + limit]
+        print(f"     電子股共 {total} 支，每 {cycle_days} 天輪一圈，"
+              f"今天第 {day_idx + 1}/{cycle_days} 輪（代號索引 {start}~{min(start + limit, total) - 1}）")
+    return fallback[:limit], set(fallback[:limit])
 
 # ── 第一階段：快速粗篩 ──────────────────────────────────────
 def quick_filter(scan_sids, stock_meta, quick_start, end_date):
