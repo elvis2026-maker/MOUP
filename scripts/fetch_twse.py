@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-台股權證標的篩選腳本 V20
+台股權證標的篩選腳本 V21
 ==============================
 V20 核心改動：只掃電子股
 
@@ -402,9 +402,9 @@ def main():
         end_date = today
         print(f"  ► 盤後模式：使用今日收盤資料（end_date={end_date}）")
 
-    print(f"[{now.strftime('%H:%M:%S')} 台灣時間] fetch_twse V19 開始 {today}")
+    print(f"[{now.strftime('%H:%M:%S')} 台灣時間] fetch_twse V20 開始 {today}")
     print(f"  FinMind token: {'已設定（600req/hr）' if TOKEN else '未設定（匿名300req/hr）'}")
-    print(f"  掃描策略：兩階段（粗篩 {SCAN_LIMIT_TOKEN if TOKEN else SCAN_LIMIT_NO_TOKEN} 支 → 精篩存活）")
+    print(f"  掃描策略：V20 兩階段（電子股 ∩ 有認購權證 全掃，無人工上限）")
 
     # ── ① 有認購權證的全部標的（1 req，免費）─────────────────────
     print("  ► ① 取有認購權證標的（全量，免費 dataset）...")
