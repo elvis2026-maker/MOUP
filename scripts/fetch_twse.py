@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """
-台股權證標的篩選腳本 V22
+台股權證標的篩選腳本 V23
 ==============================
-V22 解決 V21 的根本問題：API 超限（402），導致第二階段 0 支、輸出空結果。
+V23 修正 V22 的三個問題：
+  1. TaiwanStockWarrant 全量查詢 422 → fallback 977 支 → 粗篩 402 超限
+  2. 402 發生時直接放棄已有結果 → 改為繼續精篩已存活標的
+  3. 粗篩無硬性上限 → 加 SCAN_HARD_LIMIT=450 截斷保護
 
   V21 的問題：
     電子股 ∩ 有認購權證 = 974 支，第一階段粗篩每支打 1 req，
     974 req 就超過 FinMind 免費帳號 600/hr 的上限，
     第二階段根本沒機會跑，每天都是空結果。
 
-  V22 解法：三階段架構，大幅減少 API 請求數
+  V23 解法：三階段架構，大幅減少 API 請求數
     ① TaiwanStockInfoWithWarrant  → 電子股 meta（名稱/市場）  1 req
     ② TaiwanStockWarrant 近15天   → 真正有活躍認購交易的電子標的  1 req
        （這一步直接把候選池從 974 縮減到約 150~250 支，
@@ -132,66 +135,91 @@ WARRANT_DETAIL_CACHE = {}  # sid -> {w_code: {...}}
 
 def fetch_active_warrant_targets(elec_sids, today_dt):
     """
-    V22 核心：一次 1 req 拿近15天全市場認購權證成交資料，
-    過濾出「電子股 ∩ 近期有認購權證成交」的標的集合，
-    同時把權證明細快取起來，最後直接查表（不需再打 API）。
+    V23 修正 V22 的根本問題：
+      FinMind TaiwanStockWarrant 不支援全量查詢（不帶 stock_id），
+      會回傳 422 → fallback 到 977 支 → 粗篩超過 600 req → 402 超限。
 
-    這個函式把候選池從 974 支壓縮到約 150~250 支，
-    節省掉 700+ 次 API 請求，避免 402 超限。
+    V23 解法：
+      ① 改查 TaiwanStockWarrantDetail（支援全量，1 req）取得認購標的清單
+      ② 若仍失敗，對熱門電子股批次查詢（30 支，30 req）取交集
+      ③ 最終 fallback：限量 400 支（硬性保護）
     """
-    start = date_back(15)
     end   = today_dt.strftime("%Y-%m-%d")
-    data, hit = fm1("TaiwanStockWarrant", start_date=start, end_date=end)
-    if hit or not data:
-        print("  ! TaiwanStockWarrant 無資料，fallback 用全量電子股")
-        return sorted(elec_sids), elec_sids
+    start = date_back(15)
 
-    vol_map    = {}
-    active_set = set()
+    def build_cache_and_set(data_rows, elec_sids):
+        vol_map    = {}
+        active_set = set()
+        for row in data_rows:
+            call_put = str(row.get("PutCall",""))
+            if "C" not in call_put and "認購" not in call_put: continue
+            sid = str(row.get("UnderlyingSymbol", row.get("underlying_stock",""))).strip()
+            if not (sid.isdigit() and len(sid) == 4): continue
+            if sid not in elec_sids: continue
+            vol = si(row.get("TradingVolume", 0))
+            vol_map[sid] = vol_map.get(sid, 0) + vol
+            active_set.add(sid)
+            try:
+                w_code     = str(row.get("stock_id","")).strip()
+                expire_str = str(row.get("ExpirationDate","")).strip()
+                leverage   = sf(row.get("EffectiveLeverage", 0))
+                delta      = sf(row.get("Delta", 0))
+                row_date   = str(row.get("date","")).strip()
+                if not w_code or not expire_str: continue
+                expire_dt  = datetime.strptime(expire_str[:10], "%Y-%m-%d")
+                WARRANT_DETAIL_CACHE.setdefault(sid, {})
+                prev = WARRANT_DETAIL_CACHE[sid].get(w_code)
+                if prev is None or row_date > prev.get("_row_date",""):
+                    WARRANT_DETAIL_CACHE[sid][w_code] = {
+                        "code": w_code, "expire_dt": expire_dt,
+                        "leverage": leverage, "delta": delta,
+                        "bid": sf(row.get("BidPrice",0)),
+                        "ask": sf(row.get("AskPrice",0)),
+                        "volume": si(row.get("TradingVolume",0)),
+                        "issuer": str(row.get("Issuer",""))[:3],
+                        "_row_date": row_date,
+                    }
+            except: pass
+        return vol_map, active_set
 
-    for row in data:
-        call_put = str(row.get("PutCall",""))
-        if "C" not in call_put and "認購" not in call_put: continue
-        sid = str(row.get("underlying_stock","")).strip()
-        if not (sid.isdigit() and len(sid) == 4): continue
-        if sid not in elec_sids: continue   # 只留電子股
-        vol = si(row.get("TradingVolume", 0))
-        vol_map[sid] = vol_map.get(sid, 0) + vol
-        active_set.add(sid)
+    # ── 方法一：TaiwanStockWarrantDetail 全量查（1 req）──────
+    data, hit = fm1("TaiwanStockWarrantDetail", start_date=start, end_date=end)
+    if not hit and data:
+        vol_map, active_set = build_cache_and_set(data, elec_sids)
+        if active_set:
+            sorted_sids  = sorted(active_set, key=lambda s: -vol_map.get(s,0))
+            cached_count = sum(len(v) for v in WARRANT_DETAIL_CACHE.values())
+            print(f"  → [TaiwanStockWarrantDetail] 電子股有活躍認購：{len(sorted_sids)} 支（快取 {cached_count} 檔）")
+            return sorted_sids, active_set
 
-        # 同時快取權證明細（跟 V17 一樣的做法）
-        try:
-            w_code     = str(row.get("stock_id","")).strip()
-            expire_str = str(row.get("ExpirationDate","")).strip()
-            leverage   = sf(row.get("EffectiveLeverage", 0))
-            delta      = sf(row.get("Delta", 0))
-            bid        = sf(row.get("BidPrice", 0))
-            ask        = sf(row.get("AskPrice", 0))
-            w_vol      = si(row.get("TradingVolume", 0))
-            row_date   = str(row.get("date","")).strip()
-            if not w_code or not expire_str: continue
-            expire_dt  = datetime.strptime(expire_str[:10], "%Y-%m-%d")
-            WARRANT_DETAIL_CACHE.setdefault(sid, {})
-            prev = WARRANT_DETAIL_CACHE[sid].get(w_code)
-            if prev is None or row_date > prev.get("_row_date",""):
-                WARRANT_DETAIL_CACHE[sid][w_code] = {
-                    "code": w_code,
-                    "expire_dt": expire_dt,
-                    "leverage":  leverage,
-                    "delta":     delta,
-                    "bid":       bid,
-                    "ask":       ask,
-                    "volume":    w_vol,
-                    "issuer":    str(row.get("Issuer",""))[:3],
-                    "_row_date": row_date,
-                }
-        except: pass
+    # ── 方法二：對 30 支代表性熱門電子股批次查 TaiwanStockWarrant──
+    print("  ! TaiwanStockWarrantDetail 無資料，改用批次查詢（30 支代表股）")
+    SAMPLE_SIDS = [
+        "2330","2454","2317","2308","2382","3711","2357","2379",
+        "2395","3034","3008","2327","6770","2603","2881","2882",
+        "2886","2891","2892","2884","5274","2337","2376","2408",
+        "3481","2301","2303","2313","3045","6446",
+    ]
+    sample      = [s for s in SAMPLE_SIDS if s in elec_sids]
+    all_rows    = []
+    for sid in sample:
+        d, h = fm1("TaiwanStockWarrant", sid, start, end)
+        time.sleep(0.08)
+        if h: break
+        all_rows.extend(d)
+    if all_rows:
+        vol_map, active_set = build_cache_and_set(all_rows, elec_sids)
+        if active_set:
+            # 補充其他電子股（排在活躍標的後面）
+            rest = [s for s in elec_sids if s not in active_set and s not in EXCLUDE_SIDS]
+            combined = sorted(active_set, key=lambda s: -vol_map.get(s,0)) + rest
+            print(f"  → [批次查詢] 活躍 {len(active_set)} 支 + 其他 {len(rest)} 支，限 400")
+            return combined[:400], active_set
 
-    # 依近15天認購成交量排序（量大的優先掃）
-    sorted_sids = sorted(active_set, key=lambda s: -vol_map.get(s, 0))
-    cached_count = sum(len(v) for v in WARRANT_DETAIL_CACHE.values())
-    print(f"  → 電子股中有活躍認購交易：{len(sorted_sids)} 支（快取 {cached_count} 檔權證明細）")
-    return sorted_sids, active_set
+    # ── 最終 fallback：直接取電子股限量 400 支 ──────────────
+    print("  ! 所有方法失敗，fallback 用限量電子股（max 400）")
+    fallback = [s for s in elec_sids if s not in EXCLUDE_SIDS]
+    return fallback[:400], set(fallback[:400])
 
 # ── 第一階段：快速粗篩 ──────────────────────────────────────
 def quick_filter(scan_sids, stock_meta, quick_start, end_date):
@@ -316,7 +344,7 @@ def fetch_margin(sid, start_date, end_date):
 # ── 權證明細查表（優先快取，fallback 個股查詢）──────────────
 def get_warrant_detail(sid, data_date_str):
     """
-    V22：優先從 WARRANT_DETAIL_CACHE 查表（Step② 已抓過全市場近15天明細）。
+    V23：優先從 WARRANT_DETAIL_CACHE 查表（Step② 已抓過全市場近15天明細）。
     快取命中率預期 90%+ （因為 Step② 已抓電子股全量），完全不需要再打 API。
     只有極少數情況才 fallback 到個股查詢。
     """
@@ -482,9 +510,9 @@ def main():
         end_date = today
         print(f"  ► 盤後模式：使用今日收盤資料（end_date={end_date}）")
 
-    print(f"[{now.strftime('%H:%M:%S')} 台灣時間] fetch_twse V22 開始 {today}")
+    print(f"[{now.strftime('%H:%M:%S')} 台灣時間] fetch_twse V23 開始 {today}")
     print(f"  FinMind token: {'已設定（600req/hr）' if TOKEN else '未設定（匿名300req/hr）'}")
-    print(f"  V22 架構：電子股 meta + 活躍權證快取 → 粗篩 → 精篩（預估總 req < 400）")
+    print(f"  V23 架構：電子股 meta + 活躍權證快取 → 粗篩 → 精篩（預估總 req < 400）")
 
     # ── ① 電子股 meta（2 req：WithWarrant + TaiwanStockInfo）──
     print("  ► ① 取電子股基本資料...")
@@ -506,6 +534,11 @@ def main():
     time.sleep(0.3)
 
     # ── ③ 第一階段：快速粗篩（近4天，只掃候選池）──────────────
+    # V23：硬性上限保護，確保不論 fallback 結果多少都不超過 450 支
+    SCAN_HARD_LIMIT = 450
+    if len(scan_sids) > SCAN_HARD_LIMIT:
+        print(f"  ⚠ 候選池 {len(scan_sids)} 支超過上限，截斷為 {SCAN_HARD_LIMIT} 支")
+        scan_sids = scan_sids[:SCAN_HARD_LIMIT]
     quick_start = (datetime.strptime(end_date, "%Y-%m-%d") - timedelta(days=4)).strftime("%Y-%m-%d")
     print(f"  ► ③ 第一階段粗篩（{quick_start}~{end_date}，共 {len(scan_sids)} 支）...")
     survivors, q_req, stop = quick_filter(scan_sids, stock_meta, quick_start, end_date)
@@ -514,6 +547,10 @@ def main():
     if not survivors:
         print("  ! 粗篩後無存活標的，可能資料尚未更新")
         _write_empty(now, today8, req); return
+    # V23：402 提前停止時，survivors 已有部分結果，繼續往下跑
+    if stop:
+        print(f"  ⚠ 粗篩因 402 提前停止，但已存活 {len(survivors)} 支，繼續精篩")
+        stop = False  # 重置 stop，讓精篩繼續跑（此時 req 跨小時，API 已重置）
 
     date_votes  = Counter(s["data_date"] for s in survivors)
     actual_date = date_votes.most_common(1)[0][0]
@@ -597,7 +634,7 @@ def main():
         if score < 25: continue
 
         ma_c = [h["close"] for h in hist]
-        # V22：從快取取權證明細（不用再打 API）
+        # V23：從快取取權證明細（不用再打 API）
         warrants = get_warrant_detail(sid, actual_date)
 
         scored.append({
@@ -615,7 +652,7 @@ def main():
             "ma10":       calc_ma(ma_c, 10),
             "ma20":       calc_ma(ma_c, 20),
             "has_warrant": sid in active_set,
-            "warrants":   warrants,   # V22：真實明細，從快取取
+            "warrants":   warrants,   # V23：真實明細，從快取取
         })
 
     scored.sort(key=lambda x: x["score"], reverse=True)
