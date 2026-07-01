@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-台股權證標的篩選腳本 V24
+台股權證標的篩選腳本 V25
 ==============================
-V24 修正 V22 的三個問題：
+V25 修正 V22 的三個問題：
   1. TaiwanStockWarrant 全量查詢 422 → fallback 977 支 → 粗篩 402 超限
   2. 402 發生時直接放棄已有結果 → 改為繼續精篩已存活標的
   3. 粗篩無硬性上限 → 加 SCAN_HARD_LIMIT=450 截斷保護
@@ -12,7 +12,7 @@ V24 修正 V22 的三個問題：
     974 req 就超過 FinMind 免費帳號 600/hr 的上限，
     第二階段根本沒機會跑，每天都是空結果。
 
-  V24 解法：三階段架構，大幅減少 API 請求數
+  V25 解法：三階段架構，大幅減少 API 請求數
     ① TaiwanStockInfoWithWarrant  → 電子股 meta（名稱/市場）  1 req
     ② TaiwanStockWarrant 近15天   → 真正有活躍認購交易的電子標的  1 req
        （這一步直接把候選池從 974 縮減到約 150~250 支，
@@ -35,7 +35,29 @@ TZ_TW       = timezone(timedelta(hours=8))
 OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "../data/stocks.json")
 TOP_N       = 15
 FM_URL      = "https://api.finmindtrade.com/api/v4/data"
-TOKEN       = os.environ.get("FINMIND_TOKEN", "")
+# ── 多 TOKEN 輪詢（支援最多 4 個帳號）────────────────────────
+# GitHub Secrets 設定：FINMIND_TOKEN_1 / _2 / _3 / _4
+# 某個 TOKEN 觸發 402 時自動切換到下一個，全部用完才真正停止
+_ALL_TOKENS = [
+    os.environ.get("FINMIND_TOKEN_1", ""),
+    os.environ.get("FINMIND_TOKEN_2", ""),
+    os.environ.get("FINMIND_TOKEN_3", ""),
+    os.environ.get("FINMIND_TOKEN_4", ""),
+]
+TOKENS     = [t for t in _ALL_TOKENS if t.strip()]   # 過濾空值
+TOKEN      = TOKENS[0] if TOKENS else ""              # 目前使用的 TOKEN
+_TOKEN_IDX = 0                                        # 目前 TOKEN 的索引
+
+def rotate_token():
+    """切換到下一個可用 TOKEN，回傳 True 代表切換成功"""
+    global TOKEN, _TOKEN_IDX
+    _TOKEN_IDX += 1
+    if _TOKEN_IDX < len(TOKENS):
+        TOKEN = TOKENS[_TOKEN_IDX]
+        print(f"  ↻ TOKEN_{_TOKEN_IDX} 已超限，切換到 TOKEN_{_TOKEN_IDX + 1}")
+        return True
+    print(f"  ✗ 所有 {len(TOKENS)} 個 TOKEN 都已超限")
+    return False
 
 ELECTRONICS_CATEGORIES = {
     "半導體業", "電腦及週邊設備業", "光電業", "通信網路業",
@@ -62,6 +84,9 @@ def hdrs():
     if TOKEN: h["Authorization"] = f"Bearer {TOKEN}"
     return h
 
+def current_token_label():
+    return f"TOKEN_{_TOKEN_IDX + 1}" if TOKENS else "匿名"
+
 # ── 共用請求 ─────────────────────────────────────────────────
 def fm(dataset, data_id=None, start_date=None, end_date=None, retries=3):
     params = {"dataset": dataset}
@@ -72,7 +97,21 @@ def fm(dataset, data_id=None, start_date=None, end_date=None, retries=3):
         try:
             r = requests.get(FM_URL, params=params, headers=hdrs(), timeout=25)
             if r.status_code == 402:
-                print("  ! FinMind 402：API 次數超限！停止後續請求")
+                print(f"  ! FinMind 402：{current_token_label()} 已超限，嘗試切換...")
+                if rotate_token():
+                    # 用新 TOKEN 重試這次請求（不消耗 retries 次數）
+                    r2 = requests.get(FM_URL, params=params, headers=hdrs(), timeout=25)
+                    if r2.status_code == 200:
+                        d2 = r2.json()
+                        return (d2.get("data", []) if d2.get("status") == 200 else []), False
+                    elif r2.status_code == 402:
+                        # 新 TOKEN 也超限，繼續嘗試下一個
+                        if rotate_token():
+                            r3 = requests.get(FM_URL, params=params, headers=hdrs(), timeout=25)
+                            if r3.status_code == 200:
+                                d3 = r3.json()
+                                return (d3.get("data", []) if d3.get("status") == 200 else []), False
+                print("  ! 所有 TOKEN 已超限，停止後續請求")
                 return [], True
             if r.status_code in (400, 404, 422):
                 if r.status_code == 422:
@@ -135,11 +174,11 @@ WARRANT_DETAIL_CACHE = {}  # sid -> {w_code: {...}}
 
 def fetch_active_warrant_targets(elec_sids, today_dt):
     """
-    V24 修正 V22 的根本問題：
+    V25 修正 V22 的根本問題：
       FinMind TaiwanStockWarrant 不支援全量查詢（不帶 stock_id），
       會回傳 422 → fallback 到 977 支 → 粗篩超過 600 req → 402 超限。
 
-    V24 解法：
+    V25 解法：
       ① 改查 TaiwanStockWarrantDetail（支援全量，1 req）取得認購標的清單
       ② 若仍失敗，對熱門電子股批次查詢（30 支，30 req）取交集
       ③ 最終 fallback：限量 400 支（硬性保護）
@@ -344,7 +383,7 @@ def fetch_margin(sid, start_date, end_date):
 # ── 權證明細查表（優先快取，fallback 個股查詢）──────────────
 def get_warrant_detail(sid, data_date_str):
     """
-    V24：優先從 WARRANT_DETAIL_CACHE 查表（Step② 已抓過全市場近15天明細）。
+    V25：優先從 WARRANT_DETAIL_CACHE 查表（Step② 已抓過全市場近15天明細）。
     快取命中率預期 90%+ （因為 Step② 已抓電子股全量），完全不需要再打 API。
     只有極少數情況才 fallback 到個股查詢。
     """
@@ -510,9 +549,10 @@ def main():
         end_date = today
         print(f"  ► 盤後模式：使用今日收盤資料（end_date={end_date}）")
 
-    print(f"[{now.strftime('%H:%M:%S')} 台灣時間] fetch_twse V24 開始 {today}")
-    print(f"  FinMind token: {'已設定（600req/hr）' if TOKEN else '未設定（匿名300req/hr）'}")
-    print(f"  V24 架構：電子股 meta + 活躍權證快取 → 粗篩 → 精篩（預估總 req < 400）")
+    print(f"[{now.strftime('%H:%M:%S')} 台灣時間] fetch_twse V25 開始 {today}")
+    token_info = f"{len(TOKENS)} 個 TOKEN（各 600req/hr，合計 {len(TOKENS)*600}req/hr）" if TOKENS else "未設定（匿名 300req/hr）"
+    print(f"  FinMind token: {token_info}")
+    print(f"  V25 架構：電子股 meta + 活躍權證快取 → 粗篩 → 精篩（預估總 req < 400）")
 
     # ── ① 電子股 meta（2 req：WithWarrant + TaiwanStockInfo）──
     print("  ► ① 取電子股基本資料...")
@@ -534,7 +574,7 @@ def main():
     time.sleep(0.3)
 
     # ── ③ 第一階段：快速粗篩（近4天，只掃候選池）──────────────
-    # V24：硬性上限保護，確保不論 fallback 結果多少都不超過 450 支
+    # V25：硬性上限保護，確保不論 fallback 結果多少都不超過 450 支
     SCAN_HARD_LIMIT = 450
     if len(scan_sids) > SCAN_HARD_LIMIT:
         print(f"  ⚠ 候選池 {len(scan_sids)} 支超過上限，截斷為 {SCAN_HARD_LIMIT} 支")
@@ -547,7 +587,7 @@ def main():
     if not survivors:
         print("  ! 粗篩後無存活標的，可能資料尚未更新")
         _write_empty(now, today8, req); return
-    # V24：402 提前停止時，survivors 已有部分結果，繼續往下跑
+    # V25：402 提前停止時，survivors 已有部分結果，繼續往下跑
     if stop:
         print(f"  ⚠ 粗篩因 402 提前停止，但已存活 {len(survivors)} 支，繼續精篩")
         stop = False  # 重置 stop，讓精篩繼續跑（此時 req 跨小時，API 已重置）
@@ -634,7 +674,7 @@ def main():
         if score < 25: continue
 
         ma_c = [h["close"] for h in hist]
-        # V24：從快取取權證明細（不用再打 API）
+        # V25：從快取取權證明細（不用再打 API）
         warrants = get_warrant_detail(sid, actual_date)
 
         scored.append({
@@ -652,7 +692,7 @@ def main():
             "ma10":       calc_ma(ma_c, 10),
             "ma20":       calc_ma(ma_c, 20),
             "has_warrant": sid in active_set,
-            "warrants":   warrants,   # V24：真實明細，從快取取
+            "warrants":   warrants,   # V25：真實明細，從快取取
         })
 
     scored.sort(key=lambda x: x["score"], reverse=True)
