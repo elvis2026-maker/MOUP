@@ -1,7 +1,483 @@
 {
-  "trade_date": "00000000",
-  "updated_at": "尚未執行，請手動觸發 GitHub Actions「每日盤後抓資料」",
-  "total_scanned": 0,
-  "candidates_count": 0,
-  "stocks": []
+  "updated_at": "2026/07/01 08:39",
+  "trade_date": "20260630",
+  "data_date": "2026-06-30",
+  "total_scanned": 420,
+  "candidates_count": 26,
+  "total_api_req": 551,
+  "stocks": [
+    {
+      "sid": "1815",
+      "name": "富喬",
+      "close": 111.0,
+      "change_pct": 9.9,
+      "volume": 68687816,
+      "market": "otc",
+      "score": 82,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 2.1x",
+        "站上月線 MA20=100.28",
+        "突破近10日高點",
+        "三大法人買超 19466張",
+        "外資積極買超"
+      ],
+      "warnings": [
+        "融資追價明顯"
+      ],
+      "inst": {
+        "foreign_net": 18259,
+        "trust_net": 50,
+        "dealer_net": 1157,
+        "total_net": 19466
+      },
+      "ma5": 102.34,
+      "ma10": 100.12,
+      "ma20": 100.28,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "中高（74%）",
+      "prob_level": "medium-high"
+    },
+    {
+      "sid": "1303",
+      "name": "南亞",
+      "close": 166.5,
+      "change_pct": 9.9,
+      "volume": 32181722,
+      "market": "tse",
+      "score": 77,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "均線多頭排列",
+        "站上月線 MA20=122.92",
+        "突破近10日高點",
+        "三大法人買超 7841張",
+        "投信積極買超",
+        "外資積極買超"
+      ],
+      "warnings": [
+        "量能萎縮",
+        "融資追價明顯"
+      ],
+      "inst": {
+        "foreign_net": 4065,
+        "trust_net": 3288,
+        "dealer_net": 488,
+        "total_net": 7841
+      },
+      "ma5": 153.0,
+      "ma10": 141.5,
+      "ma20": 122.92,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "中高（69%）",
+      "prob_level": "medium-high"
+    },
+    {
+      "sid": "1802",
+      "name": "台玻",
+      "close": 74.8,
+      "change_pct": 10.0,
+      "volume": 137333430,
+      "market": "tse",
+      "score": 72,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 1.7x",
+        "站上月線 MA20=67.91",
+        "三大法人買超 57940張",
+        "外資積極買超"
+      ],
+      "warnings": [],
+      "inst": {
+        "foreign_net": 53989,
+        "trust_net": 59,
+        "dealer_net": 3892,
+        "total_net": 57940
+      },
+      "ma5": 68.56,
+      "ma10": 69.56,
+      "ma20": 67.91,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "中高（64%）",
+      "prob_level": "medium-high"
+    },
+    {
+      "sid": "0056",
+      "name": "元大高股息",
+      "close": 53.25,
+      "change_pct": 2.8,
+      "volume": 42298690,
+      "market": "tse",
+      "score": 63,
+      "reasons": [
+        "溫和上漲 ≥1%",
+        "收盤靠近最高點（買盤強）",
+        "均線多頭排列",
+        "站上月線 MA20=51.93",
+        "三大法人買超 6088張",
+        "外資積極買超"
+      ],
+      "warnings": [],
+      "inst": {
+        "foreign_net": 11069,
+        "trust_net": 0,
+        "dealer_net": -4982,
+        "total_net": 6088
+      },
+      "ma5": 52.64,
+      "ma10": 52.51,
+      "ma20": 51.93,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "中（56%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "2231",
+      "name": "為升",
+      "close": 101.0,
+      "change_pct": 9.78,
+      "volume": 1451333,
+      "market": "tse",
+      "score": 62,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 3.5x",
+        "站上月線 MA20=95.78",
+        "突破近10日高點"
+      ],
+      "warnings": [],
+      "inst": {
+        "foreign_net": -80,
+        "trust_net": 0,
+        "dealer_net": -1,
+        "total_net": -80
+      },
+      "ma5": 91.42,
+      "ma10": 92.65,
+      "ma20": 95.78,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "中（55%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "1525",
+      "name": "江申",
+      "close": 67.4,
+      "change_pct": 8.01,
+      "volume": 126195,
+      "market": "tse",
+      "score": 62,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "站上月線 MA20=66.09",
+        "突破近10日高點"
+      ],
+      "warnings": [
+        "量能過度放大"
+      ],
+      "inst": {
+        "foreign_net": 4,
+        "trust_net": 0,
+        "dealer_net": 0,
+        "total_net": 4
+      },
+      "ma5": 64.06,
+      "ma10": 64.88,
+      "ma20": 66.09,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "中（55%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "2243",
+      "name": "宏旭-KY",
+      "close": 57.0,
+      "change_pct": 7.14,
+      "volume": 415135,
+      "market": "tse",
+      "score": 62,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "均線多頭排列",
+        "站上月線 MA20=39.55",
+        "突破近10日高點"
+      ],
+      "warnings": [
+        "量能萎縮"
+      ],
+      "inst": {
+        "foreign_net": 24,
+        "trust_net": 0,
+        "dealer_net": -1,
+        "total_net": 23
+      },
+      "ma5": 51.85,
+      "ma10": 49.03,
+      "ma20": 39.55,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "中（55%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "2327",
+      "name": "國巨*",
+      "close": 1140.0,
+      "change_pct": 9.62,
+      "volume": 57942123,
+      "market": "tse",
+      "score": 52,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "均線多頭排列",
+        "站上月線 MA20=916.5",
+        "突破近10日高點"
+      ],
+      "warnings": [
+        "三大法人賣超"
+      ],
+      "inst": {
+        "foreign_net": -4472,
+        "trust_net": -4197,
+        "dealer_net": 596,
+        "total_net": -8072
+      },
+      "ma5": 1050.0,
+      "ma10": 1026.9,
+      "ma20": 916.5,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "2342",
+      "name": "茂矽",
+      "close": 56.6,
+      "change_pct": 8.02,
+      "volume": 3488210,
+      "market": "tse",
+      "score": 52,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "均線多頭排列",
+        "站上月線 MA20=46.76"
+      ],
+      "warnings": [
+        "量能萎縮"
+      ],
+      "inst": {
+        "foreign_net": 144,
+        "trust_net": 0,
+        "dealer_net": -19,
+        "total_net": 125
+      },
+      "ma5": 53.68,
+      "ma10": 52.41,
+      "ma20": 46.76,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "2351",
+      "name": "順德",
+      "close": 212.5,
+      "change_pct": 7.59,
+      "volume": 7009862,
+      "market": "tse",
+      "score": 52,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "均線多頭排列",
+        "站上月線 MA20=195.12"
+      ],
+      "warnings": [
+        "量能萎縮"
+      ],
+      "inst": {
+        "foreign_net": 322,
+        "trust_net": 493,
+        "dealer_net": 37,
+        "total_net": 853
+      },
+      "ma5": 203.7,
+      "ma10": 196.8,
+      "ma20": 195.12,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "2301",
+      "name": "光寶科",
+      "close": 222.0,
+      "change_pct": 4.96,
+      "volume": 24716021,
+      "market": "tse",
+      "score": 52,
+      "reasons": [
+        "大漲 ≥3%",
+        "站上月線 MA20=220.35",
+        "三大法人買超 5066張",
+        "外資積極買超"
+      ],
+      "warnings": [
+        "量能萎縮"
+      ],
+      "inst": {
+        "foreign_net": 6668,
+        "trust_net": -2065,
+        "dealer_net": 463,
+        "total_net": 5066
+      },
+      "ma5": 213.6,
+      "ma10": 213.55,
+      "ma20": 220.35,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "0050",
+      "name": "元大台灣50",
+      "close": 107.8,
+      "change_pct": 3.21,
+      "volume": 107704452,
+      "market": "tse",
+      "score": 52,
+      "reasons": [
+        "大漲 ≥3%",
+        "站上月線 MA20=105.16",
+        "三大法人買超 32497張",
+        "投信積極買超",
+        "外資積極買超"
+      ],
+      "warnings": [
+        "量能萎縮"
+      ],
+      "inst": {
+        "foreign_net": 20819,
+        "trust_net": 5350,
+        "dealer_net": 6327,
+        "total_net": 32497
+      },
+      "ma5": 106.4,
+      "ma10": 106.76,
+      "ma20": 105.16,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "1560",
+      "name": "中砂",
+      "close": 762.0,
+      "change_pct": 3.25,
+      "volume": 2339829,
+      "market": "tse",
+      "score": 49,
+      "reasons": [
+        "大漲 ≥3%",
+        "均線多頭排列",
+        "站上月線 MA20=693.25",
+        "突破近10日高點"
+      ],
+      "warnings": [],
+      "inst": {
+        "foreign_net": 76,
+        "trust_net": 87,
+        "dealer_net": -2,
+        "total_net": 162
+      },
+      "ma5": 725.0,
+      "ma10": 710.7,
+      "ma20": 693.25,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "1595",
+      "name": "川寶",
+      "close": 82.0,
+      "change_pct": 3.8,
+      "volume": 902843,
+      "market": "otc",
+      "score": 48,
+      "reasons": [
+        "大漲 ≥3%",
+        "收盤靠近最高點（買盤強）",
+        "均線多頭排列",
+        "站上月線 MA20=77.31"
+      ],
+      "warnings": [
+        "量能萎縮"
+      ],
+      "inst": {
+        "foreign_net": 12,
+        "trust_net": 0,
+        "dealer_net": -1,
+        "total_net": 11
+      },
+      "ma5": 80.26,
+      "ma10": 78.83,
+      "ma20": 77.31,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "2375",
+      "name": "凱美",
+      "close": 211.5,
+      "change_pct": 9.87,
+      "volume": 8486465,
+      "market": "tse",
+      "score": 47,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "均線多頭排列",
+        "站上月線 MA20=180.62"
+      ],
+      "warnings": [
+        "量能萎縮"
+      ],
+      "inst": {
+        "foreign_net": -900,
+        "trust_net": 0,
+        "dealer_net": 137,
+        "total_net": -762
+      },
+      "ma5": 202.8,
+      "ma10": 202.25,
+      "ma20": 180.62,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    }
+  ]
 }
