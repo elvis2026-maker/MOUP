@@ -1,8 +1,174 @@
 {
-  "updated_at": "尚未執行",
-  "trade_date": "00000000",
+  "updated_at": "2026/07/01 08:45:07",
+  "trade_date": "20260701",
   "is_trading": false,
   "is_live_data": false,
-  "ref_cards": [],
-  "fetch_errors": ["請先手動觸發 GitHub Actions「每日盤後抓資料」取得選股清單"]
+  "ref_cards": [
+    {
+      "sid": "1815",
+      "name": "富喬",
+      "market": "otc",
+      "close": 111.0,
+      "change_pct": 9.9,
+      "ma20": 100.28,
+      "score": 82,
+      "prob": "中高（74%）",
+      "prob_level": "medium-high"
+    },
+    {
+      "sid": "1303",
+      "name": "南亞",
+      "market": "tse",
+      "close": 166.5,
+      "change_pct": 9.9,
+      "ma20": 122.92,
+      "score": 77,
+      "prob": "中高（69%）",
+      "prob_level": "medium-high"
+    },
+    {
+      "sid": "1802",
+      "name": "台玻",
+      "market": "tse",
+      "close": 74.8,
+      "change_pct": 10.0,
+      "ma20": 67.91,
+      "score": 72,
+      "prob": "中高（64%）",
+      "prob_level": "medium-high"
+    },
+    {
+      "sid": "0056",
+      "name": "元大高股息",
+      "market": "tse",
+      "close": 53.25,
+      "change_pct": 2.8,
+      "ma20": 51.93,
+      "score": 63,
+      "prob": "中（56%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "2231",
+      "name": "為升",
+      "market": "tse",
+      "close": 101.0,
+      "change_pct": 9.78,
+      "ma20": 95.78,
+      "score": 62,
+      "prob": "中（55%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "1525",
+      "name": "江申",
+      "market": "tse",
+      "close": 67.4,
+      "change_pct": 8.01,
+      "ma20": 66.09,
+      "score": 62,
+      "prob": "中（55%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "2243",
+      "name": "宏旭-KY",
+      "market": "tse",
+      "close": 57.0,
+      "change_pct": 7.14,
+      "ma20": 39.55,
+      "score": 62,
+      "prob": "中（55%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "2327",
+      "name": "國巨*",
+      "market": "tse",
+      "close": 1140.0,
+      "change_pct": 9.62,
+      "ma20": 916.5,
+      "score": 52,
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "2342",
+      "name": "茂矽",
+      "market": "tse",
+      "close": 56.6,
+      "change_pct": 8.02,
+      "ma20": 46.76,
+      "score": 52,
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "2351",
+      "name": "順德",
+      "market": "tse",
+      "close": 212.5,
+      "change_pct": 7.59,
+      "ma20": 195.12,
+      "score": 52,
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "2301",
+      "name": "光寶科",
+      "market": "tse",
+      "close": 222.0,
+      "change_pct": 4.96,
+      "ma20": 220.35,
+      "score": 52,
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "0050",
+      "name": "元大台灣50",
+      "market": "tse",
+      "close": 107.8,
+      "change_pct": 3.21,
+      "ma20": 105.16,
+      "score": 52,
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "1560",
+      "name": "中砂",
+      "market": "tse",
+      "close": 762.0,
+      "change_pct": 3.25,
+      "ma20": 693.25,
+      "score": 49,
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "1595",
+      "name": "川寶",
+      "market": "otc",
+      "close": 82.0,
+      "change_pct": 3.8,
+      "ma20": 77.31,
+      "score": 48,
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "2375",
+      "name": "凱美",
+      "market": "tse",
+      "close": 211.5,
+      "change_pct": 9.87,
+      "ma20": 180.62,
+      "score": 47,
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    }
+  ],
+  "fetch_errors": []
 }
