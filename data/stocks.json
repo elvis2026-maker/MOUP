@@ -1,11 +1,45 @@
 {
-  "updated_at": "2026/07/01 14:39",
+  "updated_at": "2026/07/01 14:54",
   "trade_date": "20260630",
   "data_date": "2026-06-30",
   "total_scanned": 400,
   "candidates_count": 29,
-  "total_api_req": 610,
+  "total_api_req": 611,
   "stocks": [
+    {
+      "sid": "1815",
+      "name": "富喬",
+      "close": 111.0,
+      "change_pct": 9.9,
+      "volume": 68687816,
+      "market": "otc",
+      "score": 82,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 2.1x",
+        "站上月線 MA20=100.28",
+        "突破近10日高點",
+        "三大法人買超 19466張",
+        "外資積極買超"
+      ],
+      "warnings": [
+        "融資追價明顯"
+      ],
+      "inst": {
+        "foreign_net": 18259,
+        "trust_net": 50,
+        "dealer_net": 1157,
+        "total_net": 19466
+      },
+      "ma5": 102.34,
+      "ma10": 100.12,
+      "ma20": 100.28,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "中高（74%）",
+      "prob_level": "medium-high"
+    },
     {
       "sid": "2466",
       "name": "冠西電",
@@ -69,6 +103,40 @@
       "prob_level": "medium-high"
     },
     {
+      "sid": "2472",
+      "name": "立隆電",
+      "close": 453.5,
+      "change_pct": 9.94,
+      "volume": 28325975,
+      "market": "tse",
+      "score": 72,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 2.2x",
+        "均線多頭排列",
+        "站上月線 MA20=370.85",
+        "突破近10日高點",
+        "投信積極買超"
+      ],
+      "warnings": [
+        "融資追價明顯"
+      ],
+      "inst": {
+        "foreign_net": -4084,
+        "trust_net": 1229,
+        "dealer_net": 105,
+        "total_net": -2749
+      },
+      "ma5": 381.9,
+      "ma10": 380.4,
+      "ma20": 370.85,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "中高（64%）",
+      "prob_level": "medium-high"
+    },
+    {
       "sid": "2493",
       "name": "揚博",
       "close": 292.5,
@@ -101,32 +169,6 @@
       "prob_level": "medium"
     },
     {
-      "sid": "5314",
-      "name": "世紀*",
-      "close": 66.8,
-      "change_pct": 9.87,
-      "volume": 17703130,
-      "market": "otc",
-      "score": 62,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "收盤靠近最高點（買盤強）",
-        "站上月線 MA20=59.78",
-        "突破近10日高點"
-      ],
-      "warnings": [
-        "量能過度放大"
-      ],
-      "inst": {},
-      "ma5": 58.8,
-      "ma10": 58.55,
-      "ma20": 59.78,
-      "has_warrant": true,
-      "warrants": [],
-      "prob": "中（55%）",
-      "prob_level": "medium"
-    },
-    {
       "sid": "3555",
       "name": "博士旺",
       "close": 201.5,
@@ -146,6 +188,56 @@
       "ma5": 188.0,
       "ma10": 193.7,
       "ma20": 201.47,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "中（55%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "2327",
+      "name": "國巨*",
+      "close": 1140.0,
+      "change_pct": 9.62,
+      "volume": 57942123,
+      "market": "tse",
+      "score": 62,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "均線多頭排列",
+        "站上月線 MA20=916.5",
+        "突破近10日高點"
+      ],
+      "warnings": [],
+      "inst": {},
+      "ma5": 1050.0,
+      "ma10": 1026.9,
+      "ma20": 916.5,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "中（55%）",
+      "prob_level": "medium"
+    },
+    {
+      "sid": "2449",
+      "name": "京元電子",
+      "close": 337.5,
+      "change_pct": 9.4,
+      "volume": 38132875,
+      "market": "tse",
+      "score": 62,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "均線多頭排列",
+        "站上月線 MA20=304.25",
+        "突破近10日高點"
+      ],
+      "warnings": [],
+      "inst": {},
+      "ma5": 322.8,
+      "ma10": 310.1,
+      "ma20": 304.25,
       "has_warrant": true,
       "warrants": [],
       "prob": "中（55%）",
@@ -184,124 +276,27 @@
       "prob_level": "medium"
     },
     {
-      "sid": "8021",
-      "name": "尖點",
-      "close": 574.0,
-      "change_pct": 9.96,
-      "volume": 1983269,
+      "sid": "3017",
+      "name": "奇鋐",
+      "close": 2525.0,
+      "change_pct": 9.78,
+      "volume": 4835330,
       "market": "tse",
       "score": 57,
       "reasons": [
         "強勢大漲 ≥5%",
         "收盤靠近最高點（買盤強）",
-        "均線多頭排列",
-        "站上月線 MA20=516.65"
+        "站上月線 MA20=2492.25",
+        "突破近10日高點"
       ],
       "warnings": [],
-      "inst": {
-        "foreign_net": 177,
-        "trust_net": 0,
-        "dealer_net": 33,
-        "total_net": 210
-      },
-      "ma5": 550.2,
-      "ma10": 544.1,
-      "ma20": 516.65,
-      "has_warrant": true,
-      "warrants": [],
-      "prob": "中（50%）",
-      "prob_level": "medium"
-    },
-    {
-      "sid": "8150",
-      "name": "南茂",
-      "close": 99.5,
-      "change_pct": 9.94,
-      "volume": 40951100,
-      "market": "tse",
-      "score": 57,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "收盤靠近最高點（買盤強）",
-        "站上月線 MA20=97.96",
-        "三大法人買超 9858張",
-        "投信積極買超",
-        "外資積極買超"
-      ],
-      "warnings": [
-        "量能萎縮",
-        "融資追價明顯"
-      ],
-      "inst": {
-        "foreign_net": 7554,
-        "trust_net": 1457,
-        "dealer_net": 846,
-        "total_net": 9858
-      },
-      "ma5": 98.7,
-      "ma10": 99.69,
-      "ma20": 97.96,
-      "has_warrant": true,
-      "warrants": [],
-      "prob": "中（50%）",
-      "prob_level": "medium"
-    },
-    {
-      "sid": "8046",
-      "name": "南電",
-      "close": 1185.0,
-      "change_pct": 9.72,
-      "volume": 6270925,
-      "market": "tse",
-      "score": 57,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "收盤靠近最高點（買盤強）",
-        "均線多頭排列",
-        "站上月線 MA20=905.55",
-        "突破近10日高點"
-      ],
-      "warnings": [
-        "量能萎縮"
-      ],
       "inst": {},
-      "ma5": 1022.8,
-      "ma10": 949.9,
-      "ma20": 905.55,
+      "ma5": 2403.0,
+      "ma10": 2398.0,
+      "ma20": 2492.25,
       "has_warrant": true,
       "warrants": [],
       "prob": "中（50%）",
-      "prob_level": "medium"
-    },
-    {
-      "sid": "3694",
-      "name": "海華",
-      "close": 62.2,
-      "change_pct": 9.89,
-      "volume": 2456378,
-      "market": "tse",
-      "score": 56,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "收盤靠近最高點（買盤強）",
-        "量能放大 2.4x",
-        "突破近10日高點"
-      ],
-      "warnings": [
-        "跌破月線"
-      ],
-      "inst": {
-        "foreign_net": 178,
-        "trust_net": 0,
-        "dealer_net": 15,
-        "total_net": 193
-      },
-      "ma5": 58.18,
-      "ma10": 59.92,
-      "ma20": 62.33,
-      "has_warrant": true,
-      "warrants": [],
-      "prob": "中（49%）",
       "prob_level": "medium"
     },
     {
@@ -336,30 +331,6 @@
       "prob_level": "low"
     },
     {
-      "sid": "6278",
-      "name": "台表科",
-      "close": 213.0,
-      "change_pct": 9.79,
-      "volume": 12819719,
-      "market": "tse",
-      "score": 52,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "收盤靠近最高點（買盤強）",
-        "量能放大 1.9x",
-        "站上月線 MA20=204.18"
-      ],
-      "warnings": [],
-      "inst": {},
-      "ma5": 199.0,
-      "ma10": 203.55,
-      "ma20": 204.18,
-      "has_warrant": true,
-      "warrants": [],
-      "prob": "偏低（<48%）",
-      "prob_level": "low"
-    },
-    {
       "sid": "3037",
       "name": "欣興",
       "close": 1070.0,
@@ -384,31 +355,48 @@
       "prob_level": "low"
     },
     {
-      "sid": "3707",
-      "name": "漢磊",
-      "close": 86.9,
-      "change_pct": 10.0,
-      "volume": 16406851,
-      "market": "otc",
-      "score": 48,
+      "sid": "3149",
+      "name": "正達",
+      "close": 101.5,
+      "change_pct": 9.49,
+      "volume": 26009336,
+      "market": "tse",
+      "score": 52,
       "reasons": [
         "強勢大漲 ≥5%",
         "收盤靠近最高點（買盤強）",
         "均線多頭排列",
-        "站上月線 MA20=81.32"
+        "站上月線 MA20=90.59"
       ],
-      "warnings": [
-        "量能萎縮"
+      "warnings": [],
+      "inst": {},
+      "ma5": 97.32,
+      "ma10": 95.52,
+      "ma20": 90.59,
+      "has_warrant": true,
+      "warrants": [],
+      "prob": "偏低（<48%）",
+      "prob_level": "low"
+    },
+    {
+      "sid": "2467",
+      "name": "志聖",
+      "close": 620.0,
+      "change_pct": 8.96,
+      "volume": 2499339,
+      "market": "tse",
+      "score": 52,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 1.9x",
+        "站上月線 MA20=582.9"
       ],
-      "inst": {
-        "foreign_net": 525,
-        "trust_net": 0,
-        "dealer_net": 66,
-        "total_net": 592
-      },
-      "ma5": 87.48,
-      "ma10": 85.4,
-      "ma20": 81.32,
+      "warnings": [],
+      "inst": {},
+      "ma5": 576.4,
+      "ma10": 583.6,
+      "ma20": 582.9,
       "has_warrant": true,
       "warrants": [],
       "prob": "偏低（<48%）",
