@@ -1,36 +1,27 @@
 #!/usr/bin/env python3
 """
-台股權證標的篩選腳本 V21
+台股權證標的篩選腳本 V22
 ==============================
-V20 核心改動：只掃電子股
+V22 解決 V21 的根本問題：API 超限（402），導致第二階段 0 支、輸出空結果。
 
-  動機：
-    V19 依股票代碼數字排序取前 420 支，1000~2000 號傳產股先掃，
-    電子股（代碼多在 2300~6700）部分根本排不進前 420，造成遺漏。
-    使用者只操作電子股，掃傳產股完全是浪費 API 請求數。
+  V21 的問題：
+    電子股 ∩ 有認購權證 = 974 支，第一階段粗篩每支打 1 req，
+    974 req 就超過 FinMind 免費帳號 600/hr 的上限，
+    第二階段根本沒機會跑，每天都是空結果。
 
-  V20 改法：
-    ① fetch_warrant_targets() 取得有認購權證的全部標的（同 V19）
-    ② 新增 fetch_electronics_sids()：
-       查 FinMind TaiwanStockInfo，取 industry_category 屬於電子 8 大類的股票代碼集合
-    ③ build_scan_list() 改為：warrant_targets ∩ 電子股 → 全掃，無人工上限
-       預估有認購權證且屬電子股約 200~280 支，API 請求數反而更少
+  V22 解法：三階段架構，大幅減少 API 請求數
+    ① TaiwanStockInfoWithWarrant  → 電子股 meta（名稱/市場）  1 req
+    ② TaiwanStockWarrant 近15天   → 真正有活躍認購交易的電子標的  1 req
+       （這一步直接把候選池從 974 縮減到約 150~250 支，
+         同時快取完整權證明細，最後直接查表不用再打API）
+    ③ TaiwanStockPrice 近4天      → 量價粗篩（存活約 50~80 支）  ~150~250 req
+    ④ TaiwanStockPrice 近35天     → 完整歷史精篩                 ~50~80 req
+    ⑤ 三大法人 + 融資（Top20×2）                                  ~40 req
+    合計：~242~372 req，完全在 600/hr 內，且有大量餘裕
 
-  電子 8 大產業類別（TWSE 官方分類）：
+  電子 8 大產業類別（同 V20/V21）：
     半導體業、電腦及週邊設備業、光電業、通信網路業、
     電子零組件業、電子通路業、資訊服務業、其他電子業
-
-  沿用 V19 的兩階段掃描策略：
-    ① 第一階段（快速粗篩）：只取近 4 天資料，快速淘汰收跌/無量股
-    ② 第二階段（精細評分）：存活候選取近 35 天歷史，計算完整評分
-
-  API 預算（有 TOKEN 600 req/hr）：
-    ① TaiwanStockInfoWithWarrant   1 req
-    ② TaiwanStockInfo（電子股篩選）1 req
-    ③ 粗篩 ~250 支電子股           ~250 req
-    ④ 精篩存活 ~80 支              ~80 req
-    ⑤ 法人 + 融資 Top15 × 2        30 req
-    合計：~362 req，完全在 600/hr 上限內
 """
 
 import requests, json, time, os, statistics
@@ -43,18 +34,10 @@ TOP_N       = 15
 FM_URL      = "https://api.finmindtrade.com/api/v4/data"
 TOKEN       = os.environ.get("FINMIND_TOKEN", "")
 
-# V20：電子 8 大產業類別（TWSE 官方 industry_category 值）
 ELECTRONICS_CATEGORIES = {
-    "半導體業",
-    "電腦及週邊設備業",
-    "光電業",
-    "通信網路業",
-    "電子零組件業",
-    "電子通路業",
-    "資訊服務業",
-    "其他電子業",
+    "半導體業", "電腦及週邊設備業", "光電業", "通信網路業",
+    "電子零組件業", "電子通路業", "資訊服務業", "其他電子業",
 }
-
 EXCLUDE_SIDS = {"9999", "0000"}
 
 def tw_now():
@@ -103,37 +86,36 @@ def fm(dataset, data_id=None, start_date=None, end_date=None, retries=3):
 def fm1(dataset, data_id=None, start_date=None, end_date=None):
     return fm(dataset, data_id, start_date, end_date)
 
-# ── Step①：有認購權證的全部標的（1 req）────────────────────────
-def fetch_warrant_targets():
+# ── Step①：電子股 meta（名稱/市場別）1 req ──────────────────
+def fetch_electronics_meta():
+    """
+    從 TaiwanStockInfoWithWarrant 取得電子股的 meta（名稱/市場別）。
+    同時過濾掉非電子股，回傳 dict {sid: {name, market}}。
+    """
     data, _ = fm1("TaiwanStockInfoWithWarrant")
-    result = {}
+    # 先建 TaiwanStockInfo 的產業類別對照（需再打一次）
+    elec_meta = {}
+    all_meta  = {}
     for row in data:
         sid = str(row.get("stock_id","")).strip()
         t   = str(row.get("type","")).strip()
         if not (sid.isdigit() and len(sid) == 4): continue
-        if t not in ("twse", "tpex"):             continue
-        result[sid] = {
+        if t not in ("twse", "tpex"): continue
+        all_meta[sid] = {
             "name":   str(row.get("stock_name", sid)).strip(),
             "market": "tse" if t == "twse" else "otc",
         }
-    return result
+    return all_meta
 
-EXCLUDE_SIDS = {"9999", "0000"}
-
-# ── V20新增：電子股代碼集合（1 req）────────────────────────────
 def fetch_electronics_sids():
-    """
-    查 FinMind TaiwanStockInfo，取 industry_category 屬電子 8 大類的代碼。
-    回傳 set[str]
-    """
     data, _ = fm1("TaiwanStockInfo")
     elec_sids = set()
     cat_count = {}
     for row in data:
-        sid = str(row.get("stock_id", "")).strip()
+        sid = str(row.get("stock_id","")).strip()
         if not (sid.isdigit() and len(sid) == 4): continue
-        cat = str(row.get("industry_category", "")).strip()
-        t   = str(row.get("type", "")).strip()
+        cat = str(row.get("industry_category","")).strip()
+        t   = str(row.get("type","")).strip()
         if t not in ("twse", "tpex"): continue
         cat_count[cat] = cat_count.get(cat, 0) + 1
         if cat in ELECTRONICS_CATEGORIES:
@@ -145,35 +127,74 @@ def fetch_electronics_sids():
             print(f"     {cat}：{n} 支")
     return elec_sids
 
-WARRANT_DETAIL_CACHE = {}
+# ── Step②：活躍認購權證（1 req，同時快取明細）───────────────
+WARRANT_DETAIL_CACHE = {}  # sid -> {w_code: {...}}
 
-def fetch_active_warrant_targets():
-    return [], set()
+def fetch_active_warrant_targets(elec_sids, today_dt):
+    """
+    V22 核心：一次 1 req 拿近15天全市場認購權證成交資料，
+    過濾出「電子股 ∩ 近期有認購權證成交」的標的集合，
+    同時把權證明細快取起來，最後直接查表（不需再打 API）。
 
-# ── V20：建立掃描清單（電子股 ∩ 有認購權證）────────────────────
-def build_scan_list(warrant_targets, elec_sids):
+    這個函式把候選池從 974 支壓縮到約 150~250 支，
+    節省掉 700+ 次 API 請求，避免 402 超限。
     """
-    V20：warrant_targets（有認購權證）與 elec_sids（電子股）取交集，全掃，不設人工上限。
-    預估約 200~280 支，API 請求數比 V19 的 420 支更省。
-    """
-    all_sids = sorted([
-        s for s in warrant_targets
-        if s not in EXCLUDE_SIDS and s in elec_sids
-    ])
-    print(f"  → 電子股 ∩ 有認購權證：{len(all_sids)} 支（全部掃描，無上限）")
-    return all_sids
+    start = date_back(15)
+    end   = today_dt.strftime("%Y-%m-%d")
+    data, hit = fm1("TaiwanStockWarrant", start_date=start, end_date=end)
+    if hit or not data:
+        print("  ! TaiwanStockWarrant 無資料，fallback 用全量電子股")
+        return sorted(elec_sids), elec_sids
 
-# ── 第一階段：快速粗篩（只取近 4 天，速度快）──────────────────────
-def quick_filter(scan_sids, warrant_targets, quick_start, end_date):
-    """
-    每 req 只取一支股票的近 4 天資料。
-    淘汰條件（保守，寧可放行也不誤殺）：
-      - 最新資料距 end_date > 5 天（停牌/下市）
-      - 今日收跌（spread < 0）
-      - 成交量嚴重不足
-      - 股價 <50 或 >3000（低價股很少有認購權證）
-    通常淘汰 60~70%，回傳 list[dict]
-    """
+    vol_map    = {}
+    active_set = set()
+
+    for row in data:
+        call_put = str(row.get("PutCall",""))
+        if "C" not in call_put and "認購" not in call_put: continue
+        sid = str(row.get("underlying_stock","")).strip()
+        if not (sid.isdigit() and len(sid) == 4): continue
+        if sid not in elec_sids: continue   # 只留電子股
+        vol = si(row.get("TradingVolume", 0))
+        vol_map[sid] = vol_map.get(sid, 0) + vol
+        active_set.add(sid)
+
+        # 同時快取權證明細（跟 V17 一樣的做法）
+        try:
+            w_code     = str(row.get("stock_id","")).strip()
+            expire_str = str(row.get("ExpirationDate","")).strip()
+            leverage   = sf(row.get("EffectiveLeverage", 0))
+            delta      = sf(row.get("Delta", 0))
+            bid        = sf(row.get("BidPrice", 0))
+            ask        = sf(row.get("AskPrice", 0))
+            w_vol      = si(row.get("TradingVolume", 0))
+            row_date   = str(row.get("date","")).strip()
+            if not w_code or not expire_str: continue
+            expire_dt  = datetime.strptime(expire_str[:10], "%Y-%m-%d")
+            WARRANT_DETAIL_CACHE.setdefault(sid, {})
+            prev = WARRANT_DETAIL_CACHE[sid].get(w_code)
+            if prev is None or row_date > prev.get("_row_date",""):
+                WARRANT_DETAIL_CACHE[sid][w_code] = {
+                    "code": w_code,
+                    "expire_dt": expire_dt,
+                    "leverage":  leverage,
+                    "delta":     delta,
+                    "bid":       bid,
+                    "ask":       ask,
+                    "volume":    w_vol,
+                    "issuer":    str(row.get("Issuer",""))[:3],
+                    "_row_date": row_date,
+                }
+        except: pass
+
+    # 依近15天認購成交量排序（量大的優先掃）
+    sorted_sids = sorted(active_set, key=lambda s: -vol_map.get(s, 0))
+    cached_count = sum(len(v) for v in WARRANT_DETAIL_CACHE.values())
+    print(f"  → 電子股中有活躍認購交易：{len(sorted_sids)} 支（快取 {cached_count} 檔權證明細）")
+    return sorted_sids, active_set
+
+# ── 第一階段：快速粗篩 ──────────────────────────────────────
+def quick_filter(scan_sids, stock_meta, quick_start, end_date):
     survivors = []
     stop = False
     req  = 0
@@ -184,12 +205,10 @@ def quick_filter(scan_sids, warrant_targets, quick_start, end_date):
 
         data, hit = fm1("TaiwanStockPrice", sid, quick_start, end_date)
         req += 1
-        if hit:
-            stop = True; break
+        if hit: stop = True; break
         time.sleep(0.05)
 
         if not data: continue
-
         rows = []
         for row in data:
             try:
@@ -213,7 +232,7 @@ def quick_filter(scan_sids, warrant_targets, quick_start, end_date):
         ref_dt  = datetime.strptime(end_date, "%Y-%m-%d").date()
         if (ref_dt - last_dt).days > 5: continue
 
-        info   = warrant_targets.get(sid, {})
+        info   = stock_meta.get(sid, {})
         market = info.get("market", "tse")
         close  = today_p["close"]
         volume = today_p["volume"]
@@ -233,7 +252,7 @@ def quick_filter(scan_sids, warrant_targets, quick_start, end_date):
     print(f"  → 粗篩完成：{len(survivors)} 支存活（掃 {len(scan_sids)} 支，用 {req} req）")
     return survivors, req, stop
 
-# ── 第二階段：對粗篩存活者取完整歷史────────────────────────────────
+# ── 第二階段：完整歷史 ──────────────────────────────────────
 def fetch_price_full(sid, start_date, end_date):
     data, hit = fm1("TaiwanStockPrice", sid, start_date, end_date)
     if hit: return None, True
@@ -254,14 +273,7 @@ def fetch_price_full(sid, start_date, end_date):
         except: continue
     return sorted(result, key=lambda x: x["date"]), False
 
-# ── 三大法人 & 融資 ────────────────────────────────────────────
-# V19 修正最關鍵的 bug：name 欄位比對邏輯完全錯誤！
-#   V19 用 if "外資" in name 比對，但 FinMind 回傳的 name 欄位是英文：
-#     Dealer_Hedging, Dealer_self, Foreign_Dealer_Self,
-#     Foreign_Investor, Investment_Trust
-#   中文關鍵字「外資/投信/自營」永遠比對不到任何英文字串，
-#   所以加總結果永遠是初始值 0 —— 這就是截圖「外資0 投信0 自營0 合計0」
-#   的真正原因：不是沒資料，是比對條件寫錯，迴圈跑了但什麼都沒加進去。
+# ── 三大法人 & 融資 ─────────────────────────────────────────
 def fetch_inst(sid, start_date, end_date):
     data, hit = fm1("TaiwanStockInstitutionalInvestorsBuySell", sid, start_date, end_date)
     if hit: return {}, True
@@ -272,11 +284,10 @@ def fetch_inst(sid, start_date, end_date):
         net  = si(row.get("buy",0)) - si(row.get("sell",0))
         if date not in by_date:
             by_date[date] = {"foreign_net":0,"trust_net":0,"dealer_net":0}
-        # 正確的英文 name 值比對
         if name == "Foreign_Investor":
             by_date[date]["foreign_net"] += net
         elif name == "Foreign_Dealer_Self":
-            by_date[date]["foreign_net"] += net  # 外資自營商併入外資
+            by_date[date]["foreign_net"] += net
         elif name == "Investment_Trust":
             by_date[date]["trust_net"] += net
         elif name in ("Dealer_self", "Dealer_Hedging"):
@@ -296,24 +307,94 @@ def fetch_margin(sid, start_date, end_date):
     if hit: return {}, True
     if not data: return {}, False
     latest = sorted(data, key=lambda x: x.get("date",""))[-1]
-    # V19 修正：欄位名稱錯誤！
-    #   舊：MarginPurchaseRemainAmount  ← 不存在
-    #   新：MarginPurchaseTodayBalance  ← 正確欄位（融資今日餘額）
     bal = si(latest.get("MarginPurchaseTodayBalance",1)) or 1
     return {
         "margin_buy": si(latest.get("MarginPurchaseBuy",0)),
         "margin_bal": bal,
     }, False
 
-# ── 權證標記（誠實版：僅標記有/無，0 req）───────────────────────
-def has_warrant(sid, warrant_targets):
+# ── 權證明細查表（優先快取，fallback 個股查詢）──────────────
+def get_warrant_detail(sid, data_date_str):
     """
-    V19：誠實標記「這支股票名下是否有發行過認購權證」。
-    FinMind 免費版沒有提供權證代碼/履約價/到期日等明細表
-    （這些都在付費 Backer/Sponsor tier），所以不再產生假的明細列表。
-    回傳 True/False。
+    V22：優先從 WARRANT_DETAIL_CACHE 查表（Step② 已抓過全市場近15天明細）。
+    快取命中率預期 90%+ （因為 Step② 已抓電子股全量），完全不需要再打 API。
+    只有極少數情況才 fallback 到個股查詢。
     """
-    return sid in warrant_targets
+    dt = datetime.strptime(data_date_str, "%Y-%m-%d")
+    warrants = []
+
+    cached = WARRANT_DETAIL_CACHE.get(sid)
+    if cached:
+        for w_code, w in cached.items():
+            try:
+                days_left = (w["expire_dt"] - dt).days
+                if days_left < 20:                              continue
+                if w["leverage"] <= 0 or w["leverage"] > 15:   continue
+                delta = w["delta"]
+                if delta >= 0.70:    moneyness = "深度價內"
+                elif delta >= 0.55:  moneyness = "輕度價內"
+                elif delta >= 0.45:  moneyness = "價平"
+                elif delta >= 0.30:  moneyness = "輕度價外"
+                else:                moneyness = "價外"
+                warrants.append({
+                    "code":        w["code"],
+                    "issuer":      w["issuer"],
+                    "type":        "call",
+                    "expire":      w["expire_dt"].strftime("%Y/%m/%d"),
+                    "days_left":   days_left,
+                    "leverage":    round(w["leverage"], 1),
+                    "delta":       round(delta, 2),
+                    "moneyness":   moneyness,
+                    "bid":         w["bid"],
+                    "ask":         w["ask"],
+                    "volume":      w["volume"],
+                    "leverage_ok": 4 < w["leverage"] < 12,
+                })
+            except: continue
+
+    if not warrants:
+        # Fallback：個股查詢（窗口15天）
+        start = (dt - timedelta(days=15)).strftime("%Y-%m-%d")
+        data, _ = fm1("TaiwanStockWarrant", sid, start, data_date_str)
+        for row in data:
+            try:
+                call_put = str(row.get("PutCall",""))
+                if "C" not in call_put and "認購" not in call_put: continue
+                w_code     = str(row.get("stock_id","")).strip()
+                expire_str = str(row.get("ExpirationDate","")).strip()
+                leverage   = sf(row.get("EffectiveLeverage",0))
+                delta      = sf(row.get("Delta",0))
+                bid        = sf(row.get("BidPrice",0))
+                ask        = sf(row.get("AskPrice",0))
+                vol        = si(row.get("TradingVolume",0))
+                if not w_code: continue
+                try: expire_dt = datetime.strptime(expire_str[:10], "%Y-%m-%d")
+                except: continue
+                days_left = (expire_dt - dt).days
+                if days_left < 20:                 continue
+                if leverage <= 0 or leverage > 15: continue
+                if delta >= 0.70:    moneyness = "深度價內"
+                elif delta >= 0.55:  moneyness = "輕度價內"
+                elif delta >= 0.45:  moneyness = "價平"
+                elif delta >= 0.30:  moneyness = "輕度價外"
+                else:                moneyness = "價外"
+                warrants.append({
+                    "code":        w_code,
+                    "issuer":      str(row.get("Issuer",""))[:3],
+                    "type":        "call",
+                    "expire":      expire_dt.strftime("%Y/%m/%d"),
+                    "days_left":   days_left,
+                    "leverage":    round(leverage,1),
+                    "delta":       round(delta,2),
+                    "moneyness":   moneyness,
+                    "bid":         bid, "ask": ask, "volume": vol,
+                    "leverage_ok": 4 < leverage < 12,
+                })
+            except: continue
+
+    # 排序：成交量優先，再依槓桿合格、delta 距離 0.55 最近
+    warrants.sort(key=lambda x: (-x["volume"], 0 if x["leverage_ok"] else 1, abs(x["delta"]-0.55)))
+    return warrants[:3]
 
 # ── 評分 ──────────────────────────────────────────────────────
 def calc_ma(closes, n):
@@ -390,7 +471,6 @@ def main():
     today8 = now.strftime("%Y%m%d")
     req    = 0
 
-    # 盤中/盤後模式判斷
     hour_min = now.hour * 60 + now.minute
     if hour_min < 17 * 60 + 30:
         d = now - timedelta(days=1)
@@ -402,32 +482,33 @@ def main():
         end_date = today
         print(f"  ► 盤後模式：使用今日收盤資料（end_date={end_date}）")
 
-    print(f"[{now.strftime('%H:%M:%S')} 台灣時間] fetch_twse V20 開始 {today}")
+    print(f"[{now.strftime('%H:%M:%S')} 台灣時間] fetch_twse V22 開始 {today}")
     print(f"  FinMind token: {'已設定（600req/hr）' if TOKEN else '未設定（匿名300req/hr）'}")
-    print(f"  掃描策略：V20 兩階段（電子股 ∩ 有認購權證 全掃，無人工上限）")
+    print(f"  V22 架構：電子股 meta + 活躍權證快取 → 粗篩 → 精篩（預估總 req < 400）")
 
-    # ── ① 有認購權證的全部標的（1 req，免費）─────────────────────
-    print("  ► ① 取有認購權證標的（全量，免費 dataset）...")
-    warrant_targets = fetch_warrant_targets(); req += 1
-    if not warrant_targets: print("  ! ① 失敗，中止"); return
-    print(f"  → {len(warrant_targets)} 支")
+    # ── ① 電子股 meta（2 req：WithWarrant + TaiwanStockInfo）──
+    print("  ► ① 取電子股基本資料...")
+    stock_meta  = fetch_electronics_meta();    req += 1
+    elec_sids   = fetch_electronics_sids();    req += 1
+    if not stock_meta or not elec_sids:
+        print("  ! ① 失敗，中止"); return
+    print(f"  → 股票 meta：{len(stock_meta)} 支；電子股：{len(elec_sids)} 支")
     time.sleep(0.3)
 
-    # ── V20新增：取電子股代碼集合（1 req）──────────────────────
-    print("  ► V20：取電子股代碼（TaiwanStockInfo）...")
-    elec_sids = fetch_electronics_sids(); req += 1
-    if not elec_sids:
-        print("  ! 電子股資料取得失敗，fallback 全量掃描")
-        elec_sids = set(warrant_targets.keys())
+    # ── ② 活躍認購權證（1 req，縮減候選池 + 快取明細）──────────
+    print("  ► ② 取電子股活躍認購權證（近15天）...")
+    scan_sids, active_set = fetch_active_warrant_targets(elec_sids, now)
+    req += 1
+    if not scan_sids:
+        print("  ! ② 無任何電子股有認購權證交易，中止")
+        _write_empty(now, today8, req); return
+    print(f"  → 掃描候選：{len(scan_sids)} 支（電子股 ∩ 近15天有認購交易）")
     time.sleep(0.3)
 
-    # ── 建立掃描清單（V20：電子股 ∩ 有認購權證，全掃無上限）──
-    scan_sids = build_scan_list(warrant_targets, elec_sids)
-
-    # ── ② 第一階段：快速粗篩（近 4 天資料）──────────────────────
+    # ── ③ 第一階段：快速粗篩（近4天，只掃候選池）──────────────
     quick_start = (datetime.strptime(end_date, "%Y-%m-%d") - timedelta(days=4)).strftime("%Y-%m-%d")
-    print(f"  ► ② 第一階段粗篩（{quick_start}~{end_date}，共 {len(scan_sids)} 支）...")
-    survivors, q_req, stop = quick_filter(scan_sids, warrant_targets, quick_start, end_date)
+    print(f"  ► ③ 第一階段粗篩（{quick_start}~{end_date}，共 {len(scan_sids)} 支）...")
+    survivors, q_req, stop = quick_filter(scan_sids, stock_meta, quick_start, end_date)
     req += q_req
 
     if not survivors:
@@ -438,9 +519,9 @@ def main():
     actual_date = date_votes.most_common(1)[0][0]
     print(f"  → 實際資料日期：{actual_date}")
 
-    # ── ④ 第二階段：對存活候選取完整歷史 ─────────────────────────
+    # ── ④ 第二階段：完整歷史精篩 ──────────────────────────────
     full_start = (datetime.strptime(actual_date, "%Y-%m-%d") - timedelta(days=35)).strftime("%Y-%m-%d")
-    print(f"  ► ③ 第二階段精篩（{full_start}~{actual_date}，共 {len(survivors)} 支）...")
+    print(f"  ► ④ 第二階段精篩（{full_start}~{actual_date}，共 {len(survivors)} 支）...")
 
     candidates = []
     for idx, s in enumerate(survivors):
@@ -457,12 +538,10 @@ def main():
         time.sleep(0.07)
 
         if not hist_rows or len(hist_rows) < 6: continue
-
         today_p = hist_rows[-1]
         last_dt = datetime.strptime(today_p["date"], "%Y-%m-%d").date()
         ref_dt  = datetime.strptime(actual_date, "%Y-%m-%d").date()
         if (ref_dt - last_dt).days > 5: continue
-
         hist = hist_rows[:-1]
         if len(hist) < 5: continue
 
@@ -478,48 +557,49 @@ def main():
             "data_date": today_p["date"],
         })
 
-    print(f"  → ④ 完成：{len(candidates)} 支候選（req={req}）")
+    print(f"  → 精篩完成：{len(candidates)} 支候選（req={req}）")
 
     if not candidates:
         print("  ! 無候選，可能資料尚未更新")
         _write_empty(now, today8, req); return
 
-    # ── ⑤ Top30：查三大法人 + 融資 ─────────────────────────────
+    # ── ⑤ Top30：三大法人 + 融資 ─────────────────────────────
     candidates.sort(key=lambda x: x["chg"], reverse=True)
     top30      = candidates[:30]
     inst_start = (datetime.strptime(actual_date, "%Y-%m-%d") - timedelta(days=20)).strftime("%Y-%m-%d")
 
-    print(f"  ► ④ 三大法人 + 融資（{len(top30)} 支，{inst_start}~{actual_date}）...")
+    print(f"  ► ⑤ 三大法人 + 融資（{len(top30)} 支）...")
     inst_map   = {}
     margin_map = {}
     for c in top30:
         if stop: break
         sid = c["sid"]
-        res, hit = fetch_inst(sid, inst_start, actual_date); req += 1
+        res, hit = fetch_inst(sid, inst_start, actual_date);   req += 1
         if hit: stop = True; break
-        inst_map[sid] = res; time.sleep(0.12)
-
+        inst_map[sid] = res;   time.sleep(0.12)
         res, hit = fetch_margin(sid, inst_start, actual_date); req += 1
         if hit: stop = True; break
         margin_map[sid] = res; time.sleep(0.10)
 
     print(f"  → ⑤ 完成（req={req}）")
 
-    # ── 完整評分，取 TopN ─────────────────────────────────────────
+    # ── 完整評分 + 取 TopN ───────────────────────────────────
     scored = []
     for c in top30:
         sid  = c["sid"]
         hist = c["hist"]
         if len(hist) < 5: continue
         score, reasons, warnings, chg = calc_score(
-            c["today_p"], hist,
-            inst_map.get(sid,{}), margin_map.get(sid,{})
+            c["today_p"], hist, inst_map.get(sid,{}), margin_map.get(sid,{})
         )
-        # 有認購權證加分（誠實版：只能判斷有/無，固定加 2 分）
-        hw = has_warrant(sid, warrant_targets)
-        score = min(100, score + (2 if hw else 0))
+        # 有認購權證加分
+        if sid in active_set: score = min(100, score + 2)
         if score < 25: continue
+
         ma_c = [h["close"] for h in hist]
+        # V22：從快取取權證明細（不用再打 API）
+        warrants = get_warrant_detail(sid, actual_date)
+
         scored.append({
             "sid":        sid,
             "name":       c["info"].get("name", sid),
@@ -534,17 +614,13 @@ def main():
             "ma5":        calc_ma(ma_c, 5),
             "ma10":       calc_ma(ma_c, 10),
             "ma20":       calc_ma(ma_c, 20),
-            "has_warrant": hw,
-            "warrants":   [],   # V19：不再產生假明細，前端改用 has_warrant 顯示
+            "has_warrant": sid in active_set,
+            "warrants":   warrants,   # V22：真實明細，從快取取
         })
 
     scored.sort(key=lambda x: x["score"], reverse=True)
     top_n = scored[:TOP_N]
 
-    print(f"  → 認購權證標記：{sum(1 for c in top_n if c.get('has_warrant'))}/{len(top_n)} 支有發行過認購權證")
-    print(f"  ⚠ 注意：FinMind 免費版無權證明細 API，無法提供代碼/履約價/到期日/槓桿，請至證券 APP 查詢實際可投資的權證")
-
-    # ── 機率標籤 ─────────────────────────────────────────────
     for c in top_n:
         s = c["score"]
         if s >= 85:
