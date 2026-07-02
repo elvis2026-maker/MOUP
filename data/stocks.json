@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026/07/02 21:01",
+  "updated_at": "2026/07/02 21:25",
   "trade_date": "20260702",
   "data_date": "2026-07-02",
   "total_scanned": 195,
   "candidates_count": 29,
-  "pool_count": 44,
+  "pool_count": 40,
   "total_api_req": 332,
   "scan_progress": {
     "date": "2026-07-02",
