@@ -34,6 +34,11 @@ from collections import Counter
 TZ_TW       = timezone(timedelta(hours=8))
 OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "../data/stocks.json")
 TOP_N       = 15
+# V28：歷史保留機制 —— 保留期設 > 輪替天數，確保「這一輪」掃過的股票在下一輪掃到之前都還留著
+HISTORY_MAX_AGE_DAYS = 6
+# V29：對應 fetch-data.yml 排定的 5 次排程（台灣 18/19/20/21/22 點）
+# 一天內把電子股切成 5 份分批掃完，不用等 3 天才輪完一圈
+DAILY_RUN_SLOTS = 5
 FM_URL      = "https://api.finmindtrade.com/api/v4/data"
 # ── 多 TOKEN 輪詢（支援最多 4 個帳號）────────────────────────
 # GitHub Secrets 設定：FINMIND_TOKEN_1 / _2 / _3 / _4
@@ -174,6 +179,44 @@ def fetch_electronics_sids():
 # ── Step②：活躍認購權證（1 req，同時快取明細）───────────────
 WARRANT_DETAIL_CACHE = {}  # sid -> {w_code: {...}}
 
+# ── V30：漏跑補償機制 ────────────────────────────────────────
+# 每次寫 stocks.json 時，同時記一份「今天第幾份排程已經掃完」的進度。
+# 下次執行時，如果發現排程時間點之前有沒被記錄完成的份數（代表那一輪
+# 沒跑、或跑到一半被 402 中斷），這次就多補掃「最近一份沒完成的」。
+def _load_scan_progress():
+    if not os.path.exists(OUTPUT_PATH):
+        return None
+    try:
+        with open(OUTPUT_PATH, "r", encoding="utf-8") as f:
+            old = json.load(f)
+    except Exception:
+        return None
+    return old.get("scan_progress")
+
+def _resolve_slot_and_catchup(today_dt, n_slots):
+    """
+    回傳 (target_slots, prev_progress)
+    target_slots：這次要掃的份數 index 列表（通常是 [今天的份數]，
+                  若偵測到之前有漏掉的份數，會多補一份變成 2 個）
+    """
+    today_str = today_dt.strftime("%Y-%m-%d")
+    prev = _load_scan_progress()
+    if prev and prev.get("date") == today_str:
+        slots_done = set(prev.get("slots_done", []))
+    else:
+        slots_done = set()   # 換日了，重新開始記錄
+
+    cur_slot = (today_dt.hour - 18) % n_slots
+
+    # 找出「今天、在這一份之前」還沒被標記完成的份數 → 視為漏跑
+    missed = [i for i in range(cur_slot) if i not in slots_done]
+    catchup = missed[-1:]  # 一次只補最近的 1 份，避免額度一次燒太多
+
+    target_slots = sorted(set(catchup + [cur_slot]))
+    if catchup:
+        print(f"     ⚠ 偵測到第 {catchup[0] + 1}/{n_slots} 份先前沒跑完，這次一併補掃")
+    return target_slots, today_str, slots_done
+
 def fetch_active_warrant_targets(elec_sids, today_dt):
     """
     V27 修正 V25 的兩個問題：
@@ -184,6 +227,9 @@ def fetch_active_warrant_targets(elec_sids, today_dt):
       ① 改查 TaiwanStockWarrantDetail（支援全量，1 req）取得認購標的清單
       ② 若仍失敗，直接 fallback 限量電子股（不再逐股查，省 30 req）
       ③ 最終 fallback：限量 400 支（硬性保護）
+
+    回傳：(scan_sids, active_set, slot_meta)
+      slot_meta 是 dict，main() 用來決定這輪掃完後要不要把「份數」標記完成
     """
     end   = today_dt.strftime("%Y-%m-%d")
     start = date_back(15)
@@ -231,36 +277,62 @@ def fetch_active_warrant_targets(elec_sids, today_dt):
             sorted_sids  = sorted(active_set, key=lambda s: -vol_map.get(s,0))
             cached_count = sum(len(v) for v in WARRANT_DETAIL_CACHE.values())
             print(f"  → [TaiwanStockWarrantDetail] 電子股有活躍認購：{len(sorted_sids)} 支（快取 {cached_count} 檔）")
-            return sorted_sids, active_set
+            # 這個分支本來就查全量，不受「份數分批」限制，視為今天全部份數都掃完
+            return sorted_sids, active_set, {"mode": "full"}
 
     # ── TaiwanStockWarrantDetail 失敗 → 直接 fallback（不再逐股查）──
     # V27：移除「方法二」的 30 支批次查詢
     # 原因：TaiwanStockWarrant 個股查詢在境外 IP 也是全部 422（log 可見），
     #       白白消耗 30 req，不如直接進 fallback，保留配額給粗篩和精篩用
-    # V28：加入「日期輪替」
-    # 原因：境外 IP（GitHub Actions）長期抓不到 TaiwanStockWarrantDetail，
-    #       每次都會走到這個 fallback。若固定取 fallback[:400]，
-    #       代號較大（較後面）的電子股永遠不會被掃到。
-    #       改成依日期輪替起點，讓所有電子股平均每隔幾天都能被掃過一輪。
-    print("  ! TaiwanStockWarrantDetail 無資料，直接 fallback 用限量電子股（輪替 max 400）")
+    # V29：改成「當天分批」而不是「跨日輪替」
+    # 原因：4 個 TOKEN 合計額度足夠一天內把電子股全部掃完，不用拖到 3 天後。
+    #       fetch-data.yml 一天排定跑 5 次（18~22 點），把電子股平均切成 5 份，
+    #       每次排程掃其中一份，晚上最後一次跑完，剛好等於「今天全部電子股都掃過一輪」，
+    #       疊加歷史 pool 後隔天早上看到的就是當天完整的總整理。
+    # V30：加入漏跑補償 —— 如果偵測到前面某份沒標記完成，這輪多補掃一份
+    print("  ! TaiwanStockWarrantDetail 無資料，直接 fallback 用限量電子股（當天分批）")
     fallback_all = sorted(
         [s for s in elec_sids if s not in EXCLUDE_SIDS],
-        key=lambda s: s   # 清單本身仍按代號排序，只用輪替 offset 移動起點
+        key=lambda s: s   # 清單本身仍按代號排序，只用分批 offset 移動起點
     )
     total = len(fallback_all)
-    limit = 400
+    limit = 400   # 單輪保護上限，避免異常情況下一次掃太多把額度燒光
+
     if total <= limit:
-        fallback = fallback_all
-        print(f"     電子股僅 {total} 支（≤{limit}），全部掃描，不需輪替")
+        fallback  = fallback_all
+        slot_meta = {"mode": "full"}   # 全部都掃了，等同今天全份數完成
+        print(f"     電子股僅 {total} 支（≤{limit}），全部掃描，不需分批")
     else:
-        cycle_days = -(-total // limit)          # ceil，幾天輪完一圈
-        day_idx    = today_dt.toordinal() % cycle_days
-        start      = day_idx * limit
-        # 用「清單接自己一次」處理跨尾端接回頭的情況，取 limit 支
-        fallback = (fallback_all + fallback_all)[start:start + limit]
-        print(f"     電子股共 {total} 支，每 {cycle_days} 天輪一圈，"
-              f"今天第 {day_idx + 1}/{cycle_days} 輪（代號索引 {start}~{min(start + limit, total) - 1}）")
-    return fallback[:limit], set(fallback[:limit])
+        n_slots = DAILY_RUN_SLOTS
+        base = total // n_slots
+        rem  = total % n_slots
+        bounds, pos = [], 0
+        for i in range(n_slots):
+            size = base + (1 if i < rem else 0)   # 餘數平均塞進前幾份
+            bounds.append((pos, pos + size))
+            pos += size
+
+        target_slots, today_str, slots_done = _resolve_slot_and_catchup(today_dt, n_slots)
+
+        fallback = []
+        ranges_desc = []
+        for slot_idx in target_slots:
+            s_idx, e_idx = bounds[slot_idx]
+            fallback.extend(fallback_all[s_idx:e_idx])
+            ranges_desc.append(f"第{slot_idx+1}份({s_idx}~{e_idx-1})")
+        fallback = fallback[:limit] if len(fallback) > limit else fallback
+
+        slot_meta = {
+            "mode":          "fallback",
+            "date":          today_str,
+            "target_slots":  target_slots,
+            "total_slots":   n_slots,
+            "prev_done":     sorted(slots_done),
+        }
+        print(f"     電子股共 {total} 支，今天排程共 {n_slots} 份，本輪掃 "
+              f"{'、'.join(ranges_desc)}，合計 {len(fallback)} 支")
+
+    return fallback, set(fallback), slot_meta
 
 # ── 第一階段：快速粗篩 ──────────────────────────────────────
 def quick_filter(scan_sids, stock_meta, quick_start, end_date):
@@ -495,6 +567,60 @@ def calc_score(today_p, hist, inst, margin):
 
     return max(0, min(100, score)), reasons, warnings, chg
 
+# ── V28：歷史 pool（因為 fallback 400 支是輪替的，同一批股票要隔幾天
+#         才會再被掃到一次，所以精選清單要用「多天疊加」而不是每次全蓋掉）──
+def _load_history_pool():
+    """讀取上次寫出的 stocks.json，回傳 {sid: stock_dict} 方便用代號合併。"""
+    if not os.path.exists(OUTPUT_PATH):
+        return {}
+    try:
+        with open(OUTPUT_PATH, "r", encoding="utf-8") as f:
+            old = json.load(f)
+    except Exception as e:
+        print(f"  ! 讀取舊 stocks.json 失敗（{e}），視為沒有歷史資料")
+        return {}
+    pool = {}
+    for s in old.get("stocks", []):
+        sid = s.get("sid")
+        if sid:
+            pool[sid] = s
+    return pool
+
+def _merge_with_history(today_scored, ref_date_str):
+    """
+    合併今天新掃到的 + 舊 pool 裡還沒過期的，用 sid 去重（今天的新資料優先），
+    依 score 重新排序，只丟掉太舊（超過 HISTORY_MAX_AGE_DAYS 天沒更新）的股票。
+    回傳：(排序後合併清單, 用來寫檔的 top_n)
+    """
+    ref_date = datetime.strptime(ref_date_str, "%Y-%m-%d").date()
+    pool = _load_history_pool()
+
+    # 今天新掃到的，一律覆蓋 pool 裡同代號的舊資料（新資料比較準）
+    for s in today_scored:
+        pool[s["sid"]] = s
+
+    kept = []
+    today_count = 0
+    for sid, s in pool.items():
+        dd = s.get("data_date")
+        try:
+            age = (ref_date - datetime.strptime(dd, "%Y-%m-%d").date()).days
+        except Exception:
+            age = 999  # 抓不到日期的舊資料，當作過期處理
+        if age > HISTORY_MAX_AGE_DAYS:
+            continue
+        s["age_days"] = age                    # 這筆資料是幾天前掃到的
+        s["is_today"] = (dd == ref_date_str)    # 是否為今天新掃到
+        if s["is_today"]:
+            today_count += 1
+        kept.append(s)
+
+    kept.sort(key=lambda x: x["score"], reverse=True)
+    print(f"  → 疊加歷史：今日新增 {today_count} 支 + 保留舊資料 "
+          f"{len(kept) - today_count} 支（{HISTORY_MAX_AGE_DAYS} 天內），"
+          f"合併後共 {len(kept)} 支候選池")
+    return kept
+
 # ── 主程式 ─────────────────────────────────────────────────────
 def main():
     now    = tw_now()
@@ -529,11 +655,11 @@ def main():
 
     # ── ② 活躍認購權證（1 req，縮減候選池 + 快取明細）──────────
     print("  ► ② 取電子股活躍認購權證（近15天）...")
-    scan_sids, active_set = fetch_active_warrant_targets(elec_sids, now)
+    scan_sids, active_set, slot_meta = fetch_active_warrant_targets(elec_sids, now)
     req += 1
     if not scan_sids:
         print("  ! ② 無任何電子股有認購權證交易，中止")
-        _write_empty(now, today8, req); return
+        _write_empty(now, today8, req, slot_meta, False); return
     print(f"  → 掃描候選：{len(scan_sids)} 支（電子股 ∩ 近15天有認購交易）")
     time.sleep(0.3)
 
@@ -548,9 +674,13 @@ def main():
     survivors, q_req, stop = quick_filter(scan_sids, stock_meta, quick_start, end_date)
     req += q_req
 
+    # V30：粗篩「完整跑完沒被 402 打斷」才算這份/這幾份排程真正完成，
+    # 留著這個旗標，等最後寫檔時才決定 slots_done 要不要納入這輪的份數
+    slot_scan_completed = not stop
+
     if not survivors:
         print("  ! 粗篩後無存活標的，可能資料尚未更新")
-        _write_empty(now, today8, req); return
+        _write_empty(now, today8, req, slot_meta, slot_scan_completed); return
     # V27：402 提前停止時，survivors 已有部分結果，繼續往下跑
     if stop:
         print(f"  ⚠ 粗篩因 402 提前停止，但已存活 {len(survivors)} 支，繼續精篩")
@@ -602,7 +732,7 @@ def main():
 
     if not candidates:
         print("  ! 無候選，可能資料尚未更新")
-        _write_empty(now, today8, req); return
+        _write_empty(now, today8, req, slot_meta, slot_scan_completed); return
 
     # ── ⑤ Top30：三大法人 + 融資 ─────────────────────────────
     candidates.sort(key=lambda x: x["chg"], reverse=True)
@@ -657,10 +787,15 @@ def main():
             "ma20":       calc_ma(ma_c, 20),
             "has_warrant": sid in active_set,  # 有發行認購權證（代號需至券商查）
             "warrants":   warrants,   # V27：真實明細，從快取取
+            "data_date":  c["data_date"],       # V28：這支股票的資料實際日期，合併歷史用
         })
 
     scored.sort(key=lambda x: x["score"], reverse=True)
-    top_n = scored[:TOP_N]
+
+    # V28：跟歷史 pool 疊加（因為 fallback 是輪替掃描，今天沒掃到的股票
+    # 不代表它不好，只是還沒輪到；先合併再取 TopN，才不會漏掉前幾輪的好標的）
+    merged_pool = _merge_with_history(scored, actual_date)
+    top_n = merged_pool[:TOP_N]
 
     for c in top_n:
         s = c["score"]
@@ -673,14 +808,18 @@ def main():
         else:
             c["prob"] = "偏低（<48%）";                       c["prob_level"] = "low"
 
+    scan_progress = _finalize_scan_progress(slot_meta, slot_scan_completed)
+
     output = {
-        "updated_at":       now.strftime("%Y/%m/%d %H:%M"),
-        "trade_date":       actual_date.replace("-",""),
-        "data_date":        actual_date,
-        "total_scanned":    len(scan_sids),
-        "candidates_count": len(scored),
-        "total_api_req":    req,
-        "stocks":           top_n,
+        "updated_at":         now.strftime("%Y/%m/%d %H:%M"),
+        "trade_date":         actual_date.replace("-",""),
+        "data_date":          actual_date,
+        "total_scanned":      len(scan_sids),
+        "candidates_count":   len(scored),          # 今天新掃到、通過門檻的數量
+        "pool_count":         len(merged_pool),      # V28：疊加歷史後的候選池總數
+        "total_api_req":      req,
+        "scan_progress":      scan_progress,         # V30：漏跑補償用的份數進度
+        "stocks":             top_n,
     }
 
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
@@ -692,20 +831,47 @@ def main():
         wc = len(s.get("warrants",[]))
         print(f"  [{s['score']:3d}] {s['sid']} {s['name'][:8]:8s} {s['change_pct']:+.2f}%  {s['prob']}  權證:{wc}支")
 
-def _write_empty(now, today8, req):
+def _finalize_scan_progress(slot_meta, completed):
+    """
+    依這輪的 slot_meta（來自 fetch_active_warrant_targets）與是否順利掃完，
+    算出要寫進 output["scan_progress"] 的內容，下次執行時用來判斷有沒有漏跑。
+    mode=="full"（全量查到 or 電子股總數 ≤ 400 不用分批）或沒有 slot_meta
+    （① 就失敗，還沒走到分批這步）都不需要記錄份數進度。
+    """
+    if not slot_meta or slot_meta.get("mode") != "fallback":
+        return None
+    prev_done = set(slot_meta.get("prev_done", []))
+    if completed:
+        prev_done |= set(slot_meta.get("target_slots", []))
+    return {
+        "date":        slot_meta["date"],
+        "total_slots": slot_meta["total_slots"],
+        "slots_done":  sorted(prev_done),
+    }
+
+def _write_empty(now, today8, req, slot_meta=None, slot_scan_completed=False):
+    # V28：今天沒新資料（額度用完/API 沒回應等），不要把舊的精選清單洗掉，
+    # 改成沿用歷史 pool（一樣會依保留天數自動過期）
+    ref_date_str = now.strftime("%Y-%m-%d")
+    merged_pool  = _merge_with_history([], ref_date_str)
+    top_n        = merged_pool[:TOP_N]
+    scan_progress = _finalize_scan_progress(slot_meta, slot_scan_completed)
+
     output = {
         "updated_at":       now.strftime("%Y/%m/%d %H:%M"),
         "trade_date":       today8,
-        "data_date":        now.strftime("%Y-%m-%d"),
+        "data_date":        ref_date_str,
         "total_scanned":    0,
         "candidates_count": 0,
+        "pool_count":       len(merged_pool),
         "total_api_req":    req,
-        "stocks":           [],
+        "scan_progress":    scan_progress,   # V30：漏跑補償用的份數進度
+        "stocks":           top_n,
     }
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
-    print(f"  💾 stocks.json 輸出空結果（API 已用 {req} 次）")
+    print(f"  💾 stocks.json 今天無新資料，沿用歷史精選 {len(top_n)} 支（API 已用 {req} 次）")
 
 if __name__ == "__main__":
     main()
