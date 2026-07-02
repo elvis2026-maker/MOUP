@@ -1,18 +1,19 @@
 {
-  "updated_at": "2026/07/02 13:43",
+  "updated_at": "2026/07/02 16:38",
   "trade_date": "20260701",
   "data_date": "2026-07-01",
-  "total_scanned": 196,
-  "candidates_count": 25,
-  "pool_count": 40,
-  "total_api_req": 311,
+  "total_scanned": 195,
+  "candidates_count": 23,
+  "pool_count": 38,
+  "total_api_req": 303,
   "scan_progress": {
     "date": "2026-07-02",
     "total_slots": 5,
     "slots_done": [
       0,
       1,
-      2
+      2,
+      3
     ]
   },
   "stocks": [
@@ -160,6 +161,78 @@
       "age_days": 0,
       "is_today": true,
       "prob": "中高（69%）",
+      "prob_level": "medium-high"
+    },
+    {
+      "sid": "6271",
+      "name": "同欣電",
+      "close": 287.5,
+      "change_pct": 7.68,
+      "volume": 42671326,
+      "market": "tse",
+      "score": 76,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "量能放大 2.2x",
+        "均線多頭排列",
+        "站上月線 MA20=242.68",
+        "突破近10日高點",
+        "三大法人買超 2413張",
+        "投信積極買超"
+      ],
+      "warnings": [
+        "融資追價明顯"
+      ],
+      "inst": {
+        "foreign_net": 798,
+        "trust_net": 649,
+        "dealer_net": 966,
+        "total_net": 2413
+      },
+      "ma5": 257.6,
+      "ma10": 249.1,
+      "ma20": 242.68,
+      "has_warrant": true,
+      "warrants": [],
+      "data_date": "2026-07-01",
+      "age_days": 0,
+      "is_today": true,
+      "prob": "中高（68%）",
+      "prob_level": "medium-high"
+    },
+    {
+      "sid": "6257",
+      "name": "矽格",
+      "close": 245.0,
+      "change_pct": 3.38,
+      "volume": 19113071,
+      "market": "tse",
+      "score": 74,
+      "reasons": [
+        "大漲 ≥3%",
+        "量能放大 1.7x",
+        "均線多頭排列",
+        "站上月線 MA20=223.32",
+        "突破近10日高點",
+        "三大法人買超 7729張",
+        "外資積極買超"
+      ],
+      "warnings": [],
+      "inst": {
+        "foreign_net": 7183,
+        "trust_net": 209,
+        "dealer_net": 336,
+        "total_net": 7729
+      },
+      "ma5": 233.2,
+      "ma10": 230.85,
+      "ma20": 223.32,
+      "has_warrant": true,
+      "warrants": [],
+      "data_date": "2026-07-01",
+      "age_days": 0,
+      "is_today": true,
+      "prob": "中高（66%）",
       "prob_level": "medium-high"
     },
     {
@@ -482,75 +555,6 @@
       "age_days": 0,
       "is_today": true,
       "prob": "中（60%）",
-      "prob_level": "medium"
-    },
-    {
-      "sid": "2493",
-      "name": "揚博",
-      "close": 317.0,
-      "change_pct": 8.38,
-      "volume": 1802623,
-      "market": "tse",
-      "score": 67,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "收盤靠近最高點（買盤強）",
-        "均線多頭排列",
-        "站上月線 MA20=224.5",
-        "突破近10日高點"
-      ],
-      "warnings": [],
-      "inst": {
-        "foreign_net": 498,
-        "trust_net": 5,
-        "dealer_net": 8,
-        "total_net": 512
-      },
-      "ma5": 276.8,
-      "ma10": 268.95,
-      "ma20": 224.5,
-      "has_warrant": true,
-      "warrants": [],
-      "data_date": "2026-07-01",
-      "age_days": 0,
-      "is_today": true,
-      "prob": "中（60%）",
-      "prob_level": "medium"
-    },
-    {
-      "sid": "2363",
-      "name": "矽統",
-      "close": 73.5,
-      "change_pct": 6.52,
-      "volume": 82848711,
-      "market": "tse",
-      "score": 63,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "量能放大 1.9x",
-        "均線多頭排列",
-        "站上月線 MA20=63.6",
-        "三大法人買超 20400張",
-        "外資積極買超"
-      ],
-      "warnings": [
-        "融資追價明顯"
-      ],
-      "inst": {
-        "foreign_net": 19230,
-        "trust_net": 0,
-        "dealer_net": 1170,
-        "total_net": 20400
-      },
-      "ma5": 70.32,
-      "ma10": 66.75,
-      "ma20": 63.6,
-      "has_warrant": true,
-      "warrants": [],
-      "data_date": "2026-07-01",
-      "age_days": 0,
-      "is_today": true,
-      "prob": "中（56%）",
       "prob_level": "medium"
     }
   ]
