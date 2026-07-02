@@ -635,10 +635,30 @@ function cardHTML(s, rank){
   const warrants=s.warrants||[];
   const hasWarrant = s.has_warrant === true || warrants.length > 0;
   let wBlock='';
-  if(hasWarrant){
+  if(warrants.length > 0){
+    const rows = warrants.map(w=>{
+      const cls = moneynessClass(w.moneyness);
+      const lev = (w.leverage_est!=null) ? `${w.leverage_est}x` : '--';
+      const pct = w.moneyness_pct>0 ? `+${w.moneyness_pct}%` : `${w.moneyness_pct}%`;
+      return `<tr>
+        <td class="w-code">${w.code}</td>
+        <td><span class="w-badge ${cls}">${w.moneyness}</span> <span class="w-mono" style="color:var(--text3);font-size:12px">${pct}</span></td>
+        <td class="w-mono">${w.fulfillment_price}</td>
+        <td class="w-mono">${w.expire}<br><span style="color:var(--text3);font-size:11px">剩 ${w.days_left} 天</span></td>
+        <td class="w-mono">${lev}</td>
+      </tr>`;
+    }).join('');
+    wBlock=`<table class="w-table">
+      <thead><tr><th>權證代號</th><th>價內外</th><th>履約價</th><th>到期日</th><th>估算槓桿</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="warrant-note">
+      ⚠ 「估算槓桿」是用（正股價×行使比例）／權證價概算，不是精確的「有效槓桿」（沒有 Delta 資料無法算），僅供參考；實際買賣價、成交量請至證券 APP 確認流動性。
+    </div>`;
+  } else if(hasWarrant){
     wBlock=`<div class="no-warrant" style="border-color:var(--accent);color:var(--text)">
-      ✅ 此標的名下有發行認購權證。
-      <br><small style="color:var(--text3)">FinMind 免費版不提供代碼/履約價/到期日等明細，請至您的<strong>證券 APP</strong> 搜尋股票代號「${s.sid}」→ 「認購權證」查詢可投資標的。</small>
+      ✅ 此標的名下有發行認購權證，但目前抓不到明細（可能全數快到期或資料源當下異常）。
+      <br><small style="color:var(--text3)">請至您的<strong>證券 APP</strong> 搜尋股票代號「${s.sid}」→ 「認購權證」查詢可投資標的。</small>
     </div>`;
   } else {
     wBlock=`<div class="no-warrant">目前查無此標的的認購權證資料（可能已全數到期或尚未發行）</div>`;

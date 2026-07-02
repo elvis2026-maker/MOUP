@@ -223,8 +223,21 @@ def fetch_active_warrant_targets(elec_sids, today_dt):
       FinMind TaiwanStockWarrant 不支援全量查詢（不帶 stock_id），
       會回傳 422 → fallback 到 977 支 → 粗篩超過 600 req → 402 超限。
 
+    V31：找到問題根源 —— TaiwanStockWarrantDetail 這個 dataset 名稱
+      在 FinMind 目前公開文件裡根本查不到（不是被擋，是這個名字可能
+      本來就不存在／已改名），才會每次都 422。
+      正確、目前文件上找得到、且欄位對得上的 dataset 是
+      TaiwanStockInfoWithWarrantSummary（可不帶 data_id 全量查）：
+        stock_id(權證代號) / target_stock_id(標的股) / type(權證類型)
+        / end_date(到期日) / fulfillment_price(履約價) / exercise_ratio(行使比例)
+        / close(權證價) / target_close(標的股價)
+      注意：這個 dataset 沒有槓桿(EffectiveLeverage)、Delta、買賣價、成交量，
+      這些是 FinMind 付費才有的即時籌碼資料，免費版本來就拿不到。
+      改成用「履約價 vs 正股價」算價內外程度、用「正股價/(權證價×行使比例)」
+      粗估槓桿倍數（非精確的有效槓桿，只能當參考）。
+
     V27 解法：
-      ① 改查 TaiwanStockWarrantDetail（支援全量，1 req）取得認購標的清單
+      ① 改查 TaiwanStockInfoWithWarrantSummary（支援全量，1 req）取得認購標的清單
       ② 若仍失敗，直接 fallback 限量電子股（不再逐股查，省 30 req）
       ③ 最終 fallback：限量 400 支（硬性保護）
 
@@ -234,53 +247,73 @@ def fetch_active_warrant_targets(elec_sids, today_dt):
     end   = today_dt.strftime("%Y-%m-%d")
     start = date_back(15)
 
+    def is_call_type(type_str):
+        """認購權證判斷：目前不確定 FinMind 這個欄位實際編碼是文字還是代碼，
+        兩種都比對，寧可保守（比對不到就當作不確定，不強行歸類為認購）。"""
+        t = str(type_str).strip()
+        if "認售" in t or t in ("02", "put", "Put", "PUT"): return False
+        if "認購" in t or t in ("01", "call", "Call", "CALL"): return True
+        return None  # 無法判斷
+
     def build_cache_and_set(data_rows, elec_sids):
-        vol_map    = {}
+        cand_count = {}    # sid -> 符合條件的權證檔數（用來排優先序，取代舊版用成交量排序）
         active_set = set()
+        type_seen  = Counter()  # 記錄實際看到的 type 值，方便之後對照真實編碼
+
         for row in data_rows:
-            call_put = str(row.get("PutCall",""))
-            if "C" not in call_put and "認購" not in call_put: continue
-            sid = str(row.get("UnderlyingSymbol", row.get("underlying_stock",""))).strip()
+            type_raw = row.get("type", "")
+            type_seen[str(type_raw)] += 1
+            is_call = is_call_type(type_raw)
+            if is_call is False:
+                continue  # 確定是認售，跳過
+            # is_call is None（無法判斷）先當作可能是認購，避免因為編碼猜錯而漏掉全部標的
+
+            sid = str(row.get("target_stock_id", "")).strip()
             if not (sid.isdigit() and len(sid) == 4): continue
             if sid not in elec_sids: continue
-            vol = si(row.get("TradingVolume", 0))
-            vol_map[sid] = vol_map.get(sid, 0) + vol
-            active_set.add(sid)
-            try:
-                w_code     = str(row.get("stock_id","")).strip()
-                expire_str = str(row.get("ExpirationDate","")).strip()
-                leverage   = sf(row.get("EffectiveLeverage", 0))
-                delta      = sf(row.get("Delta", 0))
-                row_date   = str(row.get("date","")).strip()
-                if not w_code or not expire_str: continue
-                expire_dt  = datetime.strptime(expire_str[:10], "%Y-%m-%d")
-                WARRANT_DETAIL_CACHE.setdefault(sid, {})
-                prev = WARRANT_DETAIL_CACHE[sid].get(w_code)
-                if prev is None or row_date > prev.get("_row_date",""):
-                    WARRANT_DETAIL_CACHE[sid][w_code] = {
-                        "code": w_code, "expire_dt": expire_dt,
-                        "leverage": leverage, "delta": delta,
-                        "bid": sf(row.get("BidPrice",0)),
-                        "ask": sf(row.get("AskPrice",0)),
-                        "volume": si(row.get("TradingVolume",0)),
-                        "issuer": str(row.get("Issuer",""))[:3],
-                        "_row_date": row_date,
-                    }
-            except: pass
-        return vol_map, active_set
 
-    # ── 方法一：TaiwanStockWarrantDetail 全量查（1 req）──────
-    data, hit = fm1("TaiwanStockWarrantDetail", start_date=start, end_date=end)
+            try:
+                w_code       = str(row.get("stock_id", "")).strip()
+                expire_str   = str(row.get("end_date", "")).strip()
+                fulfill_price = sf(row.get("fulfillment_price", 0))
+                ex_ratio      = sf(row.get("exercise_ratio", 0)) or 1.0
+                w_close       = sf(row.get("close", 0))
+                target_close  = sf(row.get("target_close", 0))
+                if not w_code or not expire_str or fulfill_price <= 0: continue
+                expire_dt = datetime.strptime(expire_str[:10], "%Y-%m-%d")
+
+                WARRANT_DETAIL_CACHE.setdefault(sid, {})
+                WARRANT_DETAIL_CACHE[sid][w_code] = {
+                    "code":             w_code,
+                    "expire_dt":        expire_dt,
+                    "fulfillment_price": fulfill_price,
+                    "exercise_ratio":    ex_ratio,
+                    "warrant_close":     w_close,        # 抓取當下的權證價，用來粗估槓桿
+                    "target_close_snap": target_close,    # 抓取當下的正股價快照
+                }
+                active_set.add(sid)
+                cand_count[sid] = cand_count.get(sid, 0) + 1
+            except Exception:
+                pass
+
+        # 把實際看到的 type 編碼印出來，方便下次真的跑起來後對照是不是猜對了
+        if type_seen:
+            sample = ", ".join(f"{k!r}×{v}" for k, v in type_seen.most_common(5))
+            print(f"     [type 欄位實際值抽樣] {sample}")
+        return cand_count, active_set
+
+    # ── 方法一：TaiwanStockInfoWithWarrantSummary 全量查（1 req）──
+    data, hit = fm1("TaiwanStockInfoWithWarrantSummary", start_date=start, end_date=end)
     if not hit and data:
-        vol_map, active_set = build_cache_and_set(data, elec_sids)
+        cand_count, active_set = build_cache_and_set(data, elec_sids)
         if active_set:
-            sorted_sids  = sorted(active_set, key=lambda s: -vol_map.get(s,0))
+            sorted_sids  = sorted(active_set, key=lambda s: -cand_count.get(s,0))
             cached_count = sum(len(v) for v in WARRANT_DETAIL_CACHE.values())
-            print(f"  → [TaiwanStockWarrantDetail] 電子股有活躍認購：{len(sorted_sids)} 支（快取 {cached_count} 檔）")
+            print(f"  → [TaiwanStockInfoWithWarrantSummary] 電子股有活躍認購：{len(sorted_sids)} 支（快取 {cached_count} 檔）")
             # 這個分支本來就查全量，不受「份數分批」限制，視為今天全部份數都掃完
             return sorted_sids, active_set, {"mode": "full"}
 
-    # ── TaiwanStockWarrantDetail 失敗 → 直接 fallback（不再逐股查）──
+    # ── TaiwanStockInfoWithWarrantSummary 失敗 → 直接 fallback（不再逐股查）──
     # V27：移除「方法二」的 30 支批次查詢
     # 原因：TaiwanStockWarrant 個股查詢在境外 IP 也是全部 422（log 可見），
     #       白白消耗 30 req，不如直接進 fallback，保留配額給粗篩和精篩用
@@ -290,7 +323,7 @@ def fetch_active_warrant_targets(elec_sids, today_dt):
     #       每次排程掃其中一份，晚上最後一次跑完，剛好等於「今天全部電子股都掃過一輪」，
     #       疊加歷史 pool 後隔天早上看到的就是當天完整的總整理。
     # V30：加入漏跑補償 —— 如果偵測到前面某份沒標記完成，這輪多補掃一份
-    print("  ! TaiwanStockWarrantDetail 無資料，直接 fallback 用限量電子股（當天分批）")
+    print("  ! TaiwanStockInfoWithWarrantSummary 無資料，直接 fallback 用限量電子股（當天分批）")
     fallback_all = sorted(
         [s for s in elec_sids if s not in EXCLUDE_SIDS],
         key=lambda s: s   # 清單本身仍按代號排序，只用分批 offset 移動起點
@@ -455,11 +488,13 @@ def fetch_margin(sid, start_date, end_date):
     }, False
 
 # ── 權證明細查表（從快取取，境外 IP 不再 fallback 個股查詢）────
-def get_warrant_detail(sid, data_date_str):
+def get_warrant_detail(sid, data_date_str, stock_close=None):
     """
-    V27：從 WARRANT_DETAIL_CACHE 查表（Step② 填入）。
-    快取空時不再 fallback 個股查詢（境外 IP 全部 422，純粹浪費請求）。
-    快取有資料就顯示；沒有則前端提示去券商 APP 查詢。
+    V31：從 WARRANT_DETAIL_CACHE 查表（Step② 用 TaiwanStockInfoWithWarrantSummary 填入）。
+    這個 dataset 沒有槓桿/Delta/買賣價/成交量（免費版拿不到），
+    改用「履約價 vs 正股價」算價內外程度，「正股價/(權證價×行使比例)」粗估槓桿倍數。
+    stock_close：呼叫時傳入當下已知的正股收盤價（比快取當時的價格快照更即時準確），
+                 沒傳的話退回用快取當時的快照價。
     """
     dt = datetime.strptime(data_date_str, "%Y-%m-%d")
     warrants = []
@@ -469,34 +504,43 @@ def get_warrant_detail(sid, data_date_str):
         for w_code, w in cached.items():
             try:
                 days_left = (w["expire_dt"] - dt).days
-                if days_left < 20:                              continue
-                if w["leverage"] <= 0 or w["leverage"] > 15:   continue
-                delta = w["delta"]
-                if delta >= 0.70:    moneyness = "深度價內"
-                elif delta >= 0.55:  moneyness = "輕度價內"
-                elif delta >= 0.45:  moneyness = "價平"
-                elif delta >= 0.30:  moneyness = "輕度價外"
-                else:                moneyness = "價外"
+                if days_left < 20:  continue   # 太接近到期，時間價值耗損快，先濾掉
+
+                fp   = w["fulfillment_price"]
+                px   = stock_close if stock_close else w.get("target_close_snap", 0)
+                if fp <= 0 or px <= 0: continue
+
+                moneyness_pct = (px - fp) / fp * 100   # 認購：正值＝價內
+                if moneyness_pct >= 15:      moneyness = "深度價內"
+                elif moneyness_pct >= 3:     moneyness = "輕度價內"
+                elif moneyness_pct >= -3:    moneyness = "價平"
+                elif moneyness_pct >= -15:   moneyness = "輕度價外"
+                else:                        moneyness = "深度價外"
+
+                w_close = w.get("warrant_close", 0)
+                ratio   = w.get("exercise_ratio", 1.0) or 1.0
+                # 台股權證槓桿慣用公式：(正股價 × 執行比例) ／ 權證價
+                # 原本寫成 px/(w_close*ratio) 是顛倒的，算出來會離譜地大（測試發現 2019 倍）
+                leverage_est = round((px * ratio) / w_close, 1) if w_close > 0 and ratio > 0 else None
+
                 warrants.append({
-                    "code":        w["code"],
-                    "issuer":      w["issuer"],
-                    "type":        "call",
-                    "expire":      w["expire_dt"].strftime("%Y/%m/%d"),
-                    "days_left":   days_left,
-                    "leverage":    round(w["leverage"], 1),
-                    "delta":       round(delta, 2),
-                    "moneyness":   moneyness,
-                    "bid":         w["bid"],
-                    "ask":         w["ask"],
-                    "volume":      w["volume"],
-                    "leverage_ok": 4 < w["leverage"] < 12,
+                    "code":          w["code"],
+                    "type":          "call",
+                    "expire":        w["expire_dt"].strftime("%Y/%m/%d"),
+                    "days_left":     days_left,
+                    "fulfillment_price": fp,
+                    "moneyness":     moneyness,
+                    "moneyness_pct": round(moneyness_pct, 1),
+                    "leverage_est":  leverage_est,   # 粗估值，不是精確的有效槓桿，僅供參考
                 })
-            except: continue
+            except Exception:
+                continue
 
     # V27：快取空時不再 fallback 個股查詢
     # TaiwanStockWarrant 個股查詢在境外 IP 全部 422，省下這些無效請求
     # 前端改為顯示「有發行，請至券商 APP 查詢」
-    warrants.sort(key=lambda x: (-x["volume"], 0 if x["leverage_ok"] else 1, abs(x["delta"]-0.55)))
+    # 排序：優先價平/輕度價內外（|moneyness_pct| 小），到期日較久的排前面
+    warrants.sort(key=lambda x: (abs(x["moneyness_pct"]), -x["days_left"]))
     return warrants[:3]
 
 # ── 評分 ──────────────────────────────────────────────────────
@@ -769,7 +813,8 @@ def main():
 
         ma_c = [h["close"] for h in hist]
         # V27：從快取取權證明細（不用再打 API）
-        warrants = get_warrant_detail(sid, actual_date)
+        # V31：傳入當下正股收盤價，價內外估算比用快取快照價準確
+        warrants = get_warrant_detail(sid, actual_date, c["today_p"]["close"])
 
         scored.append({
             "sid":        sid,
