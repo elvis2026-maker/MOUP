@@ -1,11 +1,11 @@
 {
-  "updated_at": "2026/07/03 09:25",
+  "updated_at": "2026/07/03 10:07",
   "trade_date": "20260702",
   "data_date": "2026-07-02",
-  "total_scanned": 196,
-  "candidates_count": 25,
-  "pool_count": 39,
-  "total_api_req": 321,
+  "total_scanned": 195,
+  "candidates_count": 23,
+  "pool_count": 37,
+  "total_api_req": 352,
   "scan_progress": {
     "date": "2026-07-03",
     "total_slots": 5,
@@ -52,7 +52,8 @@
       "age_days": 1,
       "is_today": false,
       "prob": "中高（74%）",
-      "prob_level": "medium-high"
+      "prob_level": "medium-high",
+      "risk_flags": {}
     },
     {
       "sid": "3055",
@@ -87,7 +88,11 @@
       "age_days": 0,
       "is_today": true,
       "prob": "中高（74%）",
-      "prob_level": "medium-high"
+      "prob_level": "medium-high",
+      "risk_flags": {
+        "ex_dividend_days": 8,
+        "ex_dividend_date": "2026/07/10"
+      }
     },
     {
       "sid": "5483",
@@ -124,7 +129,11 @@
       "age_days": 1,
       "is_today": false,
       "prob": "中高（69%）",
-      "prob_level": "medium-high"
+      "prob_level": "medium-high",
+      "risk_flags": {
+        "ex_dividend_days": 21,
+        "ex_dividend_date": "2026/07/23"
+      }
     },
     {
       "sid": "3221",
@@ -161,7 +170,11 @@
       "age_days": 1,
       "is_today": false,
       "prob": "中高（69%）",
-      "prob_level": "medium-high"
+      "prob_level": "medium-high",
+      "risk_flags": {
+        "ex_dividend_days": 6,
+        "ex_dividend_date": "2026/07/08"
+      }
     },
     {
       "sid": "6182",
@@ -198,7 +211,8 @@
       "age_days": 0,
       "is_today": true,
       "prob": "中高（69%）",
-      "prob_level": "medium-high"
+      "prob_level": "medium-high",
+      "risk_flags": {}
     },
     {
       "sid": "2484",
@@ -235,7 +249,8 @@
       "age_days": 0,
       "is_today": true,
       "prob": "中高（69%）",
-      "prob_level": "medium-high"
+      "prob_level": "medium-high",
+      "risk_flags": {}
     },
     {
       "sid": "6271",
@@ -272,7 +287,8 @@
       "age_days": 1,
       "is_today": false,
       "prob": "中高（68%）",
-      "prob_level": "medium-high"
+      "prob_level": "medium-high",
+      "risk_flags": {}
     },
     {
       "sid": "6257",
@@ -307,7 +323,11 @@
       "age_days": 1,
       "is_today": false,
       "prob": "中高（66%）",
-      "prob_level": "medium-high"
+      "prob_level": "medium-high",
+      "risk_flags": {
+        "ex_dividend_days": 5,
+        "ex_dividend_date": "2026/07/07"
+      }
     },
     {
       "sid": "3236",
@@ -344,7 +364,8 @@
       "age_days": 1,
       "is_today": false,
       "prob": "中高（65%）",
-      "prob_level": "medium-high"
+      "prob_level": "medium-high",
+      "risk_flags": {}
     },
     {
       "sid": "2330",
@@ -379,7 +400,8 @@
       "age_days": 1,
       "is_today": false,
       "prob": "中高（65%）",
-      "prob_level": "medium-high"
+      "prob_level": "medium-high",
+      "risk_flags": {}
     },
     {
       "sid": "2464",
@@ -416,7 +438,8 @@
       "age_days": 1,
       "is_today": false,
       "prob": "中高（64%）",
-      "prob_level": "medium-high"
+      "prob_level": "medium-high",
+      "risk_flags": {}
     },
     {
       "sid": "4989",
@@ -439,18 +462,29 @@
         "foreign_net": 1341,
         "trust_net": 0,
         "dealer_net": 35,
-        "total_net": 1377
+        "total_net": 1377,
+        "buy_streak_days": 4
       },
       "ma5": 86.46,
       "ma10": 88.01,
       "ma20": 86.51,
       "has_warrant": true,
       "warrants": [],
+      "risk": {
+        "volatility_pct": 5.87,
+        "volatility_level": "高",
+        "bias20_pct": 15.9,
+        "overheated": true,
+        "up_streak_days": 3,
+        "dist_from_high_pct": -6.1,
+        "is_new_high": false
+      },
       "data_date": "2026-07-02",
       "age_days": 0,
       "is_today": true,
       "prob": "中高（64%）",
-      "prob_level": "medium-high"
+      "prob_level": "medium-high",
+      "risk_flags": {}
     },
     {
       "sid": "6138",
@@ -486,7 +520,8 @@
       "age_days": 0,
       "is_today": true,
       "prob": "中高（64%）",
-      "prob_level": "medium-high"
+      "prob_level": "medium-high",
+      "risk_flags": {}
     },
     {
       "sid": "6435",
@@ -522,7 +557,8 @@
       "age_days": 0,
       "is_today": true,
       "prob": "中高（64%）",
-      "prob_level": "medium-high"
+      "prob_level": "medium-high",
+      "risk_flags": {}
     },
     {
       "sid": "2302",
@@ -558,7 +594,8 @@
       "age_days": 0,
       "is_today": true,
       "prob": "中高（64%）",
-      "prob_level": "medium-high"
+      "prob_level": "medium-high",
+      "risk_flags": {}
     }
   ]
 }
