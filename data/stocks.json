@@ -1,11 +1,11 @@
 {
-  "updated_at": "2026/07/03 08:57",
+  "updated_at": "2026/07/03 09:09",
   "trade_date": "20260702",
   "data_date": "2026-07-02",
   "total_scanned": 196,
-  "candidates_count": 27,
-  "pool_count": 40,
-  "total_api_req": 328,
+  "candidates_count": 25,
+  "pool_count": 39,
+  "total_api_req": 321,
   "scan_progress": {
     "date": "2026-07-03",
     "total_slots": 5,
