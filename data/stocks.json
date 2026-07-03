@@ -1,18 +1,20 @@
 {
-  "updated_at": "2026/07/03 10:56",
+  "updated_at": "2026/07/03 17:03",
   "trade_date": "20260702",
   "data_date": "2026-07-02",
-  "total_scanned": 195,
-  "candidates_count": 23,
-  "pool_count": 37,
-  "total_api_req": 352,
+  "total_scanned": 390,
+  "candidates_count": 30,
+  "pool_count": 42,
+  "total_api_req": 639,
   "scan_progress": {
     "date": "2026-07-03",
     "total_slots": 5,
     "slots_done": [
       0,
       1,
-      2
+      2,
+      3,
+      4
     ]
   },
   "stocks": [
@@ -200,13 +202,23 @@
         "foreign_net": 19334,
         "trust_net": -189,
         "dealer_net": -979,
-        "total_net": 18166
+        "total_net": 18166,
+        "buy_streak_days": 2
       },
       "ma5": 122.9,
       "ma10": 119.55,
       "ma20": 104.45,
       "has_warrant": true,
       "warrants": [],
+      "risk": {
+        "volatility_pct": 7.15,
+        "volatility_level": "高",
+        "bias20_pct": 38.7,
+        "overheated": true,
+        "up_streak_days": 3,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
+      },
       "data_date": "2026-07-02",
       "age_days": 0,
       "is_today": true,
@@ -324,10 +336,7 @@
       "is_today": false,
       "prob": "中高（66%）",
       "prob_level": "medium-high",
-      "risk_flags": {
-        "ex_dividend_days": 5,
-        "ex_dividend_date": "2026/07/07"
-      }
+      "risk_flags": {}
     },
     {
       "sid": "3236",
@@ -509,13 +518,23 @@
         "foreign_net": -13,
         "trust_net": 30,
         "dealer_net": 87,
-        "total_net": 105
+        "total_net": 105,
+        "buy_streak_days": 1
       },
       "ma5": 362.1,
       "ma10": 361.2,
       "ma20": 336.95,
       "has_warrant": true,
       "warrants": [],
+      "risk": {
+        "volatility_pct": 6.2,
+        "volatility_level": "高",
+        "bias20_pct": 22.6,
+        "overheated": true,
+        "up_streak_days": 4,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
+      },
       "data_date": "2026-07-02",
       "age_days": 0,
       "is_today": true,
@@ -546,13 +565,23 @@
         "foreign_net": 269,
         "trust_net": 0,
         "dealer_net": 30,
-        "total_net": 299
+        "total_net": 299,
+        "buy_streak_days": 1
       },
       "ma5": 347.3,
       "ma10": 341.2,
       "ma20": 307.85,
       "has_warrant": true,
       "warrants": [],
+      "risk": {
+        "volatility_pct": 5.56,
+        "volatility_level": "高",
+        "bias20_pct": 25.4,
+        "overheated": true,
+        "up_streak_days": 1,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
+      },
       "data_date": "2026-07-02",
       "age_days": 0,
       "is_today": true,
