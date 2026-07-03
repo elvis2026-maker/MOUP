@@ -142,7 +142,19 @@ def fetch_electronics_meta():
     同時過濾掉非電子股，回傳 dict {sid: {name, market}}。
     """
     data, _ = fm1("TaiwanStockInfoWithWarrant")
-    # 先建 TaiwanStockInfo 的產業類別對照（需再打一次）
+
+    # V34：這支資料集本身確定拿得到資料（每次都成功），
+    # 但目前只挑 type in (twse, tpex) 的列，其餘全部丟棄。
+    # 既然 TaiwanStockInfoWithWarrantSummary 那條路完全打不通，
+    # 先看看被丟掉的那些列裡，會不會其實混著權證資料（不同 type 值）。
+    type_count = Counter(str(row.get("type","")).strip() for row in data)
+    print(f"     [診斷] TaiwanStockInfoWithWarrant 共 {len(data)} 筆，type 分布：{dict(type_count.most_common(10))}")
+    other_sample = next((row for row in data if str(row.get("type","")).strip() not in ("twse","tpex")), None)
+    if other_sample:
+        print(f"     [診斷] 非 twse/tpex 的樣本列完整欄位：{other_sample}")
+    else:
+        print("     [診斷] 沒有非 twse/tpex 的列，這支資料集應該真的只有股票清單，沒有權證明細")
+
     elec_meta = {}
     all_meta  = {}
     for row in data:
