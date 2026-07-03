@@ -491,13 +491,30 @@ def fetch_inst(sid, start_date, end_date):
         elif name in ("Dealer_self", "Dealer_Hedging"):
             by_date[date]["dealer_net"] += net
     if not by_date: return {}, False
-    latest = sorted(by_date.keys())[-1]
+    dates  = sorted(by_date.keys())
+    latest = dates[-1]
     v = by_date[latest]
+
+    # V35：連續買超/賣超天數 —— 同一批資料裡本來就有，不用多打 API。
+    # 正數＝連續買超天數，負數＝連續賣超天數。
+    streak = 0
+    for d in reversed(dates):
+        net = by_date[d]["foreign_net"] + by_date[d]["trust_net"] + by_date[d]["dealer_net"]
+        if streak == 0:
+            if net > 0:   streak = 1
+            elif net < 0: streak = -1
+            else:         break
+        elif (streak > 0 and net > 0) or (streak < 0 and net < 0):
+            streak += 1 if streak > 0 else -1
+        else:
+            break
+
     return {
         "foreign_net": v["foreign_net"]//1000,
         "trust_net":   v["trust_net"]//1000,
         "dealer_net":  v["dealer_net"]//1000,
         "total_net":   (v["foreign_net"]+v["trust_net"]+v["dealer_net"])//1000,
+        "buy_streak_days": streak,
     }, False
 
 def fetch_margin(sid, start_date, end_date):
@@ -510,6 +527,68 @@ def fetch_margin(sid, start_date, end_date):
         "margin_buy": si(latest.get("MarginPurchaseBuy",0)),
         "margin_bal": bal,
     }, False
+
+# ── V35：除權息倒數 + 警示/處置股狀態（只對最終 TopN 呼叫，控制配額）────
+_printed_div_sample  = False
+_printed_disp_sample = False
+
+def fetch_risk_flags(sid, ref_date_str):
+    """
+    除權息倒數：接近除權息會讓權證履約價被機械式調整，是重要風險提醒。
+    警示/處置股：處置期間交易受限，連動權證流動性通常驟降。
+    這兩個 dataset 的確切欄位名稱沒有十足把握（跟權證明細那次一樣是用文件推測），
+    所以寫得很保守：任何一步出錯都直接跳過，絕對不會讓整個流程掛掉，
+    第一次抓到資料時會印一次欄位樣本，方便之後對照調整。
+    """
+    global _printed_div_sample, _printed_disp_sample
+    flags = {}
+    ref_date = datetime.strptime(ref_date_str, "%Y-%m-%d")
+
+    # 除權息倒數
+    try:
+        div_end = (ref_date + timedelta(days=60)).strftime("%Y-%m-%d")
+        data, hit = fm1("TaiwanStockDividend", sid, date_back(400), div_end)
+        if not hit and data:
+            if not _printed_div_sample:
+                print(f"     [診斷][除權息樣本 {sid}] 欄位：{list(data[0].keys())}")
+                _printed_div_sample = True
+            upcoming = []
+            for row in data:
+                for key in ("CashExDividendTradingDate", "StockExDividendTradingDate"):
+                    d = str(row.get(key, "")).strip()
+                    if d and d[:10] >= ref_date_str:
+                        try: upcoming.append(datetime.strptime(d[:10], "%Y-%m-%d"))
+                        except Exception: pass
+            if upcoming:
+                nearest   = min(upcoming)
+                days_left = (nearest - ref_date).days
+                if 0 <= days_left <= 30:
+                    flags["ex_dividend_days"] = days_left
+                    flags["ex_dividend_date"] = nearest.strftime("%Y/%m/%d")
+    except Exception:
+        pass
+
+    # 警示/處置股狀態
+    try:
+        data, hit = fm1("TaiwanStockDispositionSecuritiesPeriod", sid, date_back(10), ref_date_str)
+        if not hit and data:
+            if not _printed_disp_sample:
+                print(f"     [診斷][處置股樣本 {sid}] 欄位：{list(data[0].keys())}")
+                _printed_disp_sample = True
+            latest    = data[-1]
+            end_field = latest.get("DispositionEndDate") or latest.get("EndDate") or latest.get("end_date")
+            if end_field:
+                try:
+                    end_dt = datetime.strptime(str(end_field)[:10], "%Y-%m-%d")
+                    if end_dt >= ref_date:
+                        flags["disposition_active"] = True
+                        flags["disposition_end"]    = end_dt.strftime("%Y/%m/%d")
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    return flags
 
 # ── 權證明細查表（從快取取，境外 IP 不再 fallback 個股查詢）────
 def get_warrant_detail(sid, data_date_str, stock_close=None):
@@ -571,6 +650,52 @@ def get_warrant_detail(sid, data_date_str, stock_close=None):
 def calc_ma(closes, n):
     if len(closes) < n: return None
     return round(statistics.mean(closes[-n:]), 2)
+
+# ── V35：權證選股輔助指標 ────────────────────────────────────
+# 波動度／乖離率／連續上漲天數／距高點位置，全部用已經抓到的
+# 股價歷史（hist，35天）算，不用多打任何 API。
+def calc_risk_metrics(today_p, hist):
+    closes = [h["close"] for h in hist] + [today_p["close"]]
+    result = {}
+
+    # 波動度：近20個交易日日報酬率的標準差（挑權證的核心邏輯——
+    # 正股波動越大，權證的槓桿效果越有意義）
+    if len(closes) >= 21:
+        window = closes[-21:]
+        rets = [
+            (window[i] - window[i-1]) / window[i-1] * 100
+            for i in range(1, len(window)) if window[i-1] > 0
+        ]
+        if len(rets) >= 5:
+            vol = statistics.stdev(rets)
+            result["volatility_pct"] = round(vol, 2)
+            if vol >= 4:    result["volatility_level"] = "高"
+            elif vol >= 2:  result["volatility_level"] = "中"
+            else:           result["volatility_level"] = "低"
+
+    # 乖離率：收盤價偏離 MA20 的百分比，過高＝追高風險
+    if len(closes) >= 20:
+        ma20 = statistics.mean(closes[-20:])
+        if ma20 > 0:
+            bias = (closes[-1] - ma20) / ma20 * 100
+            result["bias20_pct"] = round(bias, 1)
+            result["overheated"] = bias >= 15
+
+    # 連續上漲天數（從今天往前算）
+    streak = 0
+    for i in range(len(closes) - 1, 0, -1):
+        if closes[i] > closes[i-1]: streak += 1
+        else: break
+    result["up_streak_days"] = streak
+
+    # 距離目前抓到的歷史區間高點位置
+    recent_high = max(closes)
+    if recent_high > 0:
+        dist = (closes[-1] / recent_high - 1) * 100
+        result["dist_from_high_pct"] = round(dist, 1)
+        result["is_new_high"] = closes[-1] >= recent_high * 0.999
+
+    return result
 
 def calc_score(today_p, hist, inst, margin):
     score, reasons, warnings = 0, [], []
@@ -839,6 +964,8 @@ def main():
         # V27：從快取取權證明細（不用再打 API）
         # V31：傳入當下正股收盤價，價內外估算比用快取快照價準確
         warrants = get_warrant_detail(sid, actual_date, c["today_p"]["close"])
+        # V35：波動度/乖離率/連續天數/距高點位置 —— 用已抓到的 hist 算，不多打 API
+        risk = calc_risk_metrics(c["today_p"], hist)
 
         scored.append({
             "sid":        sid,
@@ -856,6 +983,7 @@ def main():
             "ma20":       calc_ma(ma_c, 20),
             "has_warrant": sid in active_set,  # 有發行認購權證（代號需至券商查）
             "warrants":   warrants,   # V27：真實明細，從快取取
+            "risk":       risk,       # V35：波動度/乖離率/連續天數/距高點位置
             "data_date":  c["data_date"],       # V28：這支股票的資料實際日期，合併歷史用
         })
 
@@ -876,6 +1004,15 @@ def main():
             c["prob"] = f"中（{48+(s-55)}%）";               c["prob_level"] = "medium"
         else:
             c["prob"] = "偏低（<48%）";                       c["prob_level"] = "low"
+
+    # V35：除權息倒數 + 警示/處置股狀態 —— 只對最終 TopN 呼叫（最多 2*15=30 req），
+    # 控制配額消耗。任一支失敗都不影響其他支，也不影響整體流程。
+    for c in top_n:
+        try:
+            c["risk_flags"] = fetch_risk_flags(c["sid"], actual_date)
+            req += 2
+        except Exception:
+            c["risk_flags"] = {}
 
     scan_progress = _finalize_scan_progress(slot_meta, slot_scan_completed)
 

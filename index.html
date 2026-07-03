@@ -268,6 +268,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 .lc-cell{background:var(--surface2);border-radius:6px;padding:6px 8px}
 .lc-cell .lci-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:3px}
 .lc-cell .lci-val{font-family:var(--mono);font-size:16px;font-weight:800;color:var(--text)}
+.lc-cell .lci-val.up{color:var(--danger)}
+.lc-cell .lci-val.ok{color:var(--ok)}
 
 /* 開盤信號 */
 .open-signal{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;font-size:15px;font-weight:700;margin-top:10px}
@@ -632,6 +634,22 @@ function cardHTML(s, rank){
   const rTags=(s.reasons||[]).map(r=>`<span class="tag g">${r}</span>`).join('');
   const wTags=(s.warnings||[]).map(w=>`<span class="tag w">⚠ ${w}</span>`).join('');
 
+  // V35：波動度/乖離率/連續天數/距高點/除權息/處置股 —— 權證選股輔助指標
+  const risk = s.risk||{}, riskFlags = s.risk_flags||{};
+  const riskChipList = [];
+  if(risk.volatility_level) riskChipList.push(`<div class="chip"><span class="cl">波動度</span>${risk.volatility_level}${risk.volatility_pct!=null?`(${risk.volatility_pct}%)`:''}</div>`);
+  if(risk.bias20_pct!=null) riskChipList.push(`<div class="chip"><span class="cl">乖離率</span><span style="${risk.overheated?'color:var(--danger);font-weight:700':''}">${risk.bias20_pct>0?'+':''}${risk.bias20_pct}%</span></div>`);
+  if(risk.up_streak_days) riskChipList.push(`<div class="chip"><span class="cl">連續動能</span>${risk.is_new_high?'創新高':`連漲${risk.up_streak_days}天`}</div>`);
+  const riskChips = riskChipList.join('');
+
+  const riskWarnList = [];
+  if(risk.overheated) riskWarnList.push('<span class="tag w">⚠ 乖離過大，追高風險</span>');
+  if(riskFlags.disposition_active) riskWarnList.push(`<span class="tag w">⚠ 處置股（至 ${riskFlags.disposition_end}）</span>`);
+  if(riskFlags.ex_dividend_days!=null) riskWarnList.push(`<span class="tag w">⚠ ${riskFlags.ex_dividend_days}天後除權息，權證履約價將調整</span>`);
+  const buyStreak = (s.inst||{}).buy_streak_days;
+  if(buyStreak!=null && buyStreak>=3) riskWarnList.push(`<span class="tag g">法人連買${buyStreak}天</span>`);
+  const riskWarnTags = riskWarnList.join('');
+
   const warrants=s.warrants||[];
   const hasWarrant = s.has_warrant === true || warrants.length > 0;
   let wBlock='';
@@ -728,7 +746,9 @@ function cardHTML(s, rank){
         <div class="chip-row">
           <div class="chip"><span class="cl">續漲機率</span><span style="color:${color};font-weight:700">${s.prob}</span></div>
           <div class="chip"><span class="cl">評分</span>${s.score} / 100</div>
+          ${riskChips}
         </div>
+        ${riskWarnTags?`<div class="tag-row" style="margin-top:8px">${riskWarnTags}</div>`:''}
       </div>
       <div class="warrant-section">
         <h4>認購權證 <span class="w-count">${(s.has_warrant||warrants.length>0)?'✅ 有發行':'查無'}</span></h4>
@@ -809,8 +829,9 @@ async function fetchLive(){
   }
 }
 
-// V20：參考卡只顯示盤後已確定的數據（昨收/漲幅/MA20/評分），
-// 不再計算「開高走高」之類需要即時報價才能判斷的訊號。
+// V35：盤中參考卡改版 —— 不再只是精選清單的重複資料，
+// 加入波動度/乖離率/連續天數/距高點/法人連買/除權息倒數/處置股警示，
+// 這些是「開盤前決定要不要進場買權證」該看的東西，不需要即時報價也能做。
 function liveCardHTML(s,card){
   const color=probColor(s.prob_level);
   const close = card?.close ?? s.close;
@@ -818,6 +839,35 @@ function liveCardHTML(s,card){
   const ma20 = card?.ma20 ?? s.ma20;
   const up = chgPct >= 0;
   const pctStr = (up?'+':'')+chgPct+'%';
+
+  const volLv   = card?.volatility_level;
+  const volPct  = card?.volatility_pct;
+  const bias    = card?.bias20_pct;
+  const overheat= card?.overheated;
+  const upDays  = card?.up_streak_days;
+  const distHigh= card?.dist_from_high_pct;
+  const isHigh  = card?.is_new_high;
+  const buyDays = card?.buy_streak_days;
+  const exDivD  = card?.ex_dividend_days;
+  const dispose = card?.disposition_active;
+
+  const volCls = volLv==='高'?'up':(volLv==='中'?'':'ok');
+  const volTxt = volLv ? `${volLv}${volPct!=null?`(${volPct}%)`:''}` : '--';
+
+  const biasTxt = bias!=null ? `${bias>0?'+':''}${bias}%` : '--';
+  const biasCls = overheat ? 'up' : '';
+
+  const trendTxt = isHigh ? '創新高' : (distHigh!=null ? `距高點${distHigh}%` : '--');
+  const trendCls = isHigh ? 'up' : '';
+
+  const streakTxt = (upDays!=null && upDays>0) ? `連漲${upDays}天` : '--';
+
+  const warnTags = [];
+  if(overheat) warnTags.push('<span class="tag w">⚠ 乖離過大，追高風險</span>');
+  if(dispose)  warnTags.push('<span class="tag w">⚠ 處置股，交易受限</span>');
+  if(exDivD!=null) warnTags.push(`<span class="tag w">⚠ ${exDivD}天後除權息</span>`);
+  if(buyDays!=null && buyDays>=3) warnTags.push(`<span class="tag g">法人連買${buyDays}天</span>`);
+  if(buyDays!=null && buyDays<=-3) warnTags.push(`<span class="tag w">法人連賣${Math.abs(buyDays)}天</span>`);
 
   return `
   <div class="live-card">
@@ -831,7 +881,12 @@ function liveCardHTML(s,card){
     <div class="lc-grid">
       <div class="lc-cell"><span class="lci-lbl">MA20</span><span class="lci-val">${ma20 ?? '--'}</span></div>
       <div class="lc-cell"><span class="lci-lbl">評分</span><span class="lci-val">${s.score}</span></div>
+      <div class="lc-cell"><span class="lci-lbl">波動度</span><span class="lci-val ${volCls}">${volTxt}</span></div>
+      <div class="lc-cell"><span class="lci-lbl">乖離率</span><span class="lci-val ${biasCls}">${biasTxt}</span></div>
+      <div class="lc-cell"><span class="lci-lbl">趨勢位置</span><span class="lci-val ${trendCls}">${trendTxt}</span></div>
+      <div class="lc-cell"><span class="lci-lbl">連續動能</span><span class="lci-val">${streakTxt}</span></div>
     </div>
+    ${warnTags.length?`<div class="tag-row" style="margin-top:8px">${warnTags.join('')}</div>`:''}
     <div class="open-signal neutral">📱 請至證券 APP 查看今日即時走勢</div>
   </div>`;
 }

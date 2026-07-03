@@ -63,9 +63,14 @@ def main():
                ["stocks.json 無候選股，請先執行每日盤後抓資料 workflow"])
         return
 
-    # V19：直接整理參考卡，不打任何「今日報價」API
+    # V35：盤中參考卡改版 —— 不再只是精選清單的重複資料，
+    # 加入波動度/乖離率/連續天數/距高點/法人連買天數/除權息倒數/處置股警示，
+    # 這些對「開盤前決定要不要進場買權證」比單純複製漲跌幅有意義。
     ref_cards = []
     for s in stocks:
+        risk       = s.get("risk", {}) or {}
+        risk_flags = s.get("risk_flags", {}) or {}
+        inst       = s.get("inst", {}) or {}
         ref_cards.append({
             "sid":        s["sid"],
             "name":       s.get("name", ""),
@@ -76,6 +81,17 @@ def main():
             "score":      s.get("score", 0),
             "prob":       s.get("prob", ""),
             "prob_level": s.get("prob_level", ""),
+            # V35 新增：權證選股輔助指標
+            "volatility_level":   risk.get("volatility_level"),
+            "volatility_pct":     risk.get("volatility_pct"),
+            "bias20_pct":         risk.get("bias20_pct"),
+            "overheated":         risk.get("overheated", False),
+            "up_streak_days":     risk.get("up_streak_days"),
+            "dist_from_high_pct": risk.get("dist_from_high_pct"),
+            "is_new_high":        risk.get("is_new_high", False),
+            "buy_streak_days":    inst.get("buy_streak_days"),
+            "ex_dividend_days":   risk_flags.get("ex_dividend_days"),
+            "disposition_active": risk_flags.get("disposition_active", False),
         })
         print(f"  - {s['sid']} {s.get('name',''):8s} 昨收 {s.get('close')}  評分 {s.get('score')}")
 
