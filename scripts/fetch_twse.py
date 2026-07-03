@@ -245,7 +245,6 @@ def fetch_active_warrant_targets(elec_sids, today_dt):
       slot_meta 是 dict，main() 用來決定這輪掃完後要不要把「份數」標記完成
     """
     end   = today_dt.strftime("%Y-%m-%d")
-    start = date_back(15)
 
     def is_call_type(type_str):
         """認購權證判斷：目前不確定 FinMind 這個欄位實際編碼是文字還是代碼，
@@ -303,7 +302,12 @@ def fetch_active_warrant_targets(elec_sids, today_dt):
         return cand_count, active_set
 
     # ── 方法一：TaiwanStockInfoWithWarrantSummary 全量查（1 req）──
-    data, hit = fm1("TaiwanStockInfoWithWarrantSummary", start_date=start, end_date=end)
+    # V32：這支是「快照型」資料集（跟 TaiwanStockInfo 系列同類），
+    # FinMind 官方範例只帶「單一 start_date」、不帶 end_date。
+    # 上一版帶了 start_date+end_date 的區間查詢，實測回傳空陣列（log 顯示無 422 錯誤訊息，
+    # 代表 200 成功但資料是空的，很可能是這個查詢方式不對，不是又被擋）。
+    data, hit = fm1("TaiwanStockInfoWithWarrantSummary", start_date=end)
+    print(f"     [診斷] TaiwanStockInfoWithWarrantSummary → hit(402旗標)={hit}, 回傳筆數={len(data) if data else 0}")
     if not hit and data:
         cand_count, active_set = build_cache_and_set(data, elec_sids)
         if active_set:
