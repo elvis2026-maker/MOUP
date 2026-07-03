@@ -307,7 +307,15 @@ def fetch_active_warrant_targets(elec_sids, today_dt):
     # 上一版帶了 start_date+end_date 的區間查詢，實測回傳空陣列（log 顯示無 422 錯誤訊息，
     # 代表 200 成功但資料是空的，很可能是這個查詢方式不對，不是又被擋）。
     data, hit = fm1("TaiwanStockInfoWithWarrantSummary", start_date=end)
-    print(f"     [診斷] TaiwanStockInfoWithWarrantSummary → hit(402旗標)={hit}, 回傳筆數={len(data) if data else 0}")
+    print(f"     [診斷] TaiwanStockInfoWithWarrantSummary(start_date={end}) → hit={hit}, 回傳筆數={len(data) if data else 0}")
+
+    # V33：實測發現帶 start_date 一樣回傳 0 筆（不是 422，是 200 但真的空）。
+    # 猜測文件講的「data_id、start_date 皆可不帶參數」，意思其實是「完全不帶」
+    # 才會給全市場快照，不是「帶一個 start_date 當篩選條件」。這裡加一次備援嘗試。
+    if not hit and not data:
+        data, hit = fm1("TaiwanStockInfoWithWarrantSummary")
+        print(f"     [診斷] TaiwanStockInfoWithWarrantSummary(無參數) → hit={hit}, 回傳筆數={len(data) if data else 0}")
+
     if not hit and data:
         cand_count, active_set = build_cache_and_set(data, elec_sids)
         if active_set:
