@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>權證標的精選｜續漲機率分析 V30</title>
+<title>權證標的精選｜續漲機率分析 V31</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -384,7 +384,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
       <span class="screw bl"></span><span class="screw br"></span>
     </div>
   </div>
-  <div class="nameplate-version">V30</div>
+  <div class="nameplate-version">V31</div>
 </div>
 
 <!-- ══ HERO ══ -->
@@ -458,7 +458,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
   <div class="footer-inner">
     <div class="footer-brand">程式設計 Elvis Liu｜版權所有・禁止未經授權轉載或作為資料來源使用</div>
     <div class="footer-meta">
-      <span>MOUP V30</span><span class="footer-dot">·</span>
+      <span>MOUP V31</span><span class="footer-dot">·</span>
       <span>Taiwan Warrant Intelligence System</span><span class="footer-dot">·</span>
       <span>最後更新：<span id="footer-update-time">--</span></span>
     </div>
@@ -467,6 +467,22 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 </div>
 
 <script>
+// ════════════════════════════════════════════
+//  V31 新增：禁用右鍵選單與常見開發者工具快捷鍵（基本嚇阻，非真正安全防護）
+//  提醒：這只能擋隨手複製的人，懂技術的人可以用瀏覽器工具列、擴充功能、
+//  或直接用 curl/wget 等方式繞過，不是真正的存取控制。
+// ════════════════════════════════════════════
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  const k = e.key;
+  const blocked =
+    k === 'F12' ||
+    (e.ctrlKey && e.shiftKey && ['I','J','C','i','j','c'].includes(k)) ||
+    (e.ctrlKey && ['u','U'].includes(k)) ||
+    (e.metaKey && e.altKey && ['I','J','C','i','j','c'].includes(k)); // Mac
+  if (blocked) e.preventDefault();
+});
+
 // ════════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════════
