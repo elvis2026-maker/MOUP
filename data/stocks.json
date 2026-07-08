@@ -1,17 +1,25 @@
 {
-  "updated_at": "2026/07/08 00:26",
+  "_meta": {
+    "source": "MOUP - Taiwan Warrant Intelligence System",
+    "author": "Elvis Liu",
+    "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
+    "generated_by": "fetch_twse.py"
+  },
+  "updated_at": "2026/07/08 12:17",
   "trade_date": "20260707",
   "data_date": "2026-07-07",
-  "total_scanned": 391,
-  "candidates_count": 9,
-  "pool_count": 24,
-  "total_api_req": 467,
+  "total_scanned": 390,
+  "candidates_count": 14,
+  "pool_count": 29,
+  "total_api_req": 484,
   "scan_progress": {
     "date": "2026-07-08",
     "total_slots": 5,
     "slots_done": [
       1,
-      2
+      2,
+      3,
+      4
     ]
   },
   "stocks": [
