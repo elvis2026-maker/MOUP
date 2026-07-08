@@ -36,6 +36,15 @@ LIVE_PATH   = os.path.join(os.path.dirname(__file__), "../data/live.json")
 def tw_now():
     return datetime.now(TZ_TW)
 
+# V30 新增：版權聲明中繼資料，理由同 fetch_twse.py，附加在 live.json 裡一併流通
+def _copyright_meta():
+    return {
+        "source": "MOUP - Taiwan Warrant Intelligence System",
+        "author": "Elvis Liu",
+        "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
+        "generated_by": "fetch_live.py"
+    }
+
 def is_trading_now():
     now = tw_now()
     if now.weekday() >= 5: return False
@@ -101,6 +110,7 @@ def main():
 
 def _write(now_str, trade_date, trading, ref_cards, errors):
     output = {
+        "_meta":       _copyright_meta(),
         "updated_at":  now_str,
         "trade_date":  trade_date,
         "is_trading":  trading,

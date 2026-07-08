@@ -40,6 +40,20 @@ HISTORY_MAX_AGE_DAYS = 6
 # 一天內把電子股切成 5 份分批掃完，不用等 3 天才輪完一圈
 DAILY_RUN_SLOTS = 5
 FM_URL      = "https://api.finmindtrade.com/api/v4/data"
+
+# ── V30 新增：版權聲明中繼資料 ────────────────────────────────
+# 附加在每次輸出的 JSON 裡（連同 data 一起流通），即使檔案被整包複製走，
+# 版權宣告與使用限制文字也會跟著走，作為授權與追溯依據。
+# 這不是技術上的存取控制（GitHub Pages 是純靜態站，本來就無法做到伺服器端擋人），
+# 而是明確表達使用限制、降低被誤用/誤植為公開 API 的機率。
+def _copyright_meta():
+    return {
+        "source": "MOUP - Taiwan Warrant Intelligence System",
+        "author": "Elvis Liu",
+        "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
+        "generated_by": "fetch_twse.py"
+    }
+
 # ── 多 TOKEN 輪詢（支援最多 4 個帳號）────────────────────────
 # GitHub Secrets 設定：FINMIND_TOKEN_1 / _2 / _3 / _4
 # 某個 TOKEN 觸發 402 時自動切換到下一個，全部用完才真正停止
@@ -1017,6 +1031,7 @@ def main():
     scan_progress = _finalize_scan_progress(slot_meta, slot_scan_completed)
 
     output = {
+        "_meta":              _copyright_meta(),
         "updated_at":         now.strftime("%Y/%m/%d %H:%M"),
         "trade_date":         actual_date.replace("-",""),
         "data_date":          actual_date,
@@ -1064,6 +1079,7 @@ def _write_empty(now, today8, req, slot_meta=None, slot_scan_completed=False):
     scan_progress = _finalize_scan_progress(slot_meta, slot_scan_completed)
 
     output = {
+        "_meta":            _copyright_meta(),
         "updated_at":       now.strftime("%Y/%m/%d %H:%M"),
         "trade_date":       today8,
         "data_date":        ref_date_str,

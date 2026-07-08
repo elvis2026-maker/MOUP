@@ -1,0 +1,49 @@
+# MOUP — Taiwan Warrant Intelligence System
+
+台股權證標的篩選網站。GitHub Actions 排程抓資料 → 寫入 `data/*.json` →
+GitHub Pages 純靜態網頁讀取顯示。
+
+## 架構說明
+
+- `scripts/fetch_twse.py`：主要選股邏輯，排程呼叫 FinMind API，輸出 `data/stocks.json`
+- `scripts/fetch_live.py`：把 `stocks.json` 整理成「盤中參考卡」，輸出 `data/live.json`
+- `.github/workflows/fetch-data.yml`、`fetch-live.yml`：排程觸發上面兩支腳本
+- `index.html`：純前端頁面，用相對路徑 `fetch('data/stocks.json')` 讀資料，
+  跟 `data/` 資料夾放在同一個網站下即可運作
+
+FinMind 的 `FINMIND_TOKEN_1~4` 存放在 GitHub Repo 的 **Settings → Secrets and
+variables → Actions** 裡，只有排程執行時的 GitHub Actions 環境讀得到，
+**不會出現在任何前端程式碼或瀏覽器看得到的地方**，這部分從一開始就是安全的。
+
+## 版本紀錄
+
+- **V30（目前版本）**：加上資料與網站的保護措施，防止整站或原始資料被複製濫用：
+  ① 三支輸出 JSON（`stocks.json` 空/非空兩種情況、`live.json`）都新增
+  `_meta` 欄位，內含版權聲明與使用限制文字，即使檔案被整包複製走，
+  聲明文字也會跟著走，作為主張權利的依據；前端只讀取既有的 `stocks` /
+  `ref_cards` 等特定欄位，新增的 `_meta` 不會影響任何既有功能。
+  ② 新增 `robots.txt`，擋掉遵守規範的搜尋引擎爬蟲索引 `data/` 底下的原始
+  資料檔案。③ 新增 `cloudflare-worker-optional/` 資料夾，內含一支選用的
+  Cloudflare Worker，可在你之後接上自訂網域時，對 `data/*.json` 加上「來源
+  網址檢查」與「頻率限制」——這是 GitHub Pages 本身（純靜態主機、沒有伺服器
+  端邏輯）做不到的事，詳細設定步驟見該資料夾內的 README。④ Footer 版次同步
+  更新，並補強版權聲明文字。
+
+## 重要提醒：關於「防止整站被下載複製」的技術限制
+
+網頁本身（HTML/CSS/JS）依技術限制無法做到完全禁止查看或下載——瀏覽器本來
+就得先收到這些程式碼才能顯示網頁，這點連大公司的網站也做不到。真正該注意的
+是**這個 GitHub Repo 目前是公開（Public）還是私人（Private）**：
+
+- 如果 Repo 是 **Public**：任何人都能直接在 GitHub 上 `git clone` 整個專案，
+  包含所有程式碼、Workflow 設定、`data/*.json` 資料，前端層級的任何防護在
+  這種情況下都沒有意義，因為原始碼本來就是公開的。
+- 如果想要真正降低「整包被複製」的風險，**最有效的做法是把 Repo 設為
+  Private**（Settings → General → Danger Zone → Change visibility）。
+  需注意：GitHub 的免費方案下，Private Repo 也可以用 GitHub Pages
+  發布網站（Pages 本身仍是公開網址，訪客照常看得到網站，但看不到你的
+  Repo 原始碼、Git 歷史、Workflow 內容），這樣兼顧「網站照常公開給使用者
+  看」跟「原始碼不公開」兩件事。
+
+建議你確認一下這個 Repo 目前的公開狀態，如果是 Public 而你希望原始碼不被
+直接複製，改成 Private 會是效果最直接的一步。
