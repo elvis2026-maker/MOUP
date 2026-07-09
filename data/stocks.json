@@ -5,22 +5,19 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/09 23:53",
+  "updated_at": "2026/07/10 00:24",
   "trade_date": "20260709",
   "data_date": "2026-07-09",
-  "total_scanned": 196,
-  "candidates_count": 18,
-  "pool_count": 32,
-  "total_api_req": 340,
+  "total_scanned": 391,
+  "candidates_count": 21,
+  "pool_count": 34,
+  "total_api_req": 568,
   "scan_progress": {
-    "date": "2026-07-09",
+    "date": "2026-07-10",
     "total_slots": 5,
     "slots_done": [
-      0,
       1,
-      2,
-      3,
-      4
+      2
     ]
   },
   "stocks": [
@@ -117,55 +114,6 @@
       "prob": "高（79%）",
       "prob_level": "high",
       "risk_flags": {}
-    },
-    {
-      "sid": "5471",
-      "name": "松翰",
-      "close": 67.6,
-      "change_pct": 7.47,
-      "volume": 16996328,
-      "market": "tse",
-      "score": 82,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "收盤靠近最高點（買盤強）",
-        "量能放大 3.5x",
-        "均線多頭排列",
-        "站上月線 MA20=59.79",
-        "突破近10日高點",
-        "三大法人買超 2360張"
-      ],
-      "warnings": [],
-      "inst": {
-        "foreign_net": 2319,
-        "trust_net": 0,
-        "dealer_net": 40,
-        "total_net": 2360,
-        "buy_streak_days": 2
-      },
-      "ma5": 62.76,
-      "ma10": 61.46,
-      "ma20": 59.79,
-      "has_warrant": true,
-      "warrants": [],
-      "risk": {
-        "volatility_pct": 4.29,
-        "volatility_level": "高",
-        "bias20_pct": 11.3,
-        "overheated": false,
-        "up_streak_days": 2,
-        "dist_from_high_pct": 0.0,
-        "is_new_high": true
-      },
-      "data_date": "2026-07-09",
-      "age_days": 0,
-      "is_today": true,
-      "prob": "中高（74%）",
-      "prob_level": "medium-high",
-      "risk_flags": {
-        "ex_dividend_days": 5,
-        "ex_dividend_date": "2026/07/14"
-      }
     },
     {
       "sid": "6182",
@@ -315,52 +263,55 @@
       "risk_flags": {}
     },
     {
-      "sid": "3374",
-      "name": "精材",
-      "close": 324.5,
-      "change_pct": 10.0,
-      "volume": 17057878,
-      "market": "otc",
+      "sid": "5471",
+      "name": "松翰",
+      "close": 67.6,
+      "change_pct": 7.47,
+      "volume": 16996328,
+      "market": "tse",
       "score": 77,
       "reasons": [
         "強勢大漲 ≥5%",
         "收盤靠近最高點（買盤強）",
+        "量能放大 3.5x",
         "均線多頭排列",
-        "站上月線 MA20=274.07",
+        "站上月線 MA20=59.79",
         "突破近10日高點",
-        "三大法人買超 5108張",
-        "外資積極買超"
+        "三大法人買超 2360張"
       ],
       "warnings": [
         "融資追價明顯"
       ],
       "inst": {
-        "foreign_net": 5073,
+        "foreign_net": 2319,
         "trust_net": 0,
-        "dealer_net": 35,
-        "total_net": 5108,
-        "buy_streak_days": 1
+        "dealer_net": 40,
+        "total_net": 2360,
+        "buy_streak_days": 2
       },
-      "ma5": 310.0,
-      "ma10": 301.05,
-      "ma20": 274.07,
+      "ma5": 62.76,
+      "ma10": 61.46,
+      "ma20": 59.79,
       "has_warrant": true,
       "warrants": [],
       "risk": {
-        "volatility_pct": 5.43,
+        "volatility_pct": 4.29,
         "volatility_level": "高",
-        "bias20_pct": 16.6,
-        "overheated": true,
-        "up_streak_days": 1,
+        "bias20_pct": 11.3,
+        "overheated": false,
+        "up_streak_days": 2,
         "dist_from_high_pct": 0.0,
         "is_new_high": true
       },
-      "data_date": "2026-07-08",
-      "age_days": 1,
-      "is_today": false,
+      "data_date": "2026-07-09",
+      "age_days": 0,
+      "is_today": true,
       "prob": "中高（69%）",
       "prob_level": "medium-high",
-      "risk_flags": {}
+      "risk_flags": {
+        "ex_dividend_days": 5,
+        "ex_dividend_date": "2026/07/14"
+      }
     },
     {
       "sid": "4989",
@@ -736,6 +687,53 @@
       "age_days": 0,
       "is_today": true,
       "prob": "中高（68%）",
+      "prob_level": "medium-high",
+      "risk_flags": {}
+    },
+    {
+      "sid": "3211",
+      "name": "順達",
+      "close": 454.0,
+      "change_pct": 6.2,
+      "volume": 28337539,
+      "market": "otc",
+      "score": 73,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "站上月線 MA20=415.43",
+        "突破近10日高點",
+        "三大法人買超 8514張",
+        "投信積極買超",
+        "外資積極買超"
+      ],
+      "warnings": [
+        "量能過度放大"
+      ],
+      "inst": {
+        "foreign_net": 5020,
+        "trust_net": 3026,
+        "dealer_net": 467,
+        "total_net": 8514,
+        "buy_streak_days": 2
+      },
+      "ma5": 409.3,
+      "ma10": 405.8,
+      "ma20": 415.43,
+      "has_warrant": true,
+      "warrants": [],
+      "risk": {
+        "volatility_pct": 4.42,
+        "volatility_level": "高",
+        "bias20_pct": 8.6,
+        "overheated": false,
+        "up_streak_days": 2,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
+      },
+      "data_date": "2026-07-09",
+      "age_days": 0,
+      "is_today": true,
+      "prob": "中高（65%）",
       "prob_level": "medium-high",
       "risk_flags": {}
     }
