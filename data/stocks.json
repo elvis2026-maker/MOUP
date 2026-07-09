@@ -5,13 +5,13 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/09 22:25",
+  "updated_at": "2026/07/09 23:53",
   "trade_date": "20260709",
   "data_date": "2026-07-09",
-  "total_scanned": 195,
-  "candidates_count": 17,
+  "total_scanned": 196,
+  "candidates_count": 18,
   "pool_count": 32,
-  "total_api_req": 337,
+  "total_api_req": 340,
   "scan_progress": {
     "date": "2026-07-09",
     "total_slots": 5,
@@ -553,52 +553,6 @@
       "risk_flags": {}
     },
     {
-      "sid": "3026",
-      "name": "禾伸堂",
-      "close": 953.0,
-      "change_pct": 9.92,
-      "volume": 20931649,
-      "market": "tse",
-      "score": 77,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "收盤靠近最高點（買盤強）",
-        "量能放大 2.0x",
-        "均線多頭排列",
-        "站上月線 MA20=822.0",
-        "三大法人買超 4399張",
-        "投信積極買超"
-      ],
-      "warnings": [],
-      "inst": {
-        "foreign_net": 1690,
-        "trust_net": 2813,
-        "dealer_net": -105,
-        "total_net": 4399,
-        "buy_streak_days": 1
-      },
-      "ma5": 923.2,
-      "ma10": 852.0,
-      "ma20": 822.0,
-      "has_warrant": true,
-      "warrants": [],
-      "risk": {
-        "volatility_pct": 6.92,
-        "volatility_level": "高",
-        "bias20_pct": 13.9,
-        "overheated": false,
-        "up_streak_days": 1,
-        "dist_from_high_pct": -3.5,
-        "is_new_high": false
-      },
-      "data_date": "2026-07-08",
-      "age_days": 1,
-      "is_today": false,
-      "prob": "中高（69%）",
-      "prob_level": "medium-high",
-      "risk_flags": {}
-    },
-    {
       "sid": "8046",
       "name": "南電",
       "close": 1215.0,
@@ -731,6 +685,51 @@
         "overheated": false,
         "up_streak_days": 2,
         "dist_from_high_pct": -0.5,
+        "is_new_high": false
+      },
+      "data_date": "2026-07-09",
+      "age_days": 0,
+      "is_today": true,
+      "prob": "中高（68%）",
+      "prob_level": "medium-high",
+      "risk_flags": {}
+    },
+    {
+      "sid": "2486",
+      "name": "一詮",
+      "close": 259.0,
+      "change_pct": 7.25,
+      "volume": 13568571,
+      "market": "tse",
+      "score": 76,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "量能放大 1.7x",
+        "站上月線 MA20=248.5",
+        "突破近10日高點",
+        "三大法人買超 3761張",
+        "外資積極買超"
+      ],
+      "warnings": [],
+      "inst": {
+        "foreign_net": 3680,
+        "trust_net": 0,
+        "dealer_net": 81,
+        "total_net": 3761,
+        "buy_streak_days": 1
+      },
+      "ma5": 249.2,
+      "ma10": 241.35,
+      "ma20": 248.5,
+      "has_warrant": true,
+      "warrants": [],
+      "risk": {
+        "volatility_pct": 5.13,
+        "volatility_level": "高",
+        "bias20_pct": 4.0,
+        "overheated": false,
+        "up_streak_days": 1,
+        "dist_from_high_pct": -7.3,
         "is_new_high": false
       },
       "data_date": "2026-07-09",
