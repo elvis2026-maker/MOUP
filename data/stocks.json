@@ -5,13 +5,13 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/09 15:48",
-  "trade_date": "20260708",
-  "data_date": "2026-07-08",
-  "total_scanned": 391,
-  "candidates_count": 25,
-  "pool_count": 36,
-  "total_api_req": 576,
+  "updated_at": "2026/07/09 20:28",
+  "trade_date": "20260709",
+  "data_date": "2026-07-09",
+  "total_scanned": 195,
+  "candidates_count": 14,
+  "pool_count": 28,
+  "total_api_req": 324,
   "scan_progress": {
     "date": "2026-07-09",
     "total_slots": 5,
@@ -63,7 +63,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-03",
-      "age_days": 5,
+      "age_days": 6,
       "is_today": false,
       "prob": "高（82%）",
       "prob_level": "high",
@@ -110,11 +110,60 @@
         "is_new_high": true
       },
       "data_date": "2026-07-06",
-      "age_days": 2,
+      "age_days": 3,
       "is_today": false,
       "prob": "高（79%）",
       "prob_level": "high",
       "risk_flags": {}
+    },
+    {
+      "sid": "5471",
+      "name": "松翰",
+      "close": 67.6,
+      "change_pct": 7.47,
+      "volume": 16996328,
+      "market": "tse",
+      "score": 82,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 3.5x",
+        "均線多頭排列",
+        "站上月線 MA20=59.79",
+        "突破近10日高點",
+        "三大法人買超 2360張"
+      ],
+      "warnings": [],
+      "inst": {
+        "foreign_net": 2319,
+        "trust_net": 0,
+        "dealer_net": 40,
+        "total_net": 2360,
+        "buy_streak_days": 2
+      },
+      "ma5": 62.76,
+      "ma10": 61.46,
+      "ma20": 59.79,
+      "has_warrant": true,
+      "warrants": [],
+      "risk": {
+        "volatility_pct": 4.29,
+        "volatility_level": "高",
+        "bias20_pct": 11.3,
+        "overheated": false,
+        "up_streak_days": 2,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
+      },
+      "data_date": "2026-07-09",
+      "age_days": 0,
+      "is_today": true,
+      "prob": "中高（74%）",
+      "prob_level": "medium-high",
+      "risk_flags": {
+        "ex_dividend_days": 5,
+        "ex_dividend_date": "2026/07/14"
+      }
     },
     {
       "sid": "2458",
@@ -159,7 +208,7 @@
         "is_new_high": false
       },
       "data_date": "2026-07-07",
-      "age_days": 1,
+      "age_days": 2,
       "is_today": false,
       "prob": "中高（70%）",
       "prob_level": "medium-high",
@@ -207,8 +256,8 @@
         "is_new_high": true
       },
       "data_date": "2026-07-08",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中高（69%）",
       "prob_level": "medium-high",
       "risk_flags": {}
@@ -254,7 +303,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-03",
-      "age_days": 5,
+      "age_days": 6,
       "is_today": false,
       "prob": "中高（69%）",
       "prob_level": "medium-high",
@@ -301,7 +350,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-03",
-      "age_days": 5,
+      "age_days": 6,
       "is_today": false,
       "prob": "中高（69%）",
       "prob_level": "medium-high",
@@ -349,7 +398,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-06",
-      "age_days": 2,
+      "age_days": 3,
       "is_today": false,
       "prob": "中高（69%）",
       "prob_level": "medium-high",
@@ -397,7 +446,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-06",
-      "age_days": 2,
+      "age_days": 3,
       "is_today": false,
       "prob": "中高（69%）",
       "prob_level": "medium-high",
@@ -443,8 +492,8 @@
         "is_new_high": false
       },
       "data_date": "2026-07-08",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中高（69%）",
       "prob_level": "medium-high",
       "risk_flags": {}
@@ -489,61 +538,11 @@
         "is_new_high": true
       },
       "data_date": "2026-07-07",
-      "age_days": 1,
+      "age_days": 2,
       "is_today": false,
       "prob": "中高（65%）",
       "prob_level": "medium-high",
       "risk_flags": {}
-    },
-    {
-      "sid": "3617",
-      "name": "碩天",
-      "close": 238.0,
-      "change_pct": 9.93,
-      "volume": 1948813,
-      "market": "tse",
-      "score": 72,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "收盤靠近最高點（買盤強）",
-        "量能放大 3.5x",
-        "均線多頭排列",
-        "站上月線 MA20=214.72",
-        "突破近10日高點"
-      ],
-      "warnings": [
-        "融資追價明顯"
-      ],
-      "inst": {
-        "foreign_net": 258,
-        "trust_net": 0,
-        "dealer_net": 27,
-        "total_net": 285,
-        "buy_streak_days": 3
-      },
-      "ma5": 218.5,
-      "ma10": 216.5,
-      "ma20": 214.72,
-      "has_warrant": true,
-      "warrants": [],
-      "risk": {
-        "volatility_pct": 3.4,
-        "volatility_level": "中",
-        "bias20_pct": 10.2,
-        "overheated": false,
-        "up_streak_days": 1,
-        "dist_from_high_pct": 0.0,
-        "is_new_high": true
-      },
-      "data_date": "2026-07-08",
-      "age_days": 0,
-      "is_today": true,
-      "prob": "中高（64%）",
-      "prob_level": "medium-high",
-      "risk_flags": {
-        "ex_dividend_days": 14,
-        "ex_dividend_date": "2026/07/22"
-      }
     },
     {
       "sid": "3088",
@@ -583,12 +582,12 @@
         "is_new_high": true
       },
       "data_date": "2026-07-08",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中高（64%）",
       "prob_level": "medium-high",
       "risk_flags": {
-        "ex_dividend_days": 15,
+        "ex_dividend_days": 14,
         "ex_dividend_date": "2026/07/23"
       }
     },
@@ -630,8 +629,8 @@
         "is_new_high": true
       },
       "data_date": "2026-07-08",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中高（63%）",
       "prob_level": "medium-high",
       "risk_flags": {}
@@ -677,8 +676,8 @@
         "is_new_high": true
       },
       "data_date": "2026-07-08",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中（60%）",
       "prob_level": "medium",
       "risk_flags": {}
@@ -724,12 +723,12 @@
         "is_new_high": true
       },
       "data_date": "2026-07-08",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中（60%）",
       "prob_level": "medium",
       "risk_flags": {
-        "ex_dividend_days": 9,
+        "ex_dividend_days": 8,
         "ex_dividend_date": "2026/07/17"
       }
     }
