@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>強勢股掃描｜隔日續航力分析 V38</title>
+<title>強勢股掃描｜隔日續航力分析 V41</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -459,6 +459,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
     <div class="footer-brand">禁止未經授權轉載或作為資料來源使用</div>
     <div class="footer-meta">
       <span>Taiwan Stock Momentum Intelligence</span><span class="footer-dot">·</span>
+      <span>V39</span><span class="footer-dot">·</span>
       <span>最後更新：<span id="footer-update-time">--</span></span>
     </div>
   </div>
@@ -697,10 +698,7 @@ function cardHTML(s, rank){
       ⚠ 「估算槓桿」是用（正股價×行使比例）／權證價概算，不是精確的「有效槓桿」（沒有 Delta 資料無法算），僅供參考；實際買賣價、成交量請至證券 APP 確認流動性。
     </div>`;
   } else if(hasWarrant){
-    wBlock=`<div class="no-warrant" style="border-color:var(--accent);color:var(--text)">
-      ✅ 此標的名下有發行認購權證，但目前抓不到明細（可能全數快到期或資料源當下異常）。
-      <br><small style="color:var(--text3)">請至您的<strong>證券 APP</strong> 搜尋股票代號「${s.sid}」→ 「認購權證」查詢可投資標的。</small>
-    </div>`;
+    wBlock='';
   } else {
     wBlock=`<div class="no-warrant">目前查無此標的的認購權證資料（可能已全數到期或尚未發行）</div>`;
   }
@@ -913,7 +911,6 @@ function liveCardHTML(s,card){
       <div class="lc-cell"><span class="lci-lbl">連續動能</span><span class="lci-val">${streakTxt}</span></div>
     </div>
     ${warnTags.length?`<div class="tag-row" style="margin-top:8px">${warnTags.join('')}</div>`:''}
-    <div class="open-signal neutral">📱 請至證券 APP 查看今日即時走勢</div>
   </div>`;
 }
 
