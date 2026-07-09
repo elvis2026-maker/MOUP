@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>強勢股掃描｜隔日續航力分析 V33</title>
+<title>強勢股掃描｜隔日續航力分析 V38</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -40,16 +40,24 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 .app{max-width:1080px;margin:0 auto;padding:0 14px 60px}
 
 /* ══ NAMEPLATE ══ */
-.nameplate-wrap{display:flex;align-items:center;justify-content:center;gap:8px;padding:20px 0 0}
-.nameplate-version{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em;padding:2px 8px;border-radius:3px;background:linear-gradient(135deg,#2563eb,#60a5fa);color:#fff;box-shadow:0 1px 4px rgba(37,99,235,.3)}
-.nameplate{position:relative;display:inline-flex;align-items:center;justify-content:center;padding:5px 22px;border-radius:3px;background:linear-gradient(180deg,#e2e5ec 0%,#f6f7fa 30%,#fff 50%,#eaecf1 75%,#d6d9e2 100%);box-shadow:0 1px 0 rgba(255,255,255,.95) inset,0 -1px 0 rgba(0,0,0,.1) inset,0 2px 5px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.08)}
-.nameplate-inner{position:relative;z-index:1;padding:3px 10px;border-top:1px solid rgba(255,255,255,.9);border-bottom:1px solid rgba(0,0,0,.08);border-left:1px solid rgba(255,255,255,.5);border-right:1px solid rgba(0,0,0,.05)}
-.nameplate-text{font-size:12px;font-weight:500;letter-spacing:.08em;color:#3a3f4e;white-space:nowrap}
-.nameplate-text .sep{color:#9ba8be;margin:0 6px;font-weight:300}
-.nameplate-screws{position:absolute;inset:0;pointer-events:none}
-.screw{position:absolute;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 33% 33%,#dde0e8 0%,#a8adb9 50%,#7a7f8e 100%);box-shadow:0 0 0 .5px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.5)}
-.screw::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(45deg);width:3.5px;height:.8px;background:rgba(0,0,0,.25)}
-.screw.tl{top:5px;left:7px}.screw.tr{top:5px;right:7px}.screw.bl{bottom:5px;left:7px}.screw.br{bottom:5px;right:7px}
+.brand-logo-top{display:flex;justify-content:center;padding:20px 0 0}
+.brand-logo-top a{display:inline-flex;transition:opacity .2s ease,transform .2s ease}
+.brand-logo-top a:hover{opacity:.82;transform:translateY(-1px)}
+.brand-logo-top img{width:92px;height:auto;display:block}
+@media(max-width:400px){.brand-logo-top{padding:14px 0 0}.brand-logo-top img{width:72px}}
+.nameplate-wrap{display:flex;align-items:center;justify-content:center;padding:28px 0 4px}
+.nameplate{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:12px;padding:14px 30px;border-radius:999px;background:linear-gradient(160deg,#232433 0%,#181924 45%,#101019 100%);box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 -1px 0 rgba(0,0,0,.4) inset,0 6px 20px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.05);text-decoration:none;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
+.nameplate:hover{transform:translateY(-1px);box-shadow:0 1px 0 rgba(255,255,255,.08) inset,0 -1px 0 rgba(0,0,0,.4) inset,0 10px 26px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.09)}
+.nameplate::before{content:"";position:absolute;top:-60%;left:-60%;width:35%;height:220%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);transform:rotate(20deg);animation:nameplate-shine 4.5s ease-in-out infinite}
+@keyframes nameplate-shine{
+  0%{left:-60%}
+  35%{left:130%}
+  100%{left:130%}
+}
+.nameplate-icon{position:relative;z-index:1;font-size:15px;color:#e8b968;text-shadow:0 0 8px rgba(232,185,104,.5)}
+.nameplate-text{position:relative;z-index:1;font-size:13px;font-weight:500;letter-spacing:.06em;color:#c7c9d6;white-space:nowrap}
+.nameplate-text strong{color:#f2f3f8;font-weight:700}
+.nameplate-text .sep{color:#4c4f5e;margin:0 10px;font-weight:300}
 
 /* ══ HERO ══ */
 .hero{text-align:center;padding:28px 20px 20px}
@@ -373,6 +381,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 <body>
 <div class="app">
 
+<!-- ══ LOGO ══ -->
+<div class="brand-logo-top">
+  <a href="https://elvis2026-maker.github.io/MIS/" target="_blank" rel="noopener" title="艾維斯資訊 IT 顧問｜MIS 外包服務與解決方案">
+    <img src="assets/logo.png" alt="艾維斯資訊 ELVIS IT 顧問">
+  </a>
+</div>
+
 <!-- ══ HERO ══ -->
 <div class="hero">
   <div class="hero-eyebrow">TAIWAN STOCK MOMENTUM INTELLIGENCE</div>
@@ -423,7 +438,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
   <div class="live-notice">
     ⚠ <strong>本頁不是即時報價</strong>，內容是昨日盤後數據（收盤價、漲幅、MA20、評分），整理成隔夜精選速覽方便你開盤前複習精選名單。
     <strong>開盤後請改用你的證券 APP 查看即時走勢</strong>，確認是否「開高走高」延續強勢再決定進場。
-    <br><small style="color:var(--text3)">這個工具的定位是盤後選股分析，不提供盤中即時資料（FinMind 免費版盤中無資料，付費版才有，目前未串接）</small>
   </div>
   <div class="err-banner" id="err-banner"></div>
   <div class="live-header">
@@ -444,7 +458,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
   <div class="footer-inner">
     <div class="footer-brand">禁止未經授權轉載或作為資料來源使用</div>
     <div class="footer-meta">
-      <span>MOUP V33</span><span class="footer-dot">·</span>
       <span>Taiwan Stock Momentum Intelligence</span><span class="footer-dot">·</span>
       <span>最後更新：<span id="footer-update-time">--</span></span>
     </div>
@@ -453,16 +466,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 
 <!-- ══ 銘牌 ══ -->
 <div class="nameplate-wrap">
-  <div class="nameplate">
-    <div class="nameplate-inner">
-      <span class="nameplate-text">✦ 程式設計 Elvis Liu <span class="sep">|</span> 版權所有</span>
-    </div>
-    <div class="nameplate-screws">
-      <span class="screw tl"></span><span class="screw tr"></span>
-      <span class="screw bl"></span><span class="screw br"></span>
-    </div>
-  </div>
-  <div class="nameplate-version">V33</div>
+  <a class="nameplate" href="https://elvis2026-maker.github.io/MIS/" target="_blank" rel="noopener">
+    <span class="nameplate-icon">✦</span>
+    <span class="nameplate-text"><strong>程式設計 Elvis Liu</strong><span class="sep">|</span>版權所有</span>
+  </a>
 </div>
 </div>
 
