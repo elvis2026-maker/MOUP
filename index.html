@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>強勢股掃描｜隔日續航力分析 V31</title>
+<title>強勢股掃描｜隔日續航力分析 V32</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -384,7 +384,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
       <span class="screw bl"></span><span class="screw br"></span>
     </div>
   </div>
-  <div class="nameplate-version">V31</div>
+  <div class="nameplate-version">V32</div>
 </div>
 
 <!-- ══ HERO ══ -->
@@ -418,7 +418,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 <!-- ══ TABS ══ -->
 <div class="tabs">
   <div class="tab active" onclick="switchTab('list',this)">📋 精選清單</div>
-  <div class="tab" onclick="switchTab('live',this)">📑 盤中參考卡</div>
+  <div class="tab" onclick="switchTab('live',this)">📑 隔夜精選速覽</div>
 </div>
 
 <!-- ══ 清單 TAB ══ -->
@@ -432,16 +432,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
   <div class="cards" id="cards"></div>
 </div>
 
-<!-- ══ 即時 TAB（V20：改為盤中參考卡，非即時報價） ══ -->
+<!-- ══ 即時 TAB（V20：改為隔夜精選速覽，非即時報價） ══ -->
 <div id="live-panel">
   <div class="live-notice">
-    ⚠ <strong>本頁不是即時報價</strong>，內容是昨日盤後數據（收盤價、漲幅、MA20、評分），整理成快速參考卡方便你開盤前複習精選名單。
+    ⚠ <strong>本頁不是即時報價</strong>，內容是昨日盤後數據（收盤價、漲幅、MA20、評分），整理成隔夜精選速覽方便你開盤前複習精選名單。
     <strong>開盤後請改用你的證券 APP 查看即時走勢</strong>，確認是否「開高走高」延續強勢再決定進場。
     <br><small style="color:var(--text3)">這個工具的定位是盤後選股分析，不提供盤中即時資料（FinMind 免費版盤中無資料，付費版才有，目前未串接）</small>
   </div>
   <div class="err-banner" id="err-banner"></div>
   <div class="live-header">
-    <h2>盤中參考卡</h2>
+    <h2>隔夜精選速覽</h2>
     <span class="live-time">資料整理時間：<span id="live-update">--</span>（昨收，非即時）</span>
   </div>
   <div class="live-grid" id="live-grid">
@@ -458,7 +458,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
   <div class="footer-inner">
     <div class="footer-brand">程式設計 Elvis Liu｜版權所有・禁止未經授權轉載或作為資料來源使用</div>
     <div class="footer-meta">
-      <span>MOUP V31</span><span class="footer-dot">·</span>
+      <span>MOUP V32</span><span class="footer-dot">·</span>
       <span>Taiwan Stock Momentum Intelligence</span><span class="footer-dot">·</span>
       <span>最後更新：<span id="footer-update-time">--</span></span>
     </div>
@@ -791,7 +791,7 @@ function genHint(s){
 function toggleCard(el){ el.classList.toggle('open'); }
 
 // ════════════════════════════════════════════
-//  盤中參考卡（V20：靜態昨收資料，非即時輪詢）
+//  隔夜精選速覽（V20：靜態昨收資料，非即時輪詢）
 // ════════════════════════════════════════════
 function startLive(){
   if(liveRunning) return;
@@ -848,7 +848,7 @@ async function fetchLive(){
   }
 }
 
-// V35：盤中參考卡改版 —— 不再只是精選清單的重複資料，
+// V35：隔夜精選速覽改版 —— 不再只是精選清單的重複資料，
 // 加入波動度/乖離率/連續天數/距高點/法人連買/除權息倒數/處置股警示，
 // 這些是「開盤前決定要不要進場買權證」該看的東西，不需要即時報價也能做。
 function liveCardHTML(s,card){

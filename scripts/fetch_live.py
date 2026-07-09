@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-盤中參考清單產生腳本 V19
+隔夜精選速覽產生腳本 V19
 ==============================
 V19 重大簡化：放棄「盤中即時報價」這個功能定位。
 
@@ -16,7 +16,7 @@ V19 重大簡化：放棄「盤中即時報價」這個功能定位。
 
   V19 新定位：
     這支腳本不再嘗試呼叫任何「今日報價」API。
-    它只做一件事：把 stocks.json 的精選清單整理成「盤中參考卡」，
+    它只做一件事：把 stocks.json 的精選清單整理成「隔夜精選速覽」，
     內容只有「昨收、漲幅、MA20、評分」這些盤後就已經確定的數據，
     明確標示「請至證券 APP 查看即時報價」，不再假裝是即時資料。
 
@@ -56,7 +56,7 @@ def main():
     now_str = now.strftime("%Y/%m/%d %H:%M:%S")
     trading = is_trading_now()
 
-    print(f"[{now_str} 台灣時間] fetch_live V19（盤中參考卡，非即時）")
+    print(f"[{now_str} 台灣時間] fetch_live V19（隔夜精選速覽，非即時）")
 
     if not os.path.exists(STOCKS_PATH):
         _write(now_str, now.strftime("%Y%m%d"), trading, [], ["stocks.json 不存在，請先執行每日盤後抓資料"])
@@ -72,7 +72,7 @@ def main():
                ["stocks.json 無候選股，請先執行每日盤後抓資料 workflow"])
         return
 
-    # V35：盤中參考卡改版 —— 不再只是精選清單的重複資料，
+    # V35：隔夜精選速覽改版 —— 不再只是精選清單的重複資料，
     # 加入波動度/乖離率/連續天數/距高點/法人連買天數/除權息倒數/處置股警示，
     # 這些對「開盤前決定要不要進場買權證」比單純複製漲跌幅有意義。
     ref_cards = []
@@ -104,7 +104,7 @@ def main():
         })
         print(f"  - {s['sid']} {s.get('name',''):8s} 昨收 {s.get('close')}  評分 {s.get('score')}")
 
-    print(f"  💾 live.json 寫入完成（{len(ref_cards)} 張盤中參考卡，全部為昨收資料）")
+    print(f"  💾 live.json 寫入完成（隔夜精選速覽 {len(ref_cards)} 筆，全部為昨收資料）")
 
     _write(now_str, now.strftime("%Y%m%d"), trading, ref_cards, [])
 
