@@ -5,19 +5,21 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/13 20:27",
+  "updated_at": "2026/07/13 21:31",
   "trade_date": "20260713",
   "data_date": "2026-07-13",
   "total_scanned": 391,
-  "candidates_count": 22,
-  "pool_count": 31,
-  "total_api_req": 544,
+  "candidates_count": 24,
+  "pool_count": 38,
+  "total_api_req": 543,
   "scan_progress": {
     "date": "2026-07-13",
     "total_slots": 5,
     "slots_done": [
+      0,
       1,
-      2
+      2,
+      3
     ]
   },
   "stocks": [
@@ -71,48 +73,48 @@
     {
       "sid": "6182",
       "name": "合晶",
-      "close": 172.5,
-      "change_pct": 7.81,
-      "volume": 182050279,
+      "close": 189.5,
+      "change_pct": 9.86,
+      "volume": 71357500,
       "market": "otc",
       "score": 82,
       "reasons": [
         "強勢大漲 ≥5%",
         "收盤靠近最高點（買盤強）",
         "均線多頭排列",
-        "站上月線 MA20=121.08",
+        "站上月線 MA20=125.78",
         "突破近10日高點",
-        "三大法人買超 11646張",
+        "三大法人買超 6025張",
         "投信積極買超",
         "外資積極買超"
       ],
       "warnings": [
-        "融資追價明顯"
+        "量能萎縮"
       ],
       "inst": {
-        "foreign_net": 7079,
-        "trust_net": 4216,
-        "dealer_net": 350,
-        "total_net": 11646,
-        "buy_streak_days": 1
+        "foreign_net": 4087,
+        "trust_net": 1938,
+        "dealer_net": 0,
+        "total_net": 6025,
+        "buy_streak_days": 2
       },
-      "ma5": 154.6,
-      "ma10": 138.75,
-      "ma20": 121.08,
+      "ma5": 159.4,
+      "ma10": 143.5,
+      "ma20": 125.78,
       "has_warrant": true,
       "warrants": [],
       "risk": {
-        "volatility_pct": 6.31,
+        "volatility_pct": 6.43,
         "volatility_level": "高",
-        "bias20_pct": 37.1,
+        "bias20_pct": 44.4,
         "overheated": true,
-        "up_streak_days": 2,
+        "up_streak_days": 3,
         "dist_from_high_pct": 0.0,
         "is_new_high": true
       },
-      "data_date": "2026-07-09",
-      "age_days": 4,
-      "is_today": false,
+      "data_date": "2026-07-13",
+      "age_days": 0,
+      "is_today": true,
       "prob": "中高（74%）",
       "prob_level": "medium-high",
       "risk_flags": {}
@@ -499,6 +501,52 @@
       "risk_flags": {}
     },
     {
+      "sid": "2377",
+      "name": "微星",
+      "close": 149.5,
+      "change_pct": 3.1,
+      "volume": 29889763,
+      "market": "tse",
+      "score": 74,
+      "reasons": [
+        "大漲 ≥3%",
+        "量能放大 2.0x",
+        "均線多頭排列",
+        "站上月線 MA20=138.7",
+        "突破近10日高點",
+        "三大法人買超 6964張",
+        "外資積極買超"
+      ],
+      "warnings": [],
+      "inst": {
+        "foreign_net": 6337,
+        "trust_net": 6,
+        "dealer_net": 621,
+        "total_net": 6964,
+        "buy_streak_days": 14
+      },
+      "ma5": 141.9,
+      "ma10": 141.45,
+      "ma20": 138.7,
+      "has_warrant": true,
+      "warrants": [],
+      "risk": {
+        "volatility_pct": 2.57,
+        "volatility_level": "中",
+        "bias20_pct": 7.2,
+        "overheated": false,
+        "up_streak_days": 3,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
+      },
+      "data_date": "2026-07-13",
+      "age_days": 0,
+      "is_today": true,
+      "prob": "中高（66%）",
+      "prob_level": "medium-high",
+      "risk_flags": {}
+    },
+    {
       "sid": "3211",
       "name": "順達",
       "close": 454.0,
@@ -639,39 +687,41 @@
       }
     },
     {
-      "sid": "3694",
-      "name": "海華",
-      "close": 67.6,
-      "change_pct": 4.0,
-      "volume": 5465902,
+      "sid": "2434",
+      "name": "統懋",
+      "close": 68.3,
+      "change_pct": 9.98,
+      "volume": 2225114,
       "market": "tse",
-      "score": 68,
+      "score": 72,
       "reasons": [
-        "大漲 ≥3%",
+        "強勢大漲 ≥5%",
         "收盤靠近最高點（買盤強）",
-        "量能放大 2.0x",
+        "量能放大 1.7x",
         "均線多頭排列",
-        "站上月線 MA20=61.6",
+        "站上月線 MA20=44.77",
         "突破近10日高點"
       ],
-      "warnings": [],
+      "warnings": [
+        "融資追價明顯"
+      ],
       "inst": {
-        "foreign_net": -399,
+        "foreign_net": 119,
         "trust_net": 0,
-        "dealer_net": 19,
-        "total_net": -379,
-        "buy_streak_days": -1
+        "dealer_net": -2,
+        "total_net": 117,
+        "buy_streak_days": 3
       },
-      "ma5": 64.1,
-      "ma10": 62.59,
-      "ma20": 61.6,
+      "ma5": 56.4,
+      "ma10": 50.73,
+      "ma20": 44.77,
       "has_warrant": true,
       "warrants": [],
       "risk": {
-        "volatility_pct": 3.99,
-        "volatility_level": "中",
-        "bias20_pct": 9.0,
-        "overheated": false,
+        "volatility_pct": 7.11,
+        "volatility_level": "高",
+        "bias20_pct": 46.7,
+        "overheated": true,
         "up_streak_days": 3,
         "dist_from_high_pct": 0.0,
         "is_new_high": true
@@ -679,55 +729,8 @@
       "data_date": "2026-07-13",
       "age_days": 0,
       "is_today": true,
-      "prob": "中（61%）",
-      "prob_level": "medium",
-      "risk_flags": {
-        "ex_dividend_days": 11,
-        "ex_dividend_date": "2026/07/24"
-      }
-    },
-    {
-      "sid": "3702",
-      "name": "大聯大",
-      "close": 117.0,
-      "change_pct": 9.86,
-      "volume": 11343796,
-      "market": "tse",
-      "score": 67,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "收盤靠近最高點（買盤強）",
-        "站上月線 MA20=108.0",
-        "突破近10日高點",
-        "三大法人買超 1028張"
-      ],
-      "warnings": [],
-      "inst": {
-        "foreign_net": 1174,
-        "trust_net": -6,
-        "dealer_net": -140,
-        "total_net": 1028,
-        "buy_streak_days": 2
-      },
-      "ma5": 108.2,
-      "ma10": 107.7,
-      "ma20": 108.0,
-      "has_warrant": true,
-      "warrants": [],
-      "risk": {
-        "volatility_pct": 3.17,
-        "volatility_level": "中",
-        "bias20_pct": 7.9,
-        "overheated": false,
-        "up_streak_days": 2,
-        "dist_from_high_pct": 0.0,
-        "is_new_high": true
-      },
-      "data_date": "2026-07-13",
-      "age_days": 0,
-      "is_today": true,
-      "prob": "中（60%）",
-      "prob_level": "medium",
+      "prob": "中高（64%）",
+      "prob_level": "medium-high",
       "risk_flags": {}
     }
   ]
