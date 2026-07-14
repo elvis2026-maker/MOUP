@@ -5,13 +5,13 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/14 19:21",
+  "updated_at": "2026/07/14 20:18",
   "trade_date": "20260714",
   "data_date": "2026-07-14",
-  "total_scanned": 392,
-  "candidates_count": 12,
-  "pool_count": 25,
-  "total_api_req": 485,
+  "total_scanned": 195,
+  "candidates_count": 5,
+  "pool_count": 20,
+  "total_api_req": 249,
   "scan_progress": {
     "date": "2026-07-14",
     "total_slots": 5,
@@ -22,6 +22,59 @@
     ]
   },
   "stocks": [
+    {
+      "sid": "5483",
+      "name": "中美晶",
+      "close": 253.0,
+      "change_pct": 9.29,
+      "volume": 84426884,
+      "market": "otc",
+      "score": 92,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 2.5x",
+        "均線多頭排列",
+        "站上月線 MA20=187.25",
+        "突破近10日高點",
+        "三大法人買超 10754張",
+        "投信積極買超",
+        "外資積極買超"
+      ],
+      "warnings": [
+        "融資追價明顯"
+      ],
+      "inst": {
+        "foreign_net": 3989,
+        "trust_net": 7843,
+        "dealer_net": -1079,
+        "total_net": 10754,
+        "buy_streak_days": 3
+      },
+      "ma5": 211.6,
+      "ma10": 201.15,
+      "ma20": 187.25,
+      "has_warrant": true,
+      "warrants": [],
+      "risk": {
+        "volatility_pct": 5.22,
+        "volatility_level": "高",
+        "bias20_pct": 31.8,
+        "overheated": true,
+        "up_streak_days": 4,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
+      },
+      "data_date": "2026-07-14",
+      "age_days": 0,
+      "is_today": true,
+      "prob": "高（82%）",
+      "prob_level": "high",
+      "risk_flags": {
+        "ex_dividend_days": 9,
+        "ex_dividend_date": "2026/07/23"
+      }
+    },
     {
       "sid": "4958",
       "name": "臻鼎-KY",
@@ -685,52 +738,6 @@
       "is_today": true,
       "prob": "中高（64%）",
       "prob_level": "medium-high",
-      "risk_flags": {}
-    },
-    {
-      "sid": "2423",
-      "name": "固緯",
-      "close": 81.7,
-      "change_pct": 4.34,
-      "volume": 403367,
-      "market": "tse",
-      "score": 63,
-      "reasons": [
-        "大漲 ≥3%",
-        "收盤靠近最高點（買盤強）",
-        "量能放大 1.6x",
-        "站上月線 MA20=75.94",
-        "突破近10日高點"
-      ],
-      "warnings": [
-        "融資追價明顯"
-      ],
-      "inst": {
-        "foreign_net": 39,
-        "trust_net": 0,
-        "dealer_net": 3,
-        "total_net": 42,
-        "buy_streak_days": 1
-      },
-      "ma5": 76.0,
-      "ma10": 74.47,
-      "ma20": 75.94,
-      "has_warrant": true,
-      "warrants": [],
-      "risk": {
-        "volatility_pct": 3.48,
-        "volatility_level": "中",
-        "bias20_pct": 7.1,
-        "overheated": false,
-        "up_streak_days": 1,
-        "dist_from_high_pct": 0.0,
-        "is_new_high": true
-      },
-      "data_date": "2026-07-14",
-      "age_days": 0,
-      "is_today": true,
-      "prob": "中（56%）",
-      "prob_level": "medium",
       "risk_flags": {}
     }
   ]
