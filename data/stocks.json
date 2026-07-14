@@ -5,17 +5,18 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/14 00:27",
-  "trade_date": "20260713",
-  "data_date": "2026-07-13",
-  "total_scanned": 391,
-  "candidates_count": 23,
-  "pool_count": 34,
-  "total_api_req": 544,
+  "updated_at": "2026/07/14 19:21",
+  "trade_date": "20260714",
+  "data_date": "2026-07-14",
+  "total_scanned": 392,
+  "candidates_count": 12,
+  "pool_count": 25,
+  "total_api_req": 485,
   "scan_progress": {
     "date": "2026-07-14",
     "total_slots": 5,
     "slots_done": [
+      0,
       1,
       2
     ]
@@ -64,8 +65,8 @@
         "is_new_high": true
       },
       "data_date": "2026-07-13",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中高（74%）",
       "prob_level": "medium-high",
       "risk_flags": {}
@@ -113,8 +114,8 @@
         "is_new_high": true
       },
       "data_date": "2026-07-13",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中高（74%）",
       "prob_level": "medium-high",
       "risk_flags": {}
@@ -162,58 +163,9 @@
         "is_new_high": true
       },
       "data_date": "2026-07-09",
-      "age_days": 4,
+      "age_days": 5,
       "is_today": false,
       "prob": "中高（74%）",
-      "prob_level": "medium-high",
-      "risk_flags": {}
-    },
-    {
-      "sid": "2458",
-      "name": "義隆",
-      "close": 188.0,
-      "change_pct": 5.03,
-      "volume": 22508274,
-      "market": "tse",
-      "score": 78,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "量能放大 2.2x",
-        "均線多頭排列",
-        "站上月線 MA20=167.43",
-        "突破近10日高點",
-        "三大法人買超 7123張",
-        "投信積極買超",
-        "外資積極買超"
-      ],
-      "warnings": [
-        "融資追價明顯"
-      ],
-      "inst": {
-        "foreign_net": 5322,
-        "trust_net": 1606,
-        "dealer_net": 193,
-        "total_net": 7123,
-        "buy_streak_days": 1
-      },
-      "ma5": 183.8,
-      "ma10": 178.1,
-      "ma20": 167.43,
-      "has_warrant": true,
-      "warrants": [],
-      "risk": {
-        "volatility_pct": 4.94,
-        "volatility_level": "高",
-        "bias20_pct": 11.2,
-        "overheated": false,
-        "up_streak_days": 1,
-        "dist_from_high_pct": -0.5,
-        "is_new_high": false
-      },
-      "data_date": "2026-07-07",
-      "age_days": 6,
-      "is_today": false,
-      "prob": "中高（70%）",
       "prob_level": "medium-high",
       "risk_flags": {}
     },
@@ -259,12 +211,12 @@
         "is_new_high": true
       },
       "data_date": "2026-07-09",
-      "age_days": 4,
+      "age_days": 5,
       "is_today": false,
       "prob": "中高（69%）",
       "prob_level": "medium-high",
       "risk_flags": {
-        "ex_dividend_days": 1,
+        "ex_dividend_days": 0,
         "ex_dividend_date": "2026/07/14"
       }
     },
@@ -308,7 +260,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-09",
-      "age_days": 4,
+      "age_days": 5,
       "is_today": false,
       "prob": "中高（69%）",
       "prob_level": "medium-high",
@@ -356,7 +308,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-09",
-      "age_days": 4,
+      "age_days": 5,
       "is_today": false,
       "prob": "中高（69%）",
       "prob_level": "medium-high",
@@ -404,7 +356,7 @@
         "is_new_high": false
       },
       "data_date": "2026-07-09",
-      "age_days": 4,
+      "age_days": 5,
       "is_today": false,
       "prob": "中高（68%）",
       "prob_level": "medium-high",
@@ -449,7 +401,7 @@
         "is_new_high": false
       },
       "data_date": "2026-07-09",
-      "age_days": 4,
+      "age_days": 5,
       "is_today": false,
       "prob": "中高（68%）",
       "prob_level": "medium-high",
@@ -495,8 +447,8 @@
         "is_new_high": true
       },
       "data_date": "2026-07-13",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中高（66%）",
       "prob_level": "medium-high",
       "risk_flags": {}
@@ -542,7 +494,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-09",
-      "age_days": 4,
+      "age_days": 5,
       "is_today": false,
       "prob": "中高（65%）",
       "prob_level": "medium-high",
@@ -587,8 +539,8 @@
         "is_new_high": true
       },
       "data_date": "2026-07-13",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中高（65%）",
       "prob_level": "medium-high",
       "risk_flags": {}
@@ -634,8 +586,8 @@
         "is_new_high": false
       },
       "data_date": "2026-07-13",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中高（64%）",
       "prob_level": "medium-high",
       "risk_flags": {}
@@ -679,60 +631,106 @@
         "is_new_high": true
       },
       "data_date": "2026-07-13",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中高（64%）",
       "prob_level": "medium-high",
       "risk_flags": {
-        "ex_dividend_days": 3,
+        "ex_dividend_days": 2,
         "ex_dividend_date": "2026/07/16"
       }
     },
     {
       "sid": "2434",
       "name": "統懋",
-      "close": 68.3,
-      "change_pct": 9.98,
-      "volume": 2225114,
+      "close": 75.1,
+      "change_pct": 9.96,
+      "volume": 2714137,
       "market": "tse",
       "score": 72,
       "reasons": [
         "強勢大漲 ≥5%",
         "收盤靠近最高點（買盤強）",
-        "量能放大 1.7x",
+        "量能放大 2.0x",
         "均線多頭排列",
-        "站上月線 MA20=44.77",
+        "站上月線 MA20=46.56",
         "突破近10日高點"
       ],
       "warnings": [
         "融資追價明顯"
       ],
       "inst": {
-        "foreign_net": 119,
+        "foreign_net": 152,
         "trust_net": 0,
-        "dealer_net": -2,
-        "total_net": 117,
-        "buy_streak_days": 3
+        "dealer_net": -4,
+        "total_net": 148,
+        "buy_streak_days": 4
       },
-      "ma5": 56.4,
-      "ma10": 50.73,
-      "ma20": 44.77,
+      "ma5": 58.52,
+      "ma10": 53.35,
+      "ma20": 46.56,
       "has_warrant": true,
       "warrants": [],
       "risk": {
-        "volatility_pct": 7.11,
+        "volatility_pct": 7.17,
         "volatility_level": "高",
-        "bias20_pct": 46.7,
+        "bias20_pct": 54.2,
         "overheated": true,
-        "up_streak_days": 3,
+        "up_streak_days": 4,
         "dist_from_high_pct": 0.0,
         "is_new_high": true
       },
-      "data_date": "2026-07-13",
+      "data_date": "2026-07-14",
       "age_days": 0,
       "is_today": true,
       "prob": "中高（64%）",
       "prob_level": "medium-high",
+      "risk_flags": {}
+    },
+    {
+      "sid": "2423",
+      "name": "固緯",
+      "close": 81.7,
+      "change_pct": 4.34,
+      "volume": 403367,
+      "market": "tse",
+      "score": 63,
+      "reasons": [
+        "大漲 ≥3%",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 1.6x",
+        "站上月線 MA20=75.94",
+        "突破近10日高點"
+      ],
+      "warnings": [
+        "融資追價明顯"
+      ],
+      "inst": {
+        "foreign_net": 39,
+        "trust_net": 0,
+        "dealer_net": 3,
+        "total_net": 42,
+        "buy_streak_days": 1
+      },
+      "ma5": 76.0,
+      "ma10": 74.47,
+      "ma20": 75.94,
+      "has_warrant": true,
+      "warrants": [],
+      "risk": {
+        "volatility_pct": 3.48,
+        "volatility_level": "中",
+        "bias20_pct": 7.1,
+        "overheated": false,
+        "up_streak_days": 1,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
+      },
+      "data_date": "2026-07-14",
+      "age_days": 0,
+      "is_today": true,
+      "prob": "中（56%）",
+      "prob_level": "medium",
       "risk_flags": {}
     }
   ]
