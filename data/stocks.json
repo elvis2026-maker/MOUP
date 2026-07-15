@@ -5,12 +5,12 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/15 20:19",
+  "updated_at": "2026/07/15 21:05",
   "trade_date": "20260715",
   "data_date": "2026-07-15",
   "total_scanned": 195,
-  "candidates_count": 19,
-  "pool_count": 32,
+  "candidates_count": 23,
+  "pool_count": 37,
   "total_api_req": 357,
   "scan_progress": {
     "date": "2026-07-15",
@@ -18,7 +18,8 @@
     "slots_done": [
       0,
       1,
-      2
+      2,
+      3
     ]
   },
   "stocks": [
@@ -599,54 +600,6 @@
       "risk_flags": {}
     },
     {
-      "sid": "6202",
-      "name": "盛群",
-      "close": 73.3,
-      "change_pct": 7.79,
-      "volume": 30785247,
-      "market": "tse",
-      "score": 76,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "均線多頭排列",
-        "站上月線 MA20=65.25",
-        "突破近10日高點",
-        "三大法人買超 8381張",
-        "外資積極買超"
-      ],
-      "warnings": [
-        "量能過度放大",
-        "融資追價明顯"
-      ],
-      "inst": {
-        "foreign_net": 8459,
-        "trust_net": 0,
-        "dealer_net": -79,
-        "total_net": 8381,
-        "buy_streak_days": 2
-      },
-      "ma5": 67.76,
-      "ma10": 66.56,
-      "ma20": 65.25,
-      "has_warrant": true,
-      "warrants": [],
-      "risk": {
-        "volatility_pct": 5.89,
-        "volatility_level": "高",
-        "bias20_pct": 10.4,
-        "overheated": false,
-        "up_streak_days": 2,
-        "dist_from_high_pct": -0.5,
-        "is_new_high": false
-      },
-      "data_date": "2026-07-09",
-      "age_days": 6,
-      "is_today": false,
-      "prob": "中高（68%）",
-      "prob_level": "medium-high",
-      "risk_flags": {}
-    },
-    {
       "sid": "2377",
       "name": "微星",
       "close": 149.5,
@@ -738,6 +691,53 @@
       "prob": "中高（65%）",
       "prob_level": "medium-high",
       "risk_flags": {}
+    },
+    {
+      "sid": "6161",
+      "name": "捷波",
+      "close": 55.0,
+      "change_pct": 4.76,
+      "volume": 559586,
+      "market": "otc",
+      "score": 63,
+      "reasons": [
+        "大漲 ≥3%",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 2.0x",
+        "均線多頭排列",
+        "站上月線 MA20=53.08"
+      ],
+      "warnings": [],
+      "inst": {
+        "foreign_net": 108,
+        "trust_net": 0,
+        "dealer_net": 0,
+        "total_net": 108,
+        "buy_streak_days": 1
+      },
+      "ma5": 54.1,
+      "ma10": 53.94,
+      "ma20": 53.08,
+      "has_warrant": true,
+      "warrants": [],
+      "risk": {
+        "volatility_pct": 3.12,
+        "volatility_level": "中",
+        "bias20_pct": 3.5,
+        "overheated": false,
+        "up_streak_days": 1,
+        "dist_from_high_pct": -5.7,
+        "is_new_high": false
+      },
+      "data_date": "2026-07-15",
+      "age_days": 0,
+      "is_today": true,
+      "prob": "中（56%）",
+      "prob_level": "medium",
+      "risk_flags": {
+        "ex_dividend_days": 1,
+        "ex_dividend_date": "2026/07/16"
+      }
     }
   ]
 }
