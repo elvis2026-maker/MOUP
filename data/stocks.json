@@ -5,13 +5,13 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/16 21:14",
+  "updated_at": "2026/07/16 22:54",
   "trade_date": "20260716",
   "data_date": "2026-07-16",
   "total_scanned": 195,
-  "candidates_count": 5,
-  "pool_count": 20,
-  "total_api_req": 284,
+  "candidates_count": 18,
+  "pool_count": 30,
+  "total_api_req": 317,
   "scan_progress": {
     "date": "2026-07-16",
     "total_slots": 5,
@@ -19,7 +19,8 @@
       0,
       1,
       2,
-      3
+      3,
+      4
     ]
   },
   "stocks": [
@@ -221,55 +222,6 @@
       "risk_flags": {}
     },
     {
-      "sid": "8039",
-      "name": "台虹",
-      "close": 185.5,
-      "change_pct": 9.76,
-      "volume": 48874130,
-      "market": "tse",
-      "score": 82,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "收盤靠近最高點（買盤強）",
-        "均線多頭排列",
-        "站上月線 MA20=147.1",
-        "突破近10日高點",
-        "三大法人買超 10614張",
-        "外資積極買超"
-      ],
-      "warnings": [
-        "量能過度放大",
-        "融資追價明顯"
-      ],
-      "inst": {
-        "foreign_net": 10613,
-        "trust_net": 0,
-        "dealer_net": 1,
-        "total_net": 10614,
-        "buy_streak_days": 1
-      },
-      "ma5": 150.7,
-      "ma10": 148.45,
-      "ma20": 147.1,
-      "has_warrant": true,
-      "warrants": [],
-      "risk": {
-        "volatility_pct": 5.06,
-        "volatility_level": "高",
-        "bias20_pct": 24.6,
-        "overheated": true,
-        "up_streak_days": 3,
-        "dist_from_high_pct": 0.0,
-        "is_new_high": true
-      },
-      "data_date": "2026-07-14",
-      "age_days": 2,
-      "is_today": false,
-      "prob": "中高（74%）",
-      "prob_level": "medium-high",
-      "risk_flags": {}
-    },
-    {
       "sid": "5388",
       "name": "中磊",
       "close": 89.4,
@@ -403,6 +355,54 @@
       "data_date": "2026-07-15",
       "age_days": 1,
       "is_today": false,
+      "prob": "中高（73%）",
+      "prob_level": "medium-high",
+      "risk_flags": {}
+    },
+    {
+      "sid": "8150",
+      "name": "南茂",
+      "close": 122.5,
+      "change_pct": 7.46,
+      "volume": 180436796,
+      "market": "tse",
+      "score": 81,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "量能放大 2.7x",
+        "均線多頭排列",
+        "站上月線 MA20=105.1",
+        "突破近10日高點",
+        "三大法人買超 27977張",
+        "外資積極買超"
+      ],
+      "warnings": [
+        "融資追價明顯"
+      ],
+      "inst": {
+        "foreign_net": 28682,
+        "trust_net": -207,
+        "dealer_net": -499,
+        "total_net": 27977,
+        "buy_streak_days": 2
+      },
+      "ma5": 111.3,
+      "ma10": 110.15,
+      "ma20": 105.1,
+      "has_warrant": true,
+      "warrants": [],
+      "risk": {
+        "volatility_pct": 7.02,
+        "volatility_level": "高",
+        "bias20_pct": 15.0,
+        "overheated": true,
+        "up_streak_days": 2,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
+      },
+      "data_date": "2026-07-16",
+      "age_days": 0,
+      "is_today": true,
       "prob": "中高（73%）",
       "prob_level": "medium-high",
       "risk_flags": {}
@@ -595,98 +595,99 @@
       "risk_flags": {}
     },
     {
-      "sid": "8150",
-      "name": "南茂",
-      "close": 114.0,
-      "change_pct": 9.62,
-      "volume": 57303876,
+      "sid": "8028",
+      "name": "昇陽半導體",
+      "close": 350.0,
+      "change_pct": 9.89,
+      "volume": 17375934,
       "market": "tse",
-      "score": 67,
+      "score": 72,
       "reasons": [
         "強勢大漲 ≥5%",
         "收盤靠近最高點（買盤強）",
-        "均線多頭排列",
-        "站上月線 MA20=104.19",
-        "三大法人買超 11024張",
+        "量能放大 3.2x",
+        "站上月線 MA20=310.5",
+        "突破近10日高點",
+        "三大法人買超 4074張",
         "外資積極買超"
       ],
       "warnings": [
         "融資追價明顯"
       ],
       "inst": {
-        "foreign_net": 8890,
-        "trust_net": -7,
-        "dealer_net": 2140,
-        "total_net": 11024,
-        "buy_streak_days": 1
+        "foreign_net": 4185,
+        "trust_net": -59,
+        "dealer_net": -53,
+        "total_net": 4074,
+        "buy_streak_days": 2
       },
-      "ma5": 110.3,
-      "ma10": 108.7,
-      "ma20": 104.19,
+      "ma5": 306.2,
+      "ma10": 313.8,
+      "ma20": 310.5,
       "has_warrant": true,
       "warrants": [],
       "risk": {
-        "volatility_pct": 6.9,
+        "volatility_pct": 4.81,
         "volatility_level": "高",
-        "bias20_pct": 8.5,
+        "bias20_pct": 12.1,
         "overheated": false,
-        "up_streak_days": 1,
-        "dist_from_high_pct": -2.6,
-        "is_new_high": false
+        "up_streak_days": 2,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
       },
-      "data_date": "2026-07-15",
-      "age_days": 1,
-      "is_today": false,
-      "prob": "中（60%）",
-      "prob_level": "medium",
+      "data_date": "2026-07-16",
+      "age_days": 0,
+      "is_today": true,
+      "prob": "中高（64%）",
+      "prob_level": "medium-high",
       "risk_flags": {}
     },
     {
-      "sid": "6967",
-      "name": "汎瑋材料",
-      "close": 78.8,
-      "change_pct": 9.9,
-      "volume": 333853,
-      "market": "otc",
+      "sid": "8039",
+      "name": "台虹",
+      "close": 199.5,
+      "change_pct": 9.92,
+      "volume": 14171335,
+      "market": "tse",
       "score": 67,
       "reasons": [
         "強勢大漲 ≥5%",
         "收盤靠近最高點（買盤強）",
-        "量能放大 2.7x",
-        "站上月線 MA20=71.64",
-        "突破近10日高點"
+        "均線多頭排列",
+        "站上月線 MA20=150.6",
+        "突破近10日高點",
+        "三大法人買超 1012張"
       ],
-      "warnings": [],
+      "warnings": [
+        "量能萎縮"
+      ],
       "inst": {
-        "foreign_net": 115,
+        "foreign_net": 678,
         "trust_net": 0,
-        "dealer_net": 0,
-        "total_net": 115,
-        "buy_streak_days": 1
+        "dealer_net": 334,
+        "total_net": 1012,
+        "buy_streak_days": 3
       },
-      "ma5": 71.38,
-      "ma10": 72.03,
-      "ma20": 71.64,
+      "ma5": 166.0,
+      "ma10": 156.5,
+      "ma20": 150.6,
       "has_warrant": true,
       "warrants": [],
       "risk": {
-        "volatility_pct": 3.81,
-        "volatility_level": "中",
-        "bias20_pct": 9.4,
-        "overheated": false,
+        "volatility_pct": 5.29,
+        "volatility_level": "高",
+        "bias20_pct": 30.0,
+        "overheated": true,
         "up_streak_days": 1,
         "dist_from_high_pct": 0.0,
         "is_new_high": true
       },
-      "data_date": "2026-07-15",
-      "age_days": 1,
-      "is_today": false,
+      "data_date": "2026-07-16",
+      "age_days": 0,
+      "is_today": true,
       "prob": "中（60%）",
       "prob_level": "medium",
-      "risk_flags": {
-        "ex_dividend_days": 5,
-        "ex_dividend_date": "2026/07/21"
-      }
+      "risk_flags": {}
     },
     {
       "sid": "3178",
