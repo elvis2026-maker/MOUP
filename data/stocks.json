@@ -5,19 +5,20 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/17 19:18",
+  "updated_at": "2026/07/17 20:14",
   "trade_date": "20260717",
   "data_date": "2026-07-17",
-  "total_scanned": 392,
-  "candidates_count": 3,
-  "pool_count": 18,
-  "total_api_req": 445,
+  "total_scanned": 195,
+  "candidates_count": 0,
+  "pool_count": 15,
+  "total_api_req": 231,
   "scan_progress": {
     "date": "2026-07-17",
     "total_slots": 5,
     "slots_done": [
       0,
-      1
+      1,
+      2
     ]
   },
   "stocks": [
