@@ -5,22 +5,19 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/16 23:29",
-  "trade_date": "20260716",
-  "data_date": "2026-07-16",
-  "total_scanned": 196,
-  "candidates_count": 20,
-  "pool_count": 35,
-  "total_api_req": 314,
+  "updated_at": "2026/07/17 19:18",
+  "trade_date": "20260717",
+  "data_date": "2026-07-17",
+  "total_scanned": 392,
+  "candidates_count": 3,
+  "pool_count": 18,
+  "total_api_req": 445,
   "scan_progress": {
-    "date": "2026-07-16",
+    "date": "2026-07-17",
     "total_slots": 5,
     "slots_done": [
       0,
-      1,
-      2,
-      3,
-      4
+      1
     ]
   },
   "stocks": [
@@ -65,7 +62,7 @@
         "is_new_high": false
       },
       "data_date": "2026-07-15",
-      "age_days": 1,
+      "age_days": 2,
       "is_today": false,
       "prob": "高（79%）",
       "prob_level": "high",
@@ -114,12 +111,12 @@
         "is_new_high": true
       },
       "data_date": "2026-07-15",
-      "age_days": 1,
+      "age_days": 2,
       "is_today": false,
       "prob": "中高（74%）",
       "prob_level": "medium-high",
       "risk_flags": {
-        "ex_dividend_days": 7,
+        "ex_dividend_days": 6,
         "ex_dividend_date": "2026/07/23"
       }
     },
@@ -166,7 +163,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-13",
-      "age_days": 3,
+      "age_days": 4,
       "is_today": false,
       "prob": "中高（74%）",
       "prob_level": "medium-high",
@@ -215,7 +212,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-13",
-      "age_days": 3,
+      "age_days": 4,
       "is_today": false,
       "prob": "中高（74%）",
       "prob_level": "medium-high",
@@ -261,7 +258,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-15",
-      "age_days": 1,
+      "age_days": 2,
       "is_today": false,
       "prob": "中高（74%）",
       "prob_level": "medium-high",
@@ -307,8 +304,8 @@
         "is_new_high": true
       },
       "data_date": "2026-07-16",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中高（74%）",
       "prob_level": "medium-high",
       "risk_flags": {}
@@ -353,7 +350,7 @@
         "is_new_high": false
       },
       "data_date": "2026-07-15",
-      "age_days": 1,
+      "age_days": 2,
       "is_today": false,
       "prob": "中高（73%）",
       "prob_level": "medium-high",
@@ -401,8 +398,8 @@
         "is_new_high": true
       },
       "data_date": "2026-07-16",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中高（73%）",
       "prob_level": "medium-high",
       "risk_flags": {}
@@ -449,7 +446,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-15",
-      "age_days": 1,
+      "age_days": 2,
       "is_today": false,
       "prob": "中高（69%）",
       "prob_level": "medium-high",
@@ -497,7 +494,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-14",
-      "age_days": 2,
+      "age_days": 3,
       "is_today": false,
       "prob": "中高（69%）",
       "prob_level": "medium-high",
@@ -542,7 +539,7 @@
         "is_new_high": false
       },
       "data_date": "2026-07-15",
-      "age_days": 1,
+      "age_days": 2,
       "is_today": false,
       "prob": "中高（69%）",
       "prob_level": "medium-high",
@@ -588,7 +585,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-13",
-      "age_days": 3,
+      "age_days": 4,
       "is_today": false,
       "prob": "中高（66%）",
       "prob_level": "medium-high",
@@ -636,8 +633,8 @@
         "is_new_high": true
       },
       "data_date": "2026-07-16",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中高（64%）",
       "prob_level": "medium-high",
       "risk_flags": {}
@@ -683,8 +680,8 @@
         "is_new_high": true
       },
       "data_date": "2026-07-16",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中（60%）",
       "prob_level": "medium",
       "risk_flags": {}
@@ -728,8 +725,8 @@
         "is_new_high": true
       },
       "data_date": "2026-07-16",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中（55%）",
       "prob_level": "medium",
       "risk_flags": {}
