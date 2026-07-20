@@ -5,20 +5,21 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/20 20:12",
+  "updated_at": "2026/07/20 21:11",
   "trade_date": "20260720",
   "data_date": "2026-07-20",
-  "total_scanned": 391,
-  "candidates_count": 12,
-  "pool_count": 24,
-  "total_api_req": 526,
+  "total_scanned": 195,
+  "candidates_count": 8,
+  "pool_count": 22,
+  "total_api_req": 287,
   "scan_progress": {
     "date": "2026-07-20",
     "total_slots": 5,
     "slots_done": [
       0,
       1,
-      2
+      2,
+      3
     ]
   },
   "stocks": [
@@ -500,53 +501,6 @@
       }
     },
     {
-      "sid": "6517",
-      "name": "保勝光學",
-      "close": 73.9,
-      "change_pct": 4.08,
-      "volume": 2731882,
-      "market": "otc",
-      "score": 68,
-      "reasons": [
-        "大漲 ≥3%",
-        "收盤靠近最高點（買盤強）",
-        "量能放大 1.6x",
-        "站上月線 MA20=71.22",
-        "突破近10日高點"
-      ],
-      "warnings": [],
-      "inst": {
-        "foreign_net": 197,
-        "trust_net": 0,
-        "dealer_net": 0,
-        "total_net": 197,
-        "buy_streak_days": 2
-      },
-      "ma5": 70.02,
-      "ma10": 69.1,
-      "ma20": 71.22,
-      "has_warrant": true,
-      "warrants": [],
-      "risk": {
-        "volatility_pct": 4.17,
-        "volatility_level": "高",
-        "bias20_pct": 4.1,
-        "overheated": false,
-        "up_streak_days": 2,
-        "dist_from_high_pct": -6.0,
-        "is_new_high": false
-      },
-      "data_date": "2026-07-17",
-      "age_days": 3,
-      "is_today": false,
-      "prob": "中（61%）",
-      "prob_level": "medium",
-      "risk_flags": {
-        "ex_dividend_days": 8,
-        "ex_dividend_date": "2026/07/28"
-      }
-    },
-    {
       "sid": "8039",
       "name": "台虹",
       "close": 199.5,
@@ -640,6 +594,50 @@
       "risk_flags": {}
     },
     {
+      "sid": "6533",
+      "name": "晶心科",
+      "close": 231.0,
+      "change_pct": 10.0,
+      "volume": 1620034,
+      "market": "tse",
+      "score": 67,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "均線多頭排列",
+        "站上月線 MA20=203.78",
+        "突破近10日高點"
+      ],
+      "warnings": [],
+      "inst": {
+        "foreign_net": 113,
+        "trust_net": 0,
+        "dealer_net": 19,
+        "total_net": 132,
+        "buy_streak_days": 3
+      },
+      "ma5": 220.1,
+      "ma10": 207.65,
+      "ma20": 203.78,
+      "has_warrant": true,
+      "warrants": [],
+      "risk": {
+        "volatility_pct": 4.44,
+        "volatility_level": "高",
+        "bias20_pct": 12.5,
+        "overheated": false,
+        "up_streak_days": 1,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
+      },
+      "data_date": "2026-07-20",
+      "age_days": 0,
+      "is_today": true,
+      "prob": "中（60%）",
+      "prob_level": "medium",
+      "risk_flags": {}
+    },
+    {
       "sid": "5403",
       "name": "中菲",
       "close": 94.9,
@@ -684,40 +682,41 @@
       "risk_flags": {}
     },
     {
-      "sid": "2388",
-      "name": "威盛",
-      "close": 72.4,
-      "change_pct": 9.86,
-      "volume": 9638215,
-      "market": "tse",
-      "score": 41,
+      "sid": "6517",
+      "name": "保勝光學",
+      "close": 76.3,
+      "change_pct": 3.25,
+      "volume": 8279983,
+      "market": "otc",
+      "score": 44,
       "reasons": [
-        "強勢大漲 ≥5%",
-        "收盤靠近最高點（買盤強）",
-        "三大法人買超 2189張"
+        "大漲 ≥3%",
+        "量能放大 3.8x",
+        "站上月線 MA20=70.99",
+        "突破近10日高點"
       ],
       "warnings": [
-        "跌破月線"
+        "融資追價明顯"
       ],
       "inst": {
-        "foreign_net": 2081,
-        "trust_net": -56,
-        "dealer_net": 163,
-        "total_net": 2189,
-        "buy_streak_days": 1
+        "foreign_net": -238,
+        "trust_net": 0,
+        "dealer_net": 2,
+        "total_net": -236,
+        "buy_streak_days": -1
       },
-      "ma5": 71.32,
-      "ma10": 71.59,
-      "ma20": 73.66,
+      "ma5": 71.7,
+      "ma10": 69.54,
+      "ma20": 70.99,
       "has_warrant": true,
       "warrants": [],
       "risk": {
-        "volatility_pct": 4.75,
+        "volatility_pct": 4.24,
         "volatility_level": "高",
-        "bias20_pct": -1.1,
+        "bias20_pct": 7.6,
         "overheated": false,
-        "up_streak_days": 1,
-        "dist_from_high_pct": -14.2,
+        "up_streak_days": 3,
+        "dist_from_high_pct": -2.9,
         "is_new_high": false
       },
       "data_date": "2026-07-20",
@@ -725,7 +724,10 @@
       "is_today": true,
       "prob": "偏低（<48%）",
       "prob_level": "low",
-      "risk_flags": {}
+      "risk_flags": {
+        "ex_dividend_days": 8,
+        "ex_dividend_date": "2026/07/28"
+      }
     }
   ]
 }
