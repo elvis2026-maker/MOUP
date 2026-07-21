@@ -5,21 +5,19 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/20 23:47",
-  "trade_date": "20260720",
-  "data_date": "2026-07-20",
-  "total_scanned": 196,
-  "candidates_count": 7,
-  "pool_count": 22,
-  "total_api_req": 274,
+  "updated_at": "2026/07/21 19:43",
+  "trade_date": "20260721",
+  "data_date": "2026-07-21",
+  "total_scanned": 392,
+  "candidates_count": 25,
+  "pool_count": 40,
+  "total_api_req": 636,
   "scan_progress": {
-    "date": "2026-07-20",
+    "date": "2026-07-21",
     "total_slots": 5,
     "slots_done": [
       0,
-      1,
-      2,
-      3
+      1
     ]
   },
   "stocks": [
@@ -64,7 +62,7 @@
         "is_new_high": false
       },
       "data_date": "2026-07-15",
-      "age_days": 5,
+      "age_days": 6,
       "is_today": false,
       "prob": "高（79%）",
       "prob_level": "high",
@@ -113,14 +111,11 @@
         "is_new_high": true
       },
       "data_date": "2026-07-15",
-      "age_days": 5,
+      "age_days": 6,
       "is_today": false,
       "prob": "中高（74%）",
       "prob_level": "medium-high",
-      "risk_flags": {
-        "ex_dividend_days": 3,
-        "ex_dividend_date": "2026/07/23"
-      }
+      "risk_flags": {}
     },
     {
       "sid": "5388",
@@ -162,7 +157,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-15",
-      "age_days": 5,
+      "age_days": 6,
       "is_today": false,
       "prob": "中高（74%）",
       "prob_level": "medium-high",
@@ -208,7 +203,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-16",
-      "age_days": 4,
+      "age_days": 5,
       "is_today": false,
       "prob": "中高（74%）",
       "prob_level": "medium-high",
@@ -254,7 +249,7 @@
         "is_new_high": false
       },
       "data_date": "2026-07-15",
-      "age_days": 5,
+      "age_days": 6,
       "is_today": false,
       "prob": "中高（73%）",
       "prob_level": "medium-high",
@@ -302,7 +297,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-16",
-      "age_days": 4,
+      "age_days": 5,
       "is_today": false,
       "prob": "中高（73%）",
       "prob_level": "medium-high",
@@ -350,7 +345,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-15",
-      "age_days": 5,
+      "age_days": 6,
       "is_today": false,
       "prob": "中高（69%）",
       "prob_level": "medium-high",
@@ -395,7 +390,7 @@
         "is_new_high": false
       },
       "data_date": "2026-07-15",
-      "age_days": 5,
+      "age_days": 6,
       "is_today": false,
       "prob": "中高（69%）",
       "prob_level": "medium-high",
@@ -443,7 +438,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-16",
-      "age_days": 4,
+      "age_days": 5,
       "is_today": false,
       "prob": "中高（64%）",
       "prob_level": "medium-high",
@@ -491,14 +486,11 @@
         "is_new_high": true
       },
       "data_date": "2026-07-17",
-      "age_days": 3,
+      "age_days": 4,
       "is_today": false,
       "prob": "中高（64%）",
       "prob_level": "medium-high",
-      "risk_flags": {
-        "ex_dividend_days": 0,
-        "ex_dividend_date": "2026/07/20"
-      }
+      "risk_flags": {}
     },
     {
       "sid": "8039",
@@ -541,7 +533,7 @@
         "is_new_high": true
       },
       "data_date": "2026-07-16",
-      "age_days": 4,
+      "age_days": 5,
       "is_today": false,
       "prob": "中（60%）",
       "prob_level": "medium",
@@ -587,8 +579,8 @@
         "is_new_high": false
       },
       "data_date": "2026-07-20",
-      "age_days": 0,
-      "is_today": true,
+      "age_days": 1,
+      "is_today": false,
       "prob": "中（60%）",
       "prob_level": "medium",
       "risk_flags": {}
@@ -631,6 +623,50 @@
         "is_new_high": true
       },
       "data_date": "2026-07-20",
+      "age_days": 1,
+      "is_today": false,
+      "prob": "中（60%）",
+      "prob_level": "medium",
+      "risk_flags": {}
+    },
+    {
+      "sid": "3479",
+      "name": "安勤",
+      "close": 148.5,
+      "change_pct": 10.0,
+      "volume": 3107129,
+      "market": "otc",
+      "score": 67,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "均線多頭排列",
+        "站上月線 MA20=140.53",
+        "突破近10日高點"
+      ],
+      "warnings": [],
+      "inst": {
+        "foreign_net": 842,
+        "trust_net": 0,
+        "dealer_net": -12,
+        "total_net": 831,
+        "buy_streak_days": 2
+      },
+      "ma5": 141.6,
+      "ma10": 141.1,
+      "ma20": 140.53,
+      "has_warrant": true,
+      "warrants": [],
+      "risk": {
+        "volatility_pct": 4.16,
+        "volatility_level": "高",
+        "bias20_pct": 5.2,
+        "overheated": false,
+        "up_streak_days": 1,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
+      },
+      "data_date": "2026-07-21",
       "age_days": 0,
       "is_today": true,
       "prob": "中（60%）",
@@ -638,96 +674,50 @@
       "risk_flags": {}
     },
     {
-      "sid": "5403",
-      "name": "中菲",
-      "close": 94.9,
-      "change_pct": 0.96,
-      "volume": 99825,
+      "sid": "3577",
+      "name": "泓格",
+      "close": 157.0,
+      "change_pct": 9.79,
+      "volume": 4944107,
       "market": "otc",
-      "score": 55,
+      "score": 67,
       "reasons": [
-        "小漲 0.5~1%",
+        "強勢大漲 ≥5%",
         "收盤靠近最高點（買盤強）",
         "均線多頭排列",
-        "站上月線 MA20=93.87",
-        "突破近10日高點"
-      ],
-      "warnings": [],
-      "inst": {
-        "foreign_net": 64,
-        "trust_net": 0,
-        "dealer_net": 0,
-        "total_net": 64,
-        "buy_streak_days": 1
-      },
-      "ma5": 94.74,
-      "ma10": 94.63,
-      "ma20": 93.87,
-      "has_warrant": true,
-      "warrants": [],
-      "risk": {
-        "volatility_pct": 0.76,
-        "volatility_level": "低",
-        "bias20_pct": 1.1,
-        "overheated": false,
-        "up_streak_days": 1,
-        "dist_from_high_pct": -0.8,
-        "is_new_high": false
-      },
-      "data_date": "2026-07-20",
-      "age_days": 0,
-      "is_today": true,
-      "prob": "中（48%）",
-      "prob_level": "medium",
-      "risk_flags": {}
-    },
-    {
-      "sid": "6517",
-      "name": "保勝光學",
-      "close": 76.3,
-      "change_pct": 3.25,
-      "volume": 8279983,
-      "market": "otc",
-      "score": 44,
-      "reasons": [
-        "大漲 ≥3%",
-        "量能放大 3.8x",
-        "站上月線 MA20=70.99",
+        "站上月線 MA20=127.53",
         "突破近10日高點"
       ],
       "warnings": [
-        "融資追價明顯"
+        "量能過度放大"
       ],
       "inst": {
-        "foreign_net": -238,
+        "foreign_net": -484,
         "trust_net": 0,
-        "dealer_net": 2,
-        "total_net": -236,
-        "buy_streak_days": -1
+        "dealer_net": 75,
+        "total_net": -409,
+        "buy_streak_days": -2
       },
-      "ma5": 71.7,
-      "ma10": 69.54,
-      "ma20": 70.99,
+      "ma5": 132.6,
+      "ma10": 129.6,
+      "ma20": 127.53,
       "has_warrant": true,
       "warrants": [],
       "risk": {
-        "volatility_pct": 4.24,
+        "volatility_pct": 6.09,
         "volatility_level": "高",
-        "bias20_pct": 7.6,
-        "overheated": false,
-        "up_streak_days": 3,
-        "dist_from_high_pct": -2.9,
-        "is_new_high": false
+        "bias20_pct": 21.5,
+        "overheated": true,
+        "up_streak_days": 2,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
       },
-      "data_date": "2026-07-20",
+      "data_date": "2026-07-21",
       "age_days": 0,
       "is_today": true,
-      "prob": "偏低（<48%）",
-      "prob_level": "low",
-      "risk_flags": {
-        "ex_dividend_days": 8,
-        "ex_dividend_date": "2026/07/28"
-      }
+      "prob": "中（60%）",
+      "prob_level": "medium",
+      "risk_flags": {}
     }
   ]
 }
