@@ -5,20 +5,21 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/21 20:25",
+  "updated_at": "2026/07/21 21:11",
   "trade_date": "20260721",
   "data_date": "2026-07-21",
   "total_scanned": 195,
-  "candidates_count": 18,
-  "pool_count": 32,
-  "total_api_req": 366,
+  "candidates_count": 17,
+  "pool_count": 31,
+  "total_api_req": 367,
   "scan_progress": {
     "date": "2026-07-21",
     "total_slots": 5,
     "slots_done": [
       0,
       1,
-      2
+      2,
+      3
     ]
   },
   "stocks": [
@@ -449,49 +450,48 @@
       "risk_flags": {}
     },
     {
-      "sid": "6277",
-      "name": "宏正",
-      "close": 80.5,
-      "change_pct": 8.49,
-      "volume": 3666335,
+      "sid": "6414",
+      "name": "樺漢",
+      "close": 445.5,
+      "change_pct": 10.0,
+      "volume": 5176748,
       "market": "tse",
       "score": 72,
       "reasons": [
         "強勢大漲 ≥5%",
         "收盤靠近最高點（買盤強）",
+        "量能放大 2.3x",
         "均線多頭排列",
-        "站上月線 MA20=71.39",
-        "突破近10日高點",
-        "三大法人買超 1024張"
+        "站上月線 MA20=382.8",
+        "突破近10日高點"
       ],
       "warnings": [
-        "量能過度放大",
         "融資追價明顯"
       ],
       "inst": {
-        "foreign_net": 985,
-        "trust_net": 34,
-        "dealer_net": 4,
-        "total_net": 1024,
-        "buy_streak_days": 3
+        "foreign_net": 218,
+        "trust_net": 0,
+        "dealer_net": -23,
+        "total_net": 195,
+        "buy_streak_days": 14
       },
-      "ma5": 73.62,
-      "ma10": 72.01,
-      "ma20": 71.39,
+      "ma5": 394.4,
+      "ma10": 394.25,
+      "ma20": 382.8,
       "has_warrant": true,
       "warrants": [],
       "risk": {
-        "volatility_pct": 2.52,
+        "volatility_pct": 3.07,
         "volatility_level": "中",
-        "bias20_pct": 12.2,
-        "overheated": false,
-        "up_streak_days": 1,
+        "bias20_pct": 15.4,
+        "overheated": true,
+        "up_streak_days": 2,
         "dist_from_high_pct": 0.0,
         "is_new_high": true
       },
-      "data_date": "2026-07-17",
-      "age_days": 4,
-      "is_today": false,
+      "data_date": "2026-07-21",
+      "age_days": 0,
+      "is_today": true,
       "prob": "中高（64%）",
       "prob_level": "medium-high",
       "risk_flags": {}
