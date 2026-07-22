@@ -5,14 +5,14 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/22 19:44",
+  "updated_at": "2026/07/22 20:43",
   "trade_date": "20260722",
   "data_date": "2026-07-22",
-  "total_scanned": 392,
-  "this_round_scanned": 392,
-  "candidates_count": 25,
-  "pool_count": 36,
-  "total_api_req": 633,
+  "total_scanned": 587,
+  "this_round_scanned": 195,
+  "candidates_count": 14,
+  "pool_count": 29,
+  "total_api_req": 359,
   "scan_progress": {
     "date": "2026-07-22",
     "total_slots": 5,
@@ -153,6 +153,52 @@
         "bias20_pct": 7.9,
         "overheated": false,
         "up_streak_days": 3,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
+      },
+      "data_date": "2026-07-22",
+      "age_days": 0,
+      "is_today": true,
+      "prob": "中高（74%）",
+      "prob_level": "medium-high",
+      "risk_flags": {}
+    },
+    {
+      "sid": "3605",
+      "name": "宏致",
+      "close": 92.8,
+      "change_pct": 9.95,
+      "volume": 15920917,
+      "market": "tse",
+      "score": 82,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 3.2x",
+        "站上月線 MA20=83.44",
+        "突破近10日高點",
+        "三大法人買超 5115張",
+        "外資積極買超"
+      ],
+      "warnings": [],
+      "inst": {
+        "foreign_net": 4706,
+        "trust_net": 0,
+        "dealer_net": 409,
+        "total_net": 5115,
+        "buy_streak_days": 4
+      },
+      "ma5": 82.24,
+      "ma10": 85.42,
+      "ma20": 83.44,
+      "has_warrant": true,
+      "warrants": [],
+      "risk": {
+        "volatility_pct": 5.13,
+        "volatility_level": "高",
+        "bias20_pct": 10.3,
+        "overheated": false,
+        "up_streak_days": 2,
         "dist_from_high_pct": 0.0,
         "is_new_high": true
       },
@@ -528,7 +574,10 @@
       "is_today": false,
       "prob": "中（60%）",
       "prob_level": "medium",
-      "risk_flags": {}
+      "risk_flags": {
+        "ex_dividend_days": 2,
+        "ex_dividend_date": "2026/07/24"
+      }
     },
     {
       "sid": "6933",
@@ -622,92 +671,46 @@
       "risk_flags": {}
     },
     {
-      "sid": "3413",
-      "name": "京鼎",
-      "close": 363.0,
-      "change_pct": 8.36,
-      "volume": 5417380,
-      "market": "tse",
-      "score": 62,
+      "sid": "3594",
+      "name": "磐儀",
+      "close": 53.7,
+      "change_pct": 9.82,
+      "volume": 1894011,
+      "market": "otc",
+      "score": 67,
       "reasons": [
         "強勢大漲 ≥5%",
         "收盤靠近最高點（買盤強）",
-        "均線多頭排列",
-        "站上月線 MA20=333.68",
-        "三大法人買超 1406張"
+        "量能放大 1.6x",
+        "站上月線 MA20=51.4",
+        "突破近10日高點"
       ],
       "warnings": [],
       "inst": {
-        "foreign_net": 1158,
+        "foreign_net": 382,
         "trust_net": 0,
-        "dealer_net": 248,
-        "total_net": 1406,
-        "buy_streak_days": 1
+        "dealer_net": 2,
+        "total_net": 384,
+        "buy_streak_days": 3
       },
-      "ma5": 359.0,
-      "ma10": 348.4,
-      "ma20": 333.68,
+      "ma5": 49.51,
+      "ma10": 50.98,
+      "ma20": 51.4,
       "has_warrant": true,
       "warrants": [],
       "risk": {
-        "volatility_pct": 4.15,
+        "volatility_pct": 5.41,
         "volatility_level": "高",
-        "bias20_pct": 8.0,
+        "bias20_pct": 4.2,
         "overheated": false,
-        "up_streak_days": 1,
-        "dist_from_high_pct": -5.0,
+        "up_streak_days": 2,
+        "dist_from_high_pct": -8.5,
         "is_new_high": false
       },
       "data_date": "2026-07-22",
       "age_days": 0,
       "is_today": true,
-      "prob": "中（55%）",
-      "prob_level": "medium",
-      "risk_flags": {}
-    },
-    {
-      "sid": "4939",
-      "name": "亞電",
-      "close": 72.8,
-      "change_pct": 9.97,
-      "volume": 36493009,
-      "market": "otc",
-      "score": 62,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "收盤靠近最高點（買盤強）",
-        "量能放大 1.8x",
-        "站上月線 MA20=61.01",
-        "突破近10日高點"
-      ],
-      "warnings": [
-        "融資追價明顯"
-      ],
-      "inst": {
-        "foreign_net": -904,
-        "trust_net": 0,
-        "dealer_net": 214,
-        "total_net": -690,
-        "buy_streak_days": -1
-      },
-      "ma5": 61.86,
-      "ma10": 60.28,
-      "ma20": 61.01,
-      "has_warrant": true,
-      "warrants": [],
-      "risk": {
-        "volatility_pct": 5.99,
-        "volatility_level": "高",
-        "bias20_pct": 18.4,
-        "overheated": true,
-        "up_streak_days": 2,
-        "dist_from_high_pct": 0.0,
-        "is_new_high": true
-      },
-      "data_date": "2026-07-21",
-      "age_days": 1,
-      "is_today": false,
-      "prob": "中（55%）",
+      "prob": "中（60%）",
       "prob_level": "medium",
       "risk_flags": {}
     }
