@@ -5,22 +5,20 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/21 23:39",
+  "updated_at": "2026/07/22 11:39",
   "trade_date": "20260721",
   "data_date": "2026-07-21",
-  "total_scanned": 196,
-  "candidates_count": 24,
-  "pool_count": 36,
-  "total_api_req": 372,
+  "total_scanned": 586,
+  "this_round_scanned": 390,
+  "candidates_count": 21,
+  "pool_count": 35,
+  "total_api_req": 640,
   "scan_progress": {
-    "date": "2026-07-21",
+    "date": "2026-07-22",
     "total_slots": 5,
     "slots_done": [
-      0,
-      1,
       2,
-      3,
-      4
+      3
     ]
   },
   "stocks": [
@@ -581,10 +579,7 @@
       "is_today": true,
       "prob": "中（60%）",
       "prob_level": "medium",
-      "risk_flags": {
-        "ex_dividend_days": 3,
-        "ex_dividend_date": "2026/07/24"
-      }
+      "risk_flags": {}
     },
     {
       "sid": "6933",
@@ -678,48 +673,48 @@
       "risk_flags": {}
     },
     {
-      "sid": "3005",
-      "name": "神基",
-      "close": 116.5,
-      "change_pct": 6.39,
-      "volume": 10271721,
-      "market": "tse",
-      "score": 61,
+      "sid": "4939",
+      "name": "亞電",
+      "close": 72.8,
+      "change_pct": 9.97,
+      "volume": 36493009,
+      "market": "otc",
+      "score": 62,
       "reasons": [
         "強勢大漲 ≥5%",
-        "量能放大 2.0x",
-        "均線多頭排列",
-        "站上月線 MA20=106.21",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 1.8x",
+        "站上月線 MA20=61.01",
         "突破近10日高點"
       ],
       "warnings": [
         "融資追價明顯"
       ],
       "inst": {
-        "foreign_net": -501,
-        "trust_net": 6,
-        "dealer_net": 407,
-        "total_net": -87,
-        "buy_streak_days": -2
+        "foreign_net": -904,
+        "trust_net": 0,
+        "dealer_net": 214,
+        "total_net": -690,
+        "buy_streak_days": -1
       },
-      "ma5": 112.6,
-      "ma10": 111.45,
-      "ma20": 106.21,
+      "ma5": 61.86,
+      "ma10": 60.28,
+      "ma20": 61.01,
       "has_warrant": true,
       "warrants": [],
       "risk": {
-        "volatility_pct": 2.96,
-        "volatility_level": "中",
-        "bias20_pct": 8.9,
-        "overheated": false,
-        "up_streak_days": 1,
+        "volatility_pct": 5.99,
+        "volatility_level": "高",
+        "bias20_pct": 18.4,
+        "overheated": true,
+        "up_streak_days": 2,
         "dist_from_high_pct": 0.0,
         "is_new_high": true
       },
       "data_date": "2026-07-21",
       "age_days": 0,
       "is_today": true,
-      "prob": "中（54%）",
+      "prob": "中（55%）",
       "prob_level": "medium",
       "risk_flags": {}
     }
