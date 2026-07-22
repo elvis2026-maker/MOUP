@@ -1030,16 +1030,31 @@ def main():
 
     scan_progress = _finalize_scan_progress(slot_meta, slot_scan_completed)
 
+    # V42 修正：total_scanned 累加今天所有輪次，而非只寫本輪
+    # 從舊 stocks.json 讀取今天已累計的掃描數（若是同一天的資料才累加）
+    prev_total = 0
+    try:
+        if os.path.exists(OUTPUT_PATH):
+            with open(OUTPUT_PATH, "r", encoding="utf-8") as f:
+                old_data = json.load(f)
+            # 只有同一交易日才累加，換日就歸零
+            if old_data.get("trade_date", "") == actual_date.replace("-",""):
+                prev_total = old_data.get("total_scanned", 0)
+    except Exception:
+        prev_total = 0
+    accumulated_scanned = prev_total + len(scan_sids)
+
     output = {
         "_meta":              _copyright_meta(),
         "updated_at":         now.strftime("%Y/%m/%d %H:%M"),
         "trade_date":         actual_date.replace("-",""),
         "data_date":          actual_date,
-        "total_scanned":      len(scan_sids),
-        "candidates_count":   len(scored),          # 今天新掃到、通過門檻的數量
-        "pool_count":         len(merged_pool),      # V28：疊加歷史後的候選池總數
+        "total_scanned":      accumulated_scanned,   # V42：今天所有輪次累計
+        "this_round_scanned": len(scan_sids),        # 本輪掃描數（除錯用）
+        "candidates_count":   len(scored),
+        "pool_count":         len(merged_pool),
         "total_api_req":      req,
-        "scan_progress":      scan_progress,         # V30：漏跑補償用的份數進度
+        "scan_progress":      scan_progress,
         "stocks":             top_n,
     }
 
@@ -1070,6 +1085,18 @@ def _finalize_scan_progress(slot_meta, completed):
         "slots_done":  sorted(prev_done),
     }
 
+def _get_prev_scanned(today8):
+    """讀取今天已累計的掃描數，換日歸零。"""
+    try:
+        if os.path.exists(OUTPUT_PATH):
+            with open(OUTPUT_PATH, "r", encoding="utf-8") as f:
+                old = json.load(f)
+            if old.get("trade_date","") == today8:
+                return old.get("total_scanned", 0)
+    except Exception:
+        pass
+    return 0
+
 def _write_empty(now, today8, req, slot_meta=None, slot_scan_completed=False):
     # V28：今天沒新資料（額度用完/API 沒回應等），不要把舊的精選清單洗掉，
     # 改成沿用歷史 pool（一樣會依保留天數自動過期）
@@ -1083,11 +1110,11 @@ def _write_empty(now, today8, req, slot_meta=None, slot_scan_completed=False):
         "updated_at":       now.strftime("%Y/%m/%d %H:%M"),
         "trade_date":       today8,
         "data_date":        ref_date_str,
-        "total_scanned":    0,
+        "total_scanned":    _get_prev_scanned(today8),  # V42：保留今天已累計的掃描數
         "candidates_count": 0,
         "pool_count":       len(merged_pool),
         "total_api_req":    req,
-        "scan_progress":    scan_progress,   # V30：漏跑補償用的份數進度
+        "scan_progress":    scan_progress,
         "stocks":           top_n,
     }
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
