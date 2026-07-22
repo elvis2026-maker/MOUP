@@ -5,14 +5,14 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/22 22:59",
+  "updated_at": "2026/07/22 23:28",
   "trade_date": "20260722",
   "data_date": "2026-07-22",
-  "total_scanned": 977,
-  "this_round_scanned": 195,
-  "candidates_count": 14,
-  "pool_count": 29,
-  "total_api_req": 369,
+  "total_scanned": 1173,
+  "this_round_scanned": 196,
+  "candidates_count": 19,
+  "pool_count": 33,
+  "total_api_req": 365,
   "scan_progress": {
     "date": "2026-07-22",
     "total_slots": 5,
@@ -32,7 +32,7 @@
       "change_pct": 6.16,
       "volume": 40828315,
       "market": "tse",
-      "score": 91,
+      "score": 86,
       "reasons": [
         "強勢大漲 ≥5%",
         "量能放大 3.4x",
@@ -43,7 +43,9 @@
         "投信積極買超",
         "外資積極買超"
       ],
-      "warnings": [],
+      "warnings": [
+        "融資追價明顯"
+      ],
       "inst": {
         "foreign_net": 10420,
         "trust_net": 691,
@@ -68,7 +70,7 @@
       "data_date": "2026-07-22",
       "age_days": 0,
       "is_today": true,
-      "prob": "高（82%）",
+      "prob": "高（77%）",
       "prob_level": "high",
       "risk_flags": {}
     },
