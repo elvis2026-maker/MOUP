@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>強勢股掃描｜隔日續航力分析 V41</title>
+<title>強勢股掃描｜隔日續航力分析 V42</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -39,25 +39,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 /* ══ LAYOUT ══ */
 .app{max-width:1080px;margin:0 auto;padding:0 14px 60px}
 
-/* ══ NAMEPLATE ══ */
-.brand-logo-top{display:flex;justify-content:center;padding:20px 0 0}
-.brand-logo-top a{display:inline-flex;transition:opacity .2s ease,transform .2s ease}
-.brand-logo-top a:hover{opacity:.82;transform:translateY(-1px)}
-.brand-logo-top img{width:92px;height:auto;display:block}
-@media(max-width:400px){.brand-logo-top{padding:14px 0 0}.brand-logo-top img{width:72px}}
-.nameplate-wrap{display:flex;align-items:center;justify-content:center;padding:28px 0 4px}
-.nameplate{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:12px;padding:14px 30px;border-radius:999px;background:linear-gradient(160deg,#232433 0%,#181924 45%,#101019 100%);box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 -1px 0 rgba(0,0,0,.4) inset,0 6px 20px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.05);text-decoration:none;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
-.nameplate:hover{transform:translateY(-1px);box-shadow:0 1px 0 rgba(255,255,255,.08) inset,0 -1px 0 rgba(0,0,0,.4) inset,0 10px 26px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.09)}
-.nameplate::before{content:"";position:absolute;top:-60%;left:-60%;width:35%;height:220%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);transform:rotate(20deg);animation:nameplate-shine 4.5s ease-in-out infinite}
-@keyframes nameplate-shine{
-  0%{left:-60%}
-  35%{left:130%}
-  100%{left:130%}
-}
-.nameplate-icon{position:relative;z-index:1;font-size:15px;color:#e8b968;text-shadow:0 0 8px rgba(232,185,104,.5)}
-.nameplate-text{position:relative;z-index:1;font-size:13px;font-weight:500;letter-spacing:.06em;color:#c7c9d6;white-space:nowrap}
-.nameplate-text strong{color:#f2f3f8;font-weight:700}
-.nameplate-text .sep{color:#4c4f5e;margin:0 10px;font-weight:300}
+/* ══ SITE HEADER (左上角 LOGO + 網站名稱) ══ */
+.site-header{display:flex;align-items:center;justify-content:space-between;padding:14px 0 10px;border-bottom:1px solid var(--border);margin-bottom:4px}
+.site-header-left{display:flex;align-items:center;gap:12px;text-decoration:none;transition:opacity .2s}
+.site-header-left:hover{opacity:.8}
+.site-header-logo{width:38px;height:38px;object-fit:contain;display:block;border-radius:6px}
+.site-header-name{display:flex;flex-direction:column;gap:1px}
+.site-header-cn{font-family:'Noto Sans TC',sans-serif;font-size:15px;font-weight:800;color:var(--text);letter-spacing:.04em;line-height:1.1}
+.site-header-en{font-size:9px;font-weight:600;letter-spacing:.18em;color:var(--text3);text-transform:uppercase;font-family:var(--mono)}
+@media(max-width:400px){.site-header-logo{width:30px;height:30px}.site-header-cn{font-size:13px}}
 
 /* ══ HERO ══ */
 .hero{text-align:center;padding:28px 20px 20px}
@@ -296,11 +286,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 .disc strong{color:var(--text2)}
 
 /* ══ FOOTER ══ */
-.site-footer{margin-top:28px;padding:18px 0;border-top:1px solid var(--border)}
-.footer-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.footer-brand{font-size:12px;font-weight:600;color:var(--text2);letter-spacing:.05em}
-.footer-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);font-family:var(--mono)}
-.footer-dot{color:var(--border)}
+.site-footer{margin-top:28px;padding:16px 0;border-top:1px solid var(--border)}
+.footer-inner{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;font-size:11px;color:var(--text3);font-family:var(--mono)}
+.footer-dot{color:var(--border);margin:0 2px}
 
 /* ══ RESPONSIVE ══ */
 @media(max-width:640px){
@@ -361,8 +349,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
   .open-signal{font-size:16px;padding:12px 14px}
 
   /* footer */
-  .footer-meta{flex-direction:column;gap:2px;align-items:flex-end}
-  .footer-dot{display:none}
+  .footer-dot{display:inline}
+  .footer-inner{gap:4px}
 }
 
 /* 超小手機 (380px) */
@@ -381,12 +369,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 <body>
 <div class="app">
 
-<!-- ══ LOGO ══ -->
-<div class="brand-logo-top">
-  <a href="https://elvis2026-maker.github.io/MIS/" target="_blank" rel="noopener" title="艾維斯資訊 IT 顧問｜MIS 外包服務與解決方案">
-    <img src="assets/logo.png" alt="艾維斯資訊 ELVIS IT 顧問">
+<!-- ══ SITE HEADER ══ -->
+<header class="site-header">
+  <a class="site-header-left" href="https://elvis2026-maker.github.io/MIS/" target="_blank" rel="noopener" title="艾維斯資訊 IT 顧問">
+    <img class="site-header-logo" src="assets/logo.png" alt="艾維斯玩股所">
+    <div class="site-header-name">
+      <span class="site-header-cn">艾維斯玩股所</span>
+      <span class="site-header-en">ELVIS STOCK INTELLIGENCE</span>
+    </div>
   </a>
-</div>
+</header>
 
 <!-- ══ HERO ══ -->
 <div class="hero">
@@ -456,22 +448,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 
 <footer class="site-footer">
   <div class="footer-inner">
-    <div class="footer-brand">禁止未經授權轉載或作為資料來源使用</div>
-    <div class="footer-meta">
-      <span>Taiwan Stock Momentum Intelligence</span><span class="footer-dot">·</span>
-      <span>V41</span><span class="footer-dot">·</span>
-      <span>最後更新：<span id="footer-update-time">--</span></span>
-    </div>
+    <span>Elvis 程式設計</span>
+    <span class="footer-dot">·</span>
+    <span>艾維斯資訊顧問 IT</span>
+    <span class="footer-dot">·</span>
+    <span>V42</span>
+    <span class="footer-dot">·</span>
+    <span id="footer-update-time">--</span>
   </div>
 </footer>
-
-<!-- ══ 銘牌 ══ -->
-<div class="nameplate-wrap">
-  <a class="nameplate" href="https://elvis2026-maker.github.io/MIS/" target="_blank" rel="noopener">
-    <span class="nameplate-icon">✦</span>
-    <span class="nameplate-text"><strong>程式設計 Elvis Liu</strong><span class="sep">|</span>版權所有</span>
-  </a>
-</div>
 </div>
 
 <script>
@@ -923,8 +908,21 @@ startClock();
 loadData();
 setInterval(()=>{
   const el=document.getElementById('footer-update-time');
-  if(el) el.textContent=new Date().toLocaleString('zh-TW',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
-},1000);
+  if(el){
+    const now=new Date();
+    const d=now.toLocaleDateString('zh-TW',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'-');
+    el.textContent=d;
+  }
+},60000);
+// 立即執行一次
+(()=>{
+  const el=document.getElementById('footer-update-time');
+  if(el){
+    const now=new Date();
+    const d=now.toLocaleDateString('zh-TW',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'-');
+    el.textContent=d;
+  }
+})();
 </script>
 </body>
 </html>
