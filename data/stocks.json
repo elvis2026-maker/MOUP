@@ -5,21 +5,22 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/23 20:26",
+  "updated_at": "2026/07/23 21:19",
   "trade_date": "20260723",
   "data_date": "2026-07-23",
-  "total_scanned": 587,
+  "total_scanned": 782,
   "this_round_scanned": 195,
-  "candidates_count": 12,
-  "pool_count": 23,
-  "total_api_req": 296,
+  "candidates_count": 9,
+  "pool_count": 24,
+  "total_api_req": 311,
   "scan_progress": {
     "date": "2026-07-23",
     "total_slots": 5,
     "slots_done": [
       0,
       1,
-      2
+      2,
+      3
     ]
   },
   "stocks": [
@@ -210,6 +211,52 @@
       "risk_flags": {}
     },
     {
+      "sid": "6166",
+      "name": "凌華",
+      "close": 159.5,
+      "change_pct": 10.0,
+      "volume": 7006594,
+      "market": "tse",
+      "score": 67,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "站上月線 MA20=134.53",
+        "突破近10日高點",
+        "三大法人買超 2411張"
+      ],
+      "warnings": [
+        "量能過度放大"
+      ],
+      "inst": {
+        "foreign_net": 2394,
+        "trust_net": 0,
+        "dealer_net": 16,
+        "total_net": 2411,
+        "buy_streak_days": 2
+      },
+      "ma5": 128.9,
+      "ma10": 131.1,
+      "ma20": 134.53,
+      "has_warrant": true,
+      "warrants": [],
+      "risk": {
+        "volatility_pct": 5.09,
+        "volatility_level": "高",
+        "bias20_pct": 18.3,
+        "overheated": true,
+        "up_streak_days": 4,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
+      },
+      "data_date": "2026-07-23",
+      "age_days": 0,
+      "is_today": true,
+      "prob": "中（60%）",
+      "prob_level": "medium",
+      "risk_flags": {}
+    },
+    {
       "sid": "3017",
       "name": "奇鋐",
       "close": 2440.0,
@@ -295,6 +342,97 @@
       "age_days": 0,
       "is_today": true,
       "prob": "中（57%）",
+      "prob_level": "medium",
+      "risk_flags": {}
+    },
+    {
+      "sid": "6245",
+      "name": "立端",
+      "close": 84.9,
+      "change_pct": 4.3,
+      "volume": 1679114,
+      "market": "otc",
+      "score": 63,
+      "reasons": [
+        "大漲 ≥3%",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 2.3x",
+        "站上月線 MA20=80.0",
+        "突破近10日高點"
+      ],
+      "warnings": [],
+      "inst": {
+        "foreign_net": 547,
+        "trust_net": 0,
+        "dealer_net": 46,
+        "total_net": 593,
+        "buy_streak_days": 3
+      },
+      "ma5": 78.78,
+      "ma10": 79.87,
+      "ma20": 80.0,
+      "has_warrant": true,
+      "warrants": [],
+      "risk": {
+        "volatility_pct": 2.88,
+        "volatility_level": "中",
+        "bias20_pct": 5.8,
+        "overheated": false,
+        "up_streak_days": 4,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
+      },
+      "data_date": "2026-07-23",
+      "age_days": 0,
+      "is_today": true,
+      "prob": "中（56%）",
+      "prob_level": "medium",
+      "risk_flags": {}
+    },
+    {
+      "sid": "6414",
+      "name": "樺漢",
+      "close": 503.0,
+      "change_pct": 2.65,
+      "volume": 8601635,
+      "market": "tse",
+      "score": 63,
+      "reasons": [
+        "溫和上漲 ≥1%",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 2.4x",
+        "均線多頭排列",
+        "站上月線 MA20=391.65",
+        "突破近10日高點"
+      ],
+      "warnings": [
+        "融資追價明顯"
+      ],
+      "inst": {
+        "foreign_net": 749,
+        "trust_net": 0,
+        "dealer_net": 155,
+        "total_net": 904,
+        "buy_streak_days": 14
+      },
+      "ma5": 427.1,
+      "ma10": 409.4,
+      "ma20": 391.65,
+      "has_warrant": true,
+      "warrants": [],
+      "risk": {
+        "volatility_pct": 3.59,
+        "volatility_level": "中",
+        "bias20_pct": 26.3,
+        "overheated": true,
+        "up_streak_days": 4,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
+      },
+      "data_date": "2026-07-23",
+      "age_days": 0,
+      "is_today": true,
+      "prob": "中（56%）",
       "prob_level": "medium",
       "risk_flags": {}
     },
@@ -561,136 +699,6 @@
       "age_days": 0,
       "is_today": true,
       "prob": "中（51%）",
-      "prob_level": "medium",
-      "risk_flags": {}
-    },
-    {
-      "sid": "3693",
-      "name": "營邦",
-      "close": 519.0,
-      "change_pct": 9.96,
-      "volume": 1165899,
-      "market": "otc",
-      "score": 57,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "收盤靠近最高點（買盤強）",
-        "量能放大 2.2x",
-        "站上月線 MA20=490.3"
-      ],
-      "warnings": [],
-      "inst": {
-        "foreign_net": 369,
-        "trust_net": 16,
-        "dealer_net": 49,
-        "total_net": 434,
-        "buy_streak_days": 7
-      },
-      "ma5": 466.8,
-      "ma10": 487.75,
-      "ma20": 490.3,
-      "has_warrant": true,
-      "warrants": [],
-      "risk": {
-        "volatility_pct": 4.86,
-        "volatility_level": "高",
-        "bias20_pct": 5.6,
-        "overheated": false,
-        "up_streak_days": 3,
-        "dist_from_high_pct": -4.2,
-        "is_new_high": false
-      },
-      "data_date": "2026-07-22",
-      "age_days": 1,
-      "is_today": false,
-      "prob": "中（50%）",
-      "prob_level": "medium",
-      "risk_flags": {}
-    },
-    {
-      "sid": "2357",
-      "name": "華碩",
-      "close": 769.0,
-      "change_pct": 1.59,
-      "volume": 3640645,
-      "market": "tse",
-      "score": 57,
-      "reasons": [
-        "溫和上漲 ≥1%",
-        "均線多頭排列",
-        "站上月線 MA20=702.55",
-        "突破近10日高點",
-        "三大法人買超 1008張"
-      ],
-      "warnings": [],
-      "inst": {
-        "foreign_net": 1180,
-        "trust_net": -189,
-        "dealer_net": 16,
-        "total_net": 1008,
-        "buy_streak_days": 14
-      },
-      "ma5": 719.2,
-      "ma10": 708.6,
-      "ma20": 702.55,
-      "has_warrant": true,
-      "warrants": [],
-      "risk": {
-        "volatility_pct": 3.14,
-        "volatility_level": "中",
-        "bias20_pct": 9.5,
-        "overheated": false,
-        "up_streak_days": 3,
-        "dist_from_high_pct": -2.5,
-        "is_new_high": false
-      },
-      "data_date": "2026-07-23",
-      "age_days": 0,
-      "is_today": true,
-      "prob": "中（50%）",
-      "prob_level": "medium",
-      "risk_flags": {}
-    },
-    {
-      "sid": "3532",
-      "name": "台勝科",
-      "close": 468.0,
-      "change_pct": 7.96,
-      "volume": 14308280,
-      "market": "tse",
-      "score": 56,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "均線多頭排列",
-        "站上月線 MA20=415.15",
-        "投信積極買超"
-      ],
-      "warnings": [],
-      "inst": {
-        "foreign_net": -84,
-        "trust_net": 1058,
-        "dealer_net": -31,
-        "total_net": 943,
-        "buy_streak_days": 2
-      },
-      "ma5": 463.5,
-      "ma10": 450.9,
-      "ma20": 415.15,
-      "has_warrant": true,
-      "warrants": [],
-      "risk": {
-        "volatility_pct": 7.56,
-        "volatility_level": "高",
-        "bias20_pct": 11.5,
-        "overheated": false,
-        "up_streak_days": 1,
-        "dist_from_high_pct": -10.5,
-        "is_new_high": false
-      },
-      "data_date": "2026-07-22",
-      "age_days": 1,
-      "is_today": false,
-      "prob": "中（49%）",
       "prob_level": "medium",
       "risk_flags": {}
     }
