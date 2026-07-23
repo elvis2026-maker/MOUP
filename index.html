@@ -427,7 +427,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 
 <!-- ══ STATS ══ -->
 <div class="stats">
-  <div class="stat"><div class="lbl">今日累計掃描<br><span style="font-size:10px;color:var(--text3);font-weight:400;letter-spacing:0">電子股（分批累加）</span></div><div class="val green" id="s-scan">--</div></div>
+  <div class="stat"><div class="lbl">今日累計掃描<br><span style="font-size:10px;color:var(--text3);font-weight:400;letter-spacing:0">電子股</span></div><div class="val green" id="s-scan">--</div></div>
   <div class="stat"><div class="lbl">通過門檻</div><div class="val blue" id="s-cand">--</div></div>
   <div class="stat"><div class="lbl">今日精選</div><div class="val" id="s-sel">--</div></div>
   <div class="stat"><div class="lbl">高機率標的</div><div class="val green" id="s-high">--</div></div>
@@ -495,9 +495,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
   </div>
   <div id="ai-suggest" class="ai-suggest"></div>
   <div id="ai-result"><div class="ai-empty">輸入股票代號或名稱，系統將根據今日技術指標、籌碼動向與風險評分，估算隔日續航機率。</div></div>
-  <div class="disc" style="margin-top:16px"><strong>⚠ 說明：</strong>目前僅能分析今日「盤後精選」掃描範圍內的標的；範圍外的股票需另外串接分析伺服器才能查詢（可用專案內 cloudflare-worker-optional 作為串接起點）。分析結果為機率參考，不構成投資建議。</div>
-</div>
-
+  
 <!-- ══ 3. 我的關注 PANEL ══ -->
 <div id="watch-panel" style="display:none">
   <div class="cards" id="watch-cards"></div>
