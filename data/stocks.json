@@ -5,14 +5,14 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/23 21:19",
+  "updated_at": "2026/07/23 23:04",
   "trade_date": "20260723",
   "data_date": "2026-07-23",
-  "total_scanned": 782,
-  "this_round_scanned": 195,
-  "candidates_count": 9,
-  "pool_count": 24,
-  "total_api_req": 311,
+  "total_scanned": 978,
+  "this_round_scanned": 196,
+  "candidates_count": 14,
+  "pool_count": 26,
+  "total_api_req": 329,
   "scan_progress": {
     "date": "2026-07-23",
     "total_slots": 5,
@@ -269,14 +269,14 @@
         "量能放大 1.6x",
         "站上月線 MA20=2384.25",
         "突破近10日高點",
-        "三大法人買超 1578張"
+        "三大法人買超 1637張"
       ],
       "warnings": [],
       "inst": {
         "foreign_net": 1382,
-        "trust_net": 133,
+        "trust_net": 192,
         "dealer_net": 61,
-        "total_net": 1578,
+        "total_net": 1637,
         "buy_streak_days": 1
       },
       "ma5": 2229.0,
