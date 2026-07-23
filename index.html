@@ -932,6 +932,51 @@ function updateAiSuggest(){
   box.innerHTML = top.map(s=>`<span class="ai-suggest-chip" onclick="document.getElementById('ai-input').value='${s.sid}';runAiAnalysis()">${s.name} ${s.sid}</span>`).join('');
 }
 
+// ── V46：全市場代號／名稱名冊（不限今日電子股掃描清單）──────────
+// 用 FinMind 公開的 TaiwanStockInfo（涵蓋上市+上櫃全部個股，不需 token）
+// 只在第一次使用「個股分析」時載入一次，之後查詢直接查記憶體內的名冊
+let stockMasterList = [];
+let stockMasterLoading = null;
+async function loadStockMasterList(){
+  if(stockMasterList.length || stockMasterLoading) return stockMasterLoading;
+  stockMasterLoading = (async()=>{
+    try{
+      const url='https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInfo';
+      const r=await fetch(url,{signal:AbortSignal.timeout(15000)});
+      const j=await r.json();
+      const byId=new Map();
+      (j.data||[]).forEach(row=>{
+        if(!row.stock_id||!row.stock_name) return;
+        byId.set(row.stock_id,{sid:row.stock_id,name:row.stock_name,market:row.type||''}); // 後面的資料列會覆蓋前面，留下最新一筆
+      });
+      stockMasterList=[...byId.values()];
+    }catch(e){ stockMasterList=[]; }
+  })();
+  return stockMasterLoading;
+}
+
+// 全市場即時報價／最新收盤：用 FinMind 公開的日K資料，取最後兩筆算漲跌幅
+// （跟「技術走勢圖」用的是同一組免 token 公開 API，全市場個股皆可查）
+async function fetchLatestQuote(sid){
+  try{
+    const endDate=new Date(); const startDate=new Date(); startDate.setDate(startDate.getDate()-15);
+    const fmt=d=>d.toISOString().slice(0,10);
+    const url=`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=${encodeURIComponent(sid)}&start_date=${fmt(startDate)}&end_date=${fmt(endDate)}`;
+    const r=await fetch(url,{signal:AbortSignal.timeout(10000)});
+    const j=await r.json();
+    const rows=(j.data||[]).sort((a,b)=>a.date.localeCompare(b.date));
+    if(!rows.length) return null;
+    const last=rows[rows.length-1];
+    const prev=rows.length>1?rows[rows.length-2]:null;
+    const close=parseFloat(last.close);
+    const change_pct = prev && parseFloat(prev.close)
+      ? +(((close-parseFloat(prev.close))/parseFloat(prev.close))*100).toFixed(2)
+      : 0;
+    return { close, change_pct };
+  }catch(e){ return null; }
+}
+
+// 先在今日電子股掃描清單內找（資料最完整：評分／均線／法人／風險指標）
 function findStock(query){
   const q = query.trim().toLowerCase();
   if(!q) return null;
@@ -939,6 +984,21 @@ function findStock(query){
          allStocks.find(s=>s.name.toLowerCase()===q) ||
          allStocks.find(s=>s.name.toLowerCase().includes(q) || s.sid.toLowerCase().includes(q)) ||
          null;
+}
+
+// V46：全市場查找（掃描清單找不到時的備援），只回傳 sid/name/market，價格另外抓
+function findStockFullMarket(query){
+  const q = query.trim();
+  if(!q) return null;
+  const ql = q.toLowerCase();
+  let hit = stockMasterList.find(s=>s.sid.toLowerCase()===ql) ||
+            stockMasterList.find(s=>s.name===q) ||
+            stockMasterList.find(s=>s.name.includes(q));
+  if(hit) return hit;
+  // 名冊裡也找不到，但輸入格式本身就像股票代號（4~6碼數字，可能帶字尾），
+  // 仍嘗試直接當代號查價，涵蓋名冊未收錄或剛上市的個股
+  if(/^\d{4,6}[A-Z]?$/i.test(q)) return { sid:q, name:q, market:'' };
+  return null;
 }
 
 async function runAiAnalysis(){
@@ -951,7 +1011,22 @@ async function runAiAnalysis(){
   resultEl.innerHTML='<div class="loading"><div class="spinner"></div>診斷分析中...</div>';
   if(chartArea) chartArea.style.display='none';
 
-  const s = findStock(query);
+  // 1) 先查今日電子股掃描清單（資料最完整）
+  let s = findStock(query);
+  let fullMarketOnly = false;
+
+  // 2) 掃描清單查不到 → V46：改查全市場（全部上市＋上櫃個股，不限電子股）
+  if(!s){
+    await loadStockMasterList();
+    const hit = findStockFullMarket(query);
+    if(hit){
+      const q = await fetchLatestQuote(hit.sid);
+      if(q){
+        s = { sid:hit.sid, name:hit.name!==hit.sid?hit.name:query, market:hit.market, close:q.close, change_pct:q.change_pct };
+        fullMarketOnly = true;
+      }
+    }
+  }
 
   // 嘗試 AI_ENDPOINT（Cloudflare Worker + Gemini）
   if(AI_ENDPOINT){
@@ -968,33 +1043,42 @@ async function runAiAnalysis(){
   }
 
   if(!s){
-    resultEl.innerHTML=`<div class="ai-not-found">⚠ 「${query}」不在今日掃描清單內<br>
+    resultEl.innerHTML=`<div class="ai-not-found">⚠ 查無「${query}」的相關資料<br>
       <span style="font-size:12px;color:var(--text3)">
-        個股分析已支援全市場查詢（透過 AI 端點），但目前 AI 服務無法連線，僅能顯示今日掃描清單內的股票。<br>
-        您可直接至券商 APP 查詢代號「${query}」的認購權證資訊。
+        請確認股票代號或名稱是否正確；個股分析已支援全市場查詢，但目前資料來源暫時無法連線，請稍後再試。
       </span></div>`;
     return;
   }
 
-  resultEl.innerHTML = aiResultHTML(s,null);
+  resultEl.innerHTML = aiResultHTML(s,null,fullMarketOnly);
   loadStockChart(s.sid, s.name);
 }
 
-function aiResultHTML(s,serverData){
+function aiResultHTML(s,serverData,fullMarketOnly){
   if(serverData && serverData.summary){
-    const prob = serverData.probability ?? s?.prob ?? '--';
+    const prob = serverData.probability ?? s?.prob ?? '約 50%';
     return `<div class="ai-result-card">
       <div class="ai-result-head">
         <div><div class="ai-result-name">${s?s.name:serverData.name||''}</div><div class="ai-result-sid">${s?s.sid:serverData.sid||''}</div></div>
         <div class="ai-prob-badge" style="background:rgba(124,58,237,.12);color:#7c3aed">${prob}</div>
       </div>
       <div class="ai-reason-list">${(serverData.reasons||[]).map(r=>`<div class="ai-reason-item"><span class="ai-dot"></span>${r}</div>`).join('')}</div>
+      ${fullMarketOnly?`<div style="margin-top:10px;font-size:11px;color:var(--text3)">⚠ 此股票不在今日電子股掃描清單內，評分為 AI 綜合研判，非系統量化評分。</div>`:''}
     </div>`;
   }
   if(!s) return '';
-  const color = probColor(s.prob_level);
+  // V46：全市場查到的股票沒有 score/ma20/inst/risk 等掃描清單獨有欄位，需優雅降級
+  const hasFullData = s.score!=null && s.prob_level;
+  const color = hasFullData ? probColor(s.prob_level) : '#8e9cba';
+  const badgeText = hasFullData ? s.prob : (s.close!=null ? '資料有限' : '--');
   const reasons=[];
-  reasons.push(`綜合評分 ${s.score} 分，落在「${probLabel(s.prob_level)}」區間，估計隔日續航機率約 ${s.prob}。`);
+  if(hasFullData){
+    reasons.push(`綜合評分 ${s.score} 分，落在「${probLabel(s.prob_level)}」區間，估計隔日續航機率約 ${s.prob}。`);
+  }else if(s.close!=null){
+    reasons.push(`此股票不在今日電子股掃描清單內，暫無系統評分，僅顯示最新收盤價 ${s.close} 元，漲跌幅 ${s.change_pct!=null?(s.change_pct>=0?'+':'')+s.change_pct+'%':'--'}。`);
+  }else{
+    reasons.push(`查無「${s.name||s.sid}」的最新價格資料，僅能提供代號基本資訊，建議至券商 APP 確認即時報價。`);
+  }
   if(s.ma20) reasons.push(`目前股價${s.close>s.ma20?'站上':'低於'} MA20（${s.ma20}），${s.close>s.ma20?'均線多頭排列，中期趨勢向上。':'短線偏弱，追高需留意拉回風險。'}`);
   const inst=s.inst||{};
   if(inst.total_net!=null) reasons.push(`三大法人合計${inst.total_net>0?'買超':inst.total_net<0?'賣超':'持平'} ${Math.abs(inst.total_net)} 張，${inst.total_net>0?'籌碼面偏多，法人積極佈局。':'籌碼面中性偏弱。'}`);
@@ -1003,13 +1087,18 @@ function aiResultHTML(s,serverData){
   else if(risk.bias20_pct!=null) reasons.push(`乖離率 ${risk.bias20_pct}%，尚在合理範圍內。`);
   if(risk.up_streak_days) reasons.push(`已連續上漲 ${risk.up_streak_days} 天${risk.is_new_high?'，並創下波段新高':''}，動能仍在延續。`);
   const hasWarrant = s.has_warrant || (s.warrants||[]).length>0;
-  reasons.push(hasWarrant?'該股有發行認購權證，可作為槓桿操作參考標的。':'該股目前查無對應認購權證，僅適合現股或零股操作。');
+  if(hasFullData){
+    reasons.push(hasWarrant?'該股有發行認購權證，可作為槓桿操作參考標的。':'該股目前查無對應認購權證，僅適合現股或零股操作。');
+  }else{
+    reasons.push(`若需查詢是否有發行認購權證，請至公開資訊觀測站或券商 APP 查詢代號「${s.sid}」。`);
+  }
   return `<div class="ai-result-card">
     <div class="ai-result-head">
       <div><div class="ai-result-name">${s.name}</div><div class="ai-result-sid">${s.sid}</div></div>
-      <div class="ai-prob-badge" style="background:rgba(${hexToRgb(color)},.12);color:${color}">${s.prob}</div>
+      <div class="ai-prob-badge" style="background:rgba(${hexToRgb(color)},.12);color:${color}">${badgeText}</div>
     </div>
     <div class="ai-reason-list">${reasons.map(r=>`<div class="ai-reason-item"><span class="ai-dot"></span>${r}</div>`).join('')}</div>
+    ${!hasFullData?`<div style="margin-top:10px;font-size:11px;color:var(--text3)">⚠ 此股票不在今日電子股掃描清單內，資料僅供參考，非完整量化評分。</div>`:''}
   </div>`;
 }
 
@@ -1245,17 +1334,20 @@ async function renderPulsePanel(){
     {sym:'BTC-USD', name:'比特幣',      flag:'₿',  region:'加密'},
   ];
 
-  // 用 Yahoo Finance v8 批次查詢（query2 支援 CORS）
-  // 每次最多約 20 個 symbols，分成 1~2 批就夠
+  // V46 修正：瀏覽器直接呼叫 query2.finance.yahoo.com/v7/finance/quote 已失效
+  // （Yahoo 自 2024 年起要求 crumb 驗證且不再開放跨網域瀏覽器請求，
+  //   所以之前每張卡片都卡在「--」）。
+  // 改為透過已部署的 Cloudflare Worker 在伺服器端代抓（改用不需 crumb 的
+  // v8/finance/chart 端點），再回傳給前端，同時解決 CORS 與驗證問題。
   async function fetchQuotes(syms){
     const symStr = syms.join(',');
-    const url = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symStr)}&fields=regularMarketPrice,regularMarketChangePercent,regularMarketChange,regularMarketTime,currency&corsDomain=finance.yahoo.com`;
+    const url = `${AI_ENDPOINT}/market-pulse?symbols=${encodeURIComponent(symStr)}`;
     try{
-      const r = await fetch(url, {signal: AbortSignal.timeout(10000)});
+      const r = await fetch(url, {signal: AbortSignal.timeout(12000)});
       if(!r.ok) return {};
       const d = await r.json();
       const result = {};
-      (d.quoteResponse?.result||[]).forEach(q=>{ result[q.symbol]=q; });
+      Object.entries(d.quotes||{}).forEach(([sym,q])=>{ if(q) result[sym]=q; });
       return result;
     }catch(e){ return {}; }
   }
@@ -1322,6 +1414,7 @@ async function renderPulsePanel(){
 
 startClock();
 loadData().then(updateAiSuggest);
+loadStockMasterList(); // V46：背景預先載入全市場代號名冊，個股分析查詢時就不用等
 setInterval(()=>{
   const el=document.getElementById('footer-update-time');
   if(el) el.textContent=new Date().toLocaleString('zh-TW',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});

@@ -1,5 +1,21 @@
 # 個股分析後端：Cloudflare Worker（Gemini API，3組金鑰備援）
 
+## ⚠ V46 更新，請重新部署 Worker
+
+`cloudflare-worker-optional/ai-analyze-worker.js` 這份程式碼有更新，**請把新版整份
+重新貼上 Cloudflare Worker 並部署**，否則以下兩個修正不會生效：
+
+1. **個股分析改為全市場**：不再限定今日電子股掃描清單，清單外的個股也會由
+   Gemini 根據其代號／名稱做全市場分析（不再只回「不在今日掃描範圍內」）。
+2. **新增 `GET /market-pulse` 路由**：修好「市場脈動」全部顯示 `--` 的問題——
+   原因是瀏覽器直接呼叫 Yahoo Finance 的 `v7/finance/quote` 已經失效（Yahoo 改版
+   後需要 crumb 驗證、也不再開放跨網域瀏覽器請求），現在改由 Worker 在伺服器端
+   代抓（改打不需 crumb 的 `v8/finance/chart` 端點）再回傳給前端。
+
+不需要新增任何機密變數，沿用原本的 3 組 `MO*_GEMINI_API_KEY` 即可。
+
+---
+
 ## 現況
 
 `index.html` 裡的 `AI_ENDPOINT` 已經填好：
