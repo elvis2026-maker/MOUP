@@ -288,7 +288,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 .ai-reason-item .ai-dot{flex-shrink:0;width:6px;height:6px;border-radius:50%;background:#7c3aed;margin-top:7px}
 .ai-not-found{padding:14px 16px;background:rgba(217,119,6,.06);border:1px solid rgba(217,119,6,.2);border-radius:var(--r);font-size:13px;color:#a35b00;line-height:1.8;margin-top:14px}
 
-/* ══ 市場脈動 PANEL ══ */
+/* ══ 市場脈動（大盤 + 全球股市）PANEL ══ */
 .pulse-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
 .pulse-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:18px 20px;box-shadow:var(--shadow-sm)}
 .pulse-card .lbl{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
@@ -297,6 +297,27 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 .pulse-legend{display:flex;flex-direction:column;gap:10px}
 .pulse-legend-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
 .pulse-legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+/* 全球市場卡片 */
+.gm-section-title{font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:22px 0 10px;padding-left:4px}
+.gm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:8px}
+.gm-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;box-shadow:var(--shadow-sm);transition:box-shadow .15s}
+.gm-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.gm-name{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:.04em;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gm-index{font-family:var(--mono);font-size:18px;font-weight:800;color:var(--text);line-height:1;margin-bottom:3px}
+.gm-chg{font-family:var(--mono);font-size:12px;font-weight:700}
+.gm-chg.up{color:var(--danger)}
+.gm-chg.dn{color:var(--ok)}
+.gm-chg.flat{color:var(--text3)}
+.gm-sub{font-size:10px;color:var(--text3);margin-top:3px}
+.gm-time{font-size:10px;color:var(--text3);margin-top:12px;padding-top:10px;border-top:1px solid var(--border);text-align:right}
+/* 個股 K線圖區 */
+.chart-section{margin-top:20px}
+.chart-section-title{font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);padding:20px;box-shadow:var(--shadow-sm);position:relative}
+.chart-tab-bar{display:flex;gap:6px;margin-bottom:14px}
+.chart-tab{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.chart-tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.chart-canvas-wrap{overflow-x:auto}
 @media(max-width:640px){
   .pulse-grid{grid-template-columns:repeat(2,1fr)}
   .ai-search-box{flex-direction:column}
@@ -472,7 +493,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
       <path d="M10 26h5l2.6-7 4 14 3-11 2.2 4h9" stroke="#fff" stroke-width="2.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <div class="feature-label">市場脈動</div>
-    <div class="feature-desc">今日掃描總覽</div>
+    <div class="feature-desc">大盤 ＋ 全球股市</div>
   </div>
 </div>
 
@@ -490,12 +511,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 <!-- ══ 2. 個股分析 PANEL ══ -->
 <div id="ai-panel" style="display:none">
   <div class="ai-search-box">
-    <input type="text" id="ai-input" placeholder="輸入股票代號或名稱，例如：2377 或 微星" onkeydown="if(event.key==='Enter')runAiAnalysis()">
+    <input type="text" id="ai-input" placeholder="輸入股票代號或名稱（全市場，例如：2377 或 微星）" onkeydown="if(event.key==='Enter')runAiAnalysis()">
     <button class="ai-btn" onclick="runAiAnalysis()">開始分析</button>
   </div>
   <div id="ai-suggest" class="ai-suggest"></div>
-  <div id="ai-result"><div class="ai-empty">輸入股票代號或名稱，系統將根據今日技術指標、籌碼動向與風險評分，估算隔日續航機率。</div></div>
-  
+  <div id="ai-result"><div class="ai-empty">輸入任意台股代號或名稱，系統將根據技術指標、籌碼動向與 AI 研判，估算隔日續航機率與操作建議。</div></div>
+  <div id="ai-chart-area" style="display:none;margin-top:20px"></div>
+</div>
+
 <!-- ══ 3. 我的關注 PANEL ══ -->
 <div id="watch-panel" style="display:none">
   <div class="cards" id="watch-cards"></div>
@@ -517,7 +540,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
     <span class="footer-dot">·</span>
     <span>艾維斯資訊顧問 IT</span>
     <span class="footer-dot">·</span>
-    <span>V44</span>
+    <span>V45</span>
     <span class="footer-dot">·</span>
     <span id="footer-update-time">--</span>
   </div>
@@ -892,13 +915,15 @@ function genHint(s){
 function toggleCard(el){ el.classList.toggle('open'); }
 
 // ════════════════════════════════════════════
-//  個股分析：輸入代號／名稱 → 估算隔日續航機率
-//  AI_ENDPOINT 已接上 Cloudflare Worker（elvis-moup-api），該 Worker 呼叫
-//  Google Gemini API（gemini-3.5-flash，額度用完時退到 gemini-3.1-flash-lite），
-//  並備援 3 組金鑰輪替。若 Worker 沒回應或發生錯誤，這裡會自動 fallback
-//  回下方的規則式評估，範圍外的個股仍只能靠規則式評估（無歷史資料可用）。
+//  個股分析：輸入代號 → 估算隔日續航機率 + K線/布林圖
+//  V45：全市場可查（不限今日掃描清單）；新增 K線＋布林通道 Canvas 圖表
 // ════════════════════════════════════════════
-const AI_ENDPOINT = 'https://elvis-moup-api.elvis-liu2027.workers.dev'; // Cloudflare Worker（Gemini API 三組金鑰備援）
+const AI_ENDPOINT = 'https://elvis-moup-api.elvis-liu2027.workers.dev';
+
+// 目前查看中的股票資料（供圖表使用）
+let currentChartSid = null;
+let currentChartData = [];
+let currentChartRange = 60; // 預設近60日
 
 function updateAiSuggest(){
   const box=document.getElementById('ai-suggest');
@@ -920,24 +945,39 @@ async function runAiAnalysis(){
   const input=document.getElementById('ai-input');
   const query=input.value.trim();
   const resultEl=document.getElementById('ai-result');
+  const chartArea=document.getElementById('ai-chart-area');
   if(!query){ resultEl.innerHTML='<div class="ai-empty">請輸入股票代號或名稱，例如 2377 或 微星</div>'; return; }
 
   resultEl.innerHTML='<div class="loading"><div class="spinner"></div>診斷分析中...</div>';
+  if(chartArea) chartArea.style.display='none';
 
   const s = findStock(query);
 
+  // 嘗試 AI_ENDPOINT（Cloudflare Worker + Gemini）
   if(AI_ENDPOINT){
     try{
-      const r = await fetch(AI_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query,stock:s||null})});
-      if(r.ok){ const data=await r.json(); resultEl.innerHTML=aiResultHTML(s,data); return; }
-    }catch(e){ /* 伺服器沒接上或失敗，往下 fallback 到規則式評估 */ }
+      const r = await fetch(AI_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({query,stock:s||null}),signal:AbortSignal.timeout(15000)});
+      if(r.ok){
+        const data=await r.json();
+        resultEl.innerHTML=aiResultHTML(s,data);
+        if(s) loadStockChart(s.sid, s.name);
+        return;
+      }
+    }catch(e){ /* fallback 到規則式 */ }
   }
 
   if(!s){
-    resultEl.innerHTML=`<div class="ai-not-found">⚠ 「${query}」不在今日「盤後精選」掃描清單內，暫時無法分析。<br>此工具目前僅掃描電子股中通過門檻的強勢標的；若需涵蓋全市場個股，需另外串接分析伺服器（AI_ENDPOINT）。</div>`;
+    resultEl.innerHTML=`<div class="ai-not-found">⚠ 「${query}」不在今日掃描清單內<br>
+      <span style="font-size:12px;color:var(--text3)">
+        個股分析已支援全市場查詢（透過 AI 端點），但目前 AI 服務無法連線，僅能顯示今日掃描清單內的股票。<br>
+        您可直接至券商 APP 查詢代號「${query}」的認購權證資訊。
+      </span></div>`;
     return;
   }
+
   resultEl.innerHTML = aiResultHTML(s,null);
+  loadStockChart(s.sid, s.name);
 }
 
 function aiResultHTML(s,serverData){
@@ -951,20 +991,19 @@ function aiResultHTML(s,serverData){
       <div class="ai-reason-list">${(serverData.reasons||[]).map(r=>`<div class="ai-reason-item"><span class="ai-dot"></span>${r}</div>`).join('')}</div>
     </div>`;
   }
-  // 規則式 fallback：用既有 score / risk / inst 欄位組出分析理由
+  if(!s) return '';
   const color = probColor(s.prob_level);
   const reasons=[];
   reasons.push(`綜合評分 ${s.score} 分，落在「${probLabel(s.prob_level)}」區間，估計隔日續航機率約 ${s.prob}。`);
-  if(s.ma20) reasons.push(`目前股價${s.close>s.ma20?'站上':'低於'} MA20（${s.ma20}），${s.close>s.ma20?'均線多頭排列':'短線偏弱，追高需留意拉回風險'}。`);
+  if(s.ma20) reasons.push(`目前股價${s.close>s.ma20?'站上':'低於'} MA20（${s.ma20}），${s.close>s.ma20?'均線多頭排列，中期趨勢向上。':'短線偏弱，追高需留意拉回風險。'}`);
   const inst=s.inst||{};
-  if(inst.total_net!=null) reasons.push(`三大法人合計${inst.total_net>0?'買超':inst.total_net<0?'賣超':'持平'} ${Math.abs(inst.total_net)} 張，${inst.total_net>0?'籌碼面偏多':'籌碼面中性偏弱'}。`);
+  if(inst.total_net!=null) reasons.push(`三大法人合計${inst.total_net>0?'買超':inst.total_net<0?'賣超':'持平'} ${Math.abs(inst.total_net)} 張，${inst.total_net>0?'籌碼面偏多，法人積極佈局。':'籌碼面中性偏弱。'}`);
   const risk=s.risk||{};
   if(risk.overheated) reasons.push(`乖離率 ${risk.bias20_pct}%，已明顯乖離均線，追高風險偏高，建議等回檔再進場。`);
   else if(risk.bias20_pct!=null) reasons.push(`乖離率 ${risk.bias20_pct}%，尚在合理範圍內。`);
   if(risk.up_streak_days) reasons.push(`已連續上漲 ${risk.up_streak_days} 天${risk.is_new_high?'，並創下波段新高':''}，動能仍在延續。`);
   const hasWarrant = s.has_warrant || (s.warrants||[]).length>0;
   reasons.push(hasWarrant?'該股有發行認購權證，可作為槓桿操作參考標的。':'該股目前查無對應認購權證，僅適合現股或零股操作。');
-
   return `<div class="ai-result-card">
     <div class="ai-result-head">
       <div><div class="ai-result-name">${s.name}</div><div class="ai-result-sid">${s.sid}</div></div>
@@ -973,72 +1012,314 @@ function aiResultHTML(s,serverData){
     <div class="ai-reason-list">${reasons.map(r=>`<div class="ai-reason-item"><span class="ai-dot"></span>${r}</div>`).join('')}</div>
   </div>`;
 }
+
+// ── K線 + 布林通道圖表（Canvas 純 JS，無需外部函式庫）──────────────────
+async function loadStockChart(sid, name){
+  const area = document.getElementById('ai-chart-area');
+  if(!area) return;
+  currentChartSid = sid;
+
+  area.style.display='block';
+  area.innerHTML=`
+    <div class="chart-section">
+      <div class="chart-section-title">📊 技術走勢圖（K線 ＋ 布林通道）</div>
+      <div class="chart-wrap">
+        <div class="chart-tab-bar">
+          <button class="chart-tab on" onclick="changeChartRange(20,this)">20日</button>
+          <button class="chart-tab" onclick="changeChartRange(60,this)">60日</button>
+          <button class="chart-tab" onclick="changeChartRange(120,this)">120日</button>
+        </div>
+        <div id="chart-loading" style="padding:30px;text-align:center;color:var(--text3);font-size:13px">
+          <div class="spinner" style="margin:0 auto 8px"></div>載入歷史資料中...
+        </div>
+        <div class="chart-canvas-wrap" id="chart-canvas-wrap" style="display:none">
+          <canvas id="stock-chart-canvas" height="300"></canvas>
+        </div>
+        <div id="chart-legend" style="display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:12px;color:var(--text2)"></div>
+      </div>
+    </div>`;
+
+  // 從 FinMind 公開 API 抓歷史 K 線（不需 token，60天免費）
+  const endDate   = new Date();
+  const startDate = new Date(); startDate.setDate(startDate.getDate() - 180);
+  const fmt = d => d.toISOString().slice(0,10);
+
+  const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=${sid}&start_date=${fmt(startDate)}&end_date=${fmt(endDate)}`;
+  try{
+    const resp = await fetch(url, {signal: AbortSignal.timeout(15000)});
+    const json = await resp.json();
+    const rows = (json.data || []).sort((a,b)=>a.date.localeCompare(b.date));
+    if(!rows.length) throw new Error('no data');
+    currentChartData = rows;
+    drawChart(rows, currentChartRange, name);
+  }catch(e){
+    document.getElementById('chart-loading').innerHTML=`
+      <div style="color:var(--text3);font-size:12px;padding:16px">
+        📉 歷史 K 線資料暫時無法載入（${e.message}）<br>
+        <span style="font-size:11px">FinMind 免費版每小時 300 req，若超限請稍後再試</span>
+      </div>`;
+  }
+}
+
+function changeChartRange(days, btn){
+  currentChartRange = days;
+  document.querySelectorAll('.chart-tab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  if(currentChartData.length){
+    const s = allStocks.find(x=>x.sid===currentChartSid);
+    drawChart(currentChartData, days, s?s.name:currentChartSid);
+  }
+}
+
+function drawChart(rows, days, name){
+  const wrap   = document.getElementById('chart-canvas-wrap');
+  const canvas = document.getElementById('stock-chart-canvas');
+  const legend = document.getElementById('chart-legend');
+  const loading= document.getElementById('chart-loading');
+  if(!canvas) return;
+
+  loading.style.display='none';
+  wrap.style.display='block';
+
+  const data = rows.slice(-days);
+  const W = wrap.clientWidth || 700;
+  const H = 300;
+  canvas.width  = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const PAD = {t:20, b:40, l:60, r:20};
+  const cW = W - PAD.l - PAD.r;
+  const cH = H - PAD.t - PAD.b;
+
+  // ── 計算布林通道（20日MA ± 2σ）──
+  function calcBoll(arr, period=20){
+    return arr.map((_, i) => {
+      if(i < period-1) return null;
+      const slice = arr.slice(i-period+1, i+1).map(r=>parseFloat(r.close));
+      const ma    = slice.reduce((a,v)=>a+v,0)/period;
+      const std   = Math.sqrt(slice.reduce((a,v)=>a+(v-ma)**2,0)/period);
+      return { ma, upper: ma+2*std, lower: ma-2*std };
+    });
+  }
+
+  const boll = calcBoll(data);
+
+  // ── 計算 MA5, MA20 ──
+  function calcMA(arr, n){ return arr.map((_,i)=>i<n-1?null:arr.slice(i-n+1,i+1).reduce((a,v)=>a+parseFloat(v.close),0)/n); }
+  const ma5arr  = calcMA(data, 5);
+  const ma20arr = calcMA(data, 20);
+
+  const highs  = data.map(r=>parseFloat(r.max));
+  const lows   = data.map(r=>parseFloat(r.min));
+  const bollUp = boll.map(b=>b?b.upper:null).filter(v=>v!==null);
+  const bollLo = boll.map(b=>b?b.lower:null).filter(v=>v!==null);
+
+  const allVals = [...highs, ...lows, ...bollUp, ...bollLo].filter(v=>!isNaN(v));
+  const vMin = Math.min(...allVals) * 0.998;
+  const vMax = Math.max(...allVals) * 1.002;
+
+  const xOf = i => PAD.l + (i+0.5) * (cW / data.length);
+  const yOf = v => PAD.t + cH - (v - vMin) / (vMax - vMin) * cH;
+
+  // 背景
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0,0,W,H);
+
+  // Y 軸格線
+  ctx.strokeStyle='#e4e9f2'; ctx.lineWidth=1;
+  const steps=5;
+  for(let i=0;i<=steps;i++){
+    const v = vMin + (vMax-vMin)*i/steps;
+    const y = yOf(v);
+    ctx.beginPath(); ctx.moveTo(PAD.l,y); ctx.lineTo(W-PAD.r,y); ctx.stroke();
+    ctx.fillStyle='#8e9cba'; ctx.font='11px JetBrains Mono,monospace'; ctx.textAlign='right';
+    ctx.fillText(v.toFixed(1), PAD.l-6, y+4);
+  }
+
+  // 布林通道填色
+  ctx.beginPath();
+  let started=false;
+  boll.forEach((b,i)=>{ if(!b) return; if(!started){ ctx.moveTo(xOf(i), yOf(b.upper)); started=true; } else ctx.lineTo(xOf(i), yOf(b.upper)); });
+  boll.slice().reverse().forEach((b,ri)=>{ if(!b) return; const i=boll.length-1-ri; ctx.lineTo(xOf(i), yOf(b.lower)); });
+  ctx.closePath();
+  ctx.fillStyle='rgba(37,99,235,.06)';
+  ctx.fill();
+
+  // 布林上軌
+  ctx.beginPath(); started=false;
+  boll.forEach((b,i)=>{ if(!b) return; if(!started){ ctx.moveTo(xOf(i),yOf(b.upper)); started=true; } else ctx.lineTo(xOf(i),yOf(b.upper)); });
+  ctx.strokeStyle='rgba(37,99,235,.5)'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
+
+  // 布林下軌
+  ctx.beginPath(); started=false;
+  boll.forEach((b,i)=>{ if(!b) return; if(!started){ ctx.moveTo(xOf(i),yOf(b.lower)); started=true; } else ctx.lineTo(xOf(i),yOf(b.lower)); });
+  ctx.strokeStyle='rgba(37,99,235,.5)'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
+
+  // 布林中軌（MA20）
+  ctx.beginPath(); started=false;
+  boll.forEach((b,i)=>{ if(!b) return; if(!started){ ctx.moveTo(xOf(i),yOf(b.ma)); started=true; } else ctx.lineTo(xOf(i),yOf(b.ma)); });
+  ctx.strokeStyle='rgba(37,99,235,.9)'; ctx.lineWidth=1.5; ctx.stroke();
+
+  // MA5
+  ctx.beginPath(); started=false;
+  ma5arr.forEach((v,i)=>{ if(v===null) return; if(!started){ ctx.moveTo(xOf(i),yOf(v)); started=true; } else ctx.lineTo(xOf(i),yOf(v)); });
+  ctx.strokeStyle='#f59e0b'; ctx.lineWidth=1.5; ctx.stroke();
+
+  // K 線本體
+  const barW = Math.max(1, cW/data.length*0.7);
+  data.forEach((r,i)=>{
+    const o=parseFloat(r.open), c=parseFloat(r.close), h=parseFloat(r.max), l=parseFloat(r.min);
+    const up = c >= o;
+    const col = up ? '#e03a3a' : '#059669';
+    const x = xOf(i);
+    // 影線
+    ctx.strokeStyle=col; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x, yOf(h)); ctx.lineTo(x, yOf(l)); ctx.stroke();
+    // 實體
+    const bodyTop = Math.min(yOf(o),yOf(c));
+    const bodyH   = Math.max(1, Math.abs(yOf(o)-yOf(c)));
+    ctx.fillStyle = col;
+    ctx.fillRect(x-barW/2, bodyTop, barW, bodyH);
+  });
+
+  // X 軸日期（每N根顯示一個）
+  const labelStep = Math.ceil(data.length/7);
+  ctx.fillStyle='#8e9cba'; ctx.font='10px sans-serif'; ctx.textAlign='center';
+  data.forEach((r,i)=>{
+    if(i%labelStep!==0 && i!==data.length-1) return;
+    ctx.fillText(r.date.slice(5), xOf(i), H-PAD.b+14);
+  });
+
+  // 圖例
+  const lastClose = parseFloat(data[data.length-1]?.close||0);
+  const lastBoll  = boll[boll.length-1];
+  legend.innerHTML=`
+    <span style="color:#e03a3a">■ 紅K（上漲）</span>
+    <span style="color:#059669">■ 綠K（下跌）</span>
+    <span style="color:rgba(37,99,235,.9)">— MA20/布林中軌 ${lastBoll?lastBoll.ma.toFixed(1):''}</span>
+    <span style="color:rgba(37,99,235,.5)">--- 布林上軌 ${lastBoll?lastBoll.upper.toFixed(1):''}</span>
+    <span style="color:rgba(37,99,235,.5)">--- 布林下軌 ${lastBoll?lastBoll.lower.toFixed(1):''}</span>
+    <span style="color:#f59e0b">— MA5 ${ma5arr[ma5arr.length-1]?ma5arr[ma5arr.length-1].toFixed(1):''}</span>
+    <span style="color:var(--text2)">收盤 <strong>${lastClose.toFixed(1)}</strong></span>
+  `;
+}
+
 function hexToRgb(hex){
   const n=parseInt(hex.replace('#',''),16);
   return `${(n>>16)&255},${(n>>8)&255},${n&255}`;
 }
 
 // ════════════════════════════════════════════
-//  市場脈動：用今日已掃描到的 allStocks 統計整體強弱分布
-//  （純前端運算既有資料，不需額外後端）
+//  市場脈動：大盤加權指數 + 全球主要股市
+//  使用 Yahoo Finance query2 API（有 CORS，瀏覽器可直接呼叫）
 // ════════════════════════════════════════════
-function renderPulsePanel(){
+async function renderPulsePanel(){
   const el=document.getElementById('pulse-content');
   if(!el) return;
-  if(!allStocks.length){
-    el.innerHTML='<div class="loading" style="padding:40px">尚無資料可統計，請先確認今日掃描資料已產生</div>';
-    return;
+
+  el.innerHTML='<div class="loading"><div class="spinner"></div>載入市場資料中...</div>';
+
+  // 全球主要指數代號（Yahoo Finance）
+  const indices = [
+    // 台灣
+    {sym:'^TWII',   name:'加權指數',     flag:'🇹🇼', region:'台灣'},
+    {sym:'00632R.TW', name:'台50反1',   flag:'🇹🇼', region:'台灣'},
+    // 美國
+    {sym:'^GSPC',   name:'S&P 500',     flag:'🇺🇸', region:'美國'},
+    {sym:'^IXIC',   name:'Nasdaq',      flag:'🇺🇸', region:'美國'},
+    {sym:'^DJI',    name:'道瓊',        flag:'🇺🇸', region:'美國'},
+    // 亞洲
+    {sym:'^N225',   name:'日經225',     flag:'🇯🇵', region:'亞洲'},
+    {sym:'000001.SS',name:'上証',       flag:'🇨🇳', region:'亞洲'},
+    {sym:'^HSI',    name:'恒生',        flag:'🇭🇰', region:'亞洲'},
+    {sym:'^KS11',   name:'韓國綜合',    flag:'🇰🇷', region:'亞洲'},
+    // 歐洲
+    {sym:'^FTSE',   name:'英國 FTSE',   flag:'🇬🇧', region:'歐洲'},
+    {sym:'^GDAXI',  name:'德國 DAX',    flag:'🇩🇪', region:'歐洲'},
+    {sym:'^FCHI',   name:'法國 CAC40',  flag:'🇫🇷', region:'歐洲'},
+    // 大宗商品 / 匯率
+    {sym:'GC=F',    name:'黃金',        flag:'🥇', region:'大宗'},
+    {sym:'CL=F',    name:'原油(WTI)',   flag:'🛢️', region:'大宗'},
+    {sym:'TWD=X',   name:'美元/新台幣', flag:'💱', region:'外匯'},
+    {sym:'BTC-USD', name:'比特幣',      flag:'₿',  region:'加密'},
+  ];
+
+  // 用 Yahoo Finance v8 批次查詢（query2 支援 CORS）
+  // 每次最多約 20 個 symbols，分成 1~2 批就夠
+  async function fetchQuotes(syms){
+    const symStr = syms.join(',');
+    const url = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symStr)}&fields=regularMarketPrice,regularMarketChangePercent,regularMarketChange,regularMarketTime,currency&corsDomain=finance.yahoo.com`;
+    try{
+      const r = await fetch(url, {signal: AbortSignal.timeout(10000)});
+      if(!r.ok) return {};
+      const d = await r.json();
+      const result = {};
+      (d.quoteResponse?.result||[]).forEach(q=>{ result[q.symbol]=q; });
+      return result;
+    }catch(e){ return {}; }
   }
-  const up = allStocks.filter(s=>s.change_pct>=0).length;
-  const down = allStocks.length-up;
-  const avgScore = (allStocks.reduce((a,s)=>a+s.score,0)/allStocks.length).toFixed(1);
-  const avgChg = (allStocks.reduce((a,s)=>a+(s.change_pct||0),0)/allStocks.length).toFixed(2);
-  const buyIn = allStocks.filter(s=>(s.inst?.total_net||0)>0).length;
 
-  const levels=['high','medium-high','medium','low'];
-  const counts=levels.map(lv=>allStocks.filter(s=>s.prob_level===lv).length);
-  const labels=['高機率','中高機率','中等機率','偏低'];
-  const colors=levels.map(probColor);
-  const total=counts.reduce((a,b)=>a+b,0)||1;
+  const syms   = indices.map(i=>i.sym);
+  const quotes = await fetchQuotes(syms);
 
-  // 甜甜圈圖（SVG stroke-dasharray 堆疊）
-  const R=54, C=2*Math.PI*R;
-  let offset=0;
-  const segs = counts.map((c,i)=>{
-    const frac=c/total, len=frac*C;
-    const seg=`<circle cx="70" cy="70" r="${R}" fill="none" stroke="${colors[i]}" stroke-width="18"
-      stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-offset}" transform="rotate(-90 70 70)"/>`;
-    offset+=len;
-    return seg;
-  }).join('');
+  // 組 HTML
+  const regions = ['台灣','美國','亞洲','歐洲','大宗','外匯','加密'];
+  let html = '';
 
-  el.innerHTML = `
-    <div class="pulse-grid">
-      <div class="pulse-card"><div class="lbl">上漲家數</div><div class="val" style="color:var(--danger)">${up}</div></div>
-      <div class="pulse-card"><div class="lbl">下跌家數</div><div class="val" style="color:var(--ok)">${down}</div></div>
-      <div class="pulse-card"><div class="lbl">平均評分</div><div class="val">${avgScore}</div></div>
-      <div class="pulse-card"><div class="lbl">法人買超家數</div><div class="val" style="color:var(--accent)">${buyIn}</div></div>
-    </div>
-    <div class="pulse-donut-wrap">
-      <svg width="140" height="140" viewBox="0 0 140 140">
-        ${segs}
-        <text x="70" y="66" text-anchor="middle" font-size="22" font-weight="800" fill="var(--text)">${allStocks.length}</text>
-        <text x="70" y="84" text-anchor="middle" font-size="11" fill="var(--text3)">今日精選</text>
-      </svg>
-      <div class="pulse-legend">
-        ${labels.map((l,i)=>`<div class="pulse-legend-item"><span class="pulse-legend-dot" style="background:${colors[i]}"></span>${l}　${counts[i]} 檔</div>`).join('')}
-        <div class="pulse-legend-item" style="margin-top:6px;color:var(--text3)">平均漲幅：${avgChg>=0?'+':''}${avgChg}%</div>
-      </div>
-    </div>`;
+  // 今日台灣掃描摘要
+  if(allStocks.length){
+    const up=allStocks.filter(s=>s.change_pct>=0).length;
+    const dn=allStocks.length-up;
+    const avgScore=(allStocks.reduce((a,s)=>a+s.score,0)/allStocks.length).toFixed(1);
+    const avgChg=(allStocks.reduce((a,s)=>a+(s.change_pct||0),0)/allStocks.length).toFixed(2);
+    const buyIn=allStocks.filter(s=>(s.inst?.total_net||0)>0).length;
+    html += `
+      <div class="gm-section-title">今日掃描摘要（電子股精選 ${allStocks.length} 支）</div>
+      <div class="pulse-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="pulse-card"><div class="lbl">平均評分</div><div class="val">${avgScore}</div></div>
+        <div class="pulse-card"><div class="lbl">平均漲幅</div><div class="val" style="color:${avgChg>=0?'var(--danger)':'var(--ok)'}">${avgChg>=0?'+':''}${avgChg}%</div></div>
+        <div class="pulse-card"><div class="lbl">法人買超</div><div class="val" style="color:var(--accent)">${buyIn}</div></div>
+        <div class="pulse-card"><div class="lbl">上漲/下跌</div><div class="val"><span style="color:var(--danger)">${up}</span>/<span style="color:var(--ok)">${dn}</span></div></div>
+      </div>`;
+  }
+
+  regions.forEach(region=>{
+    const group = indices.filter(i=>i.region===region);
+    if(!group.length) return;
+    html += `<div class="gm-section-title">${region}</div><div class="gm-grid" style="grid-template-columns:repeat(${Math.min(group.length,4)},1fr)">`;
+    group.forEach(idx=>{
+      const q = quotes[idx.sym];
+      let priceStr='--', chgStr='--', chgClass='flat', timeStr='';
+      if(q){
+        const price = q.regularMarketPrice;
+        const chgPct= q.regularMarketChangePercent;
+        const chgAmt= q.regularMarketChange;
+        priceStr = price!=null ? price.toLocaleString('en',{minimumFractionDigits:price<100?2:0,maximumFractionDigits:price<100?2:0}) : '--';
+        if(chgPct!=null){
+          chgClass = chgPct>0?'up':chgPct<0?'dn':'flat';
+          chgStr   = `${chgPct>=0?'+':''}${chgPct.toFixed(2)}%　${chgAmt>=0?'+':''}${chgAmt?.toFixed(2)??''}`;
+        }
+        if(q.regularMarketTime){
+          const d = new Date(q.regularMarketTime*1000);
+          timeStr = d.toLocaleString('zh-TW',{timeZone:'Asia/Taipei',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+        }
+      }
+      html += `<div class="gm-card">
+        <div class="gm-name">${idx.flag} ${idx.name}</div>
+        <div class="gm-index">${priceStr}</div>
+        <div class="gm-chg ${chgClass}">${chgStr}</div>
+        ${timeStr?`<div class="gm-sub">${timeStr}</div>`:''}
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  html += `<div class="gm-time">資料來源：Yahoo Finance　更新時間：${new Date().toLocaleString('zh-TW',{timeZone:'Asia/Taipei'})}</div>`;
+  el.innerHTML = html;
 }
 
-// ════════════════════════════════════════════
-//  INIT
-// ════════════════════════════════════════════
-document.getElementById('list-panel').style.display='block';
-document.getElementById('ai-panel').style.display='none';
-document.getElementById('watch-panel').style.display='none';
-document.getElementById('pulse-panel').style.display='none';
+
 startClock();
 loadData().then(updateAiSuggest);
 setInterval(()=>{
