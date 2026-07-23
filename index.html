@@ -289,26 +289,27 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 .ai-not-found{padding:14px 16px;background:rgba(217,119,6,.06);border:1px solid rgba(217,119,6,.2);border-radius:var(--r);font-size:13px;color:#a35b00;line-height:1.8;margin-top:14px}
 
 /* ══ 市場脈動（大盤 + 全球股市）PANEL ══ */
-.pulse-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.pulse-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:18px 20px;box-shadow:var(--shadow-sm)}
-.pulse-card .lbl{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
-.pulse-card .val{font-size:28px;font-weight:800;font-family:var(--mono);color:var(--text);line-height:1}
 .pulse-donut-wrap{display:flex;align-items:center;gap:28px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);padding:24px;box-shadow:var(--shadow-sm);flex-wrap:wrap}
 .pulse-legend{display:flex;flex-direction:column;gap:10px}
 .pulse-legend-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
 .pulse-legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
-/* 全球市場卡片 */
-.gm-section-title{font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:22px 0 10px;padding-left:4px}
-.gm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:8px}
-.gm-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;box-shadow:var(--shadow-sm);transition:box-shadow .15s}
-.gm-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08)}
-.gm-name{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:.04em;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gm-index{font-family:var(--mono);font-size:18px;font-weight:800;color:var(--text);line-height:1;margin-bottom:3px}
-.gm-chg{font-family:var(--mono);font-size:12px;font-weight:700}
-.gm-chg.up{color:var(--danger)}
-.gm-chg.dn{color:var(--ok)}
-.gm-chg.flat{color:var(--text3)}
-.gm-sub{font-size:10px;color:var(--text3);margin-top:3px}
+/* 全球市場卡片（V47：放大字級／圖示，SVG 箭頭一眼辨識漲跌）*/
+.gm-section-title{font-size:14px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:26px 0 12px;padding-left:4px}
+.gm-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:8px}
+.gm-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);padding:24px 26px;box-shadow:var(--shadow-sm);transition:box-shadow .15s}
+.gm-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.09)}
+.gm-card-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.gm-flag{font-size:20px;line-height:1}
+.gm-name{font-size:16px;color:var(--text2);font-weight:700;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gm-index{font-family:var(--mono);font-size:38px;font-weight:800;color:var(--text);line-height:1.1;margin-bottom:10px}
+.gm-chg-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.gm-arrow{width:26px;height:26px;flex-shrink:0}
+.gm-chg-pct{font-family:var(--mono);font-size:26px;font-weight:800;line-height:1}
+.gm-chg-amt{font-family:var(--mono);font-size:15px;font-weight:600;opacity:.8}
+.gm-chg-row.up{color:var(--danger)}
+.gm-chg-row.dn{color:var(--ok)}
+.gm-chg-row.flat{color:var(--text3)}
+.gm-sub{font-size:12px;color:var(--text3);margin-top:10px}
 .gm-time{font-size:10px;color:var(--text3);margin-top:12px;padding-top:10px;border-top:1px solid var(--border);text-align:right}
 /* 個股 K線圖區 */
 .chart-section{margin-top:20px}
@@ -319,7 +320,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 .chart-tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 .chart-canvas-wrap{overflow-x:auto}
 @media(max-width:640px){
-  .pulse-grid{grid-template-columns:repeat(2,1fr)}
+  .gm-grid{grid-template-columns:1fr}
+  .gm-index{font-size:32px}
+  .gm-chg-pct{font-size:22px}
   .ai-search-box{flex-direction:column}
 }
 
@@ -1359,30 +1362,14 @@ async function renderPulsePanel(){
   const regions = ['台灣','美國','亞洲','歐洲','大宗','外匯','加密'];
   let html = '';
 
-  // 今日台灣掃描摘要
-  if(allStocks.length){
-    const up=allStocks.filter(s=>s.change_pct>=0).length;
-    const dn=allStocks.length-up;
-    const avgScore=(allStocks.reduce((a,s)=>a+s.score,0)/allStocks.length).toFixed(1);
-    const avgChg=(allStocks.reduce((a,s)=>a+(s.change_pct||0),0)/allStocks.length).toFixed(2);
-    const buyIn=allStocks.filter(s=>(s.inst?.total_net||0)>0).length;
-    html += `
-      <div class="gm-section-title">今日掃描摘要（電子股精選 ${allStocks.length} 支）</div>
-      <div class="pulse-grid" style="grid-template-columns:repeat(4,1fr)">
-        <div class="pulse-card"><div class="lbl">平均評分</div><div class="val">${avgScore}</div></div>
-        <div class="pulse-card"><div class="lbl">平均漲幅</div><div class="val" style="color:${avgChg>=0?'var(--danger)':'var(--ok)'}">${avgChg>=0?'+':''}${avgChg}%</div></div>
-        <div class="pulse-card"><div class="lbl">法人買超</div><div class="val" style="color:var(--accent)">${buyIn}</div></div>
-        <div class="pulse-card"><div class="lbl">上漲/下跌</div><div class="val"><span style="color:var(--danger)">${up}</span>/<span style="color:var(--ok)">${dn}</span></div></div>
-      </div>`;
-  }
-
   regions.forEach(region=>{
     const group = indices.filter(i=>i.region===region);
     if(!group.length) return;
-    html += `<div class="gm-section-title">${region}</div><div class="gm-grid" style="grid-template-columns:repeat(${Math.min(group.length,4)},1fr)">`;
+    const cols = group.length===1 ? 1 : 2;
+    html += `<div class="gm-section-title">${region}</div><div class="gm-grid" style="grid-template-columns:repeat(${cols},1fr)">`;
     group.forEach(idx=>{
       const q = quotes[idx.sym];
-      let priceStr='--', chgStr='--', chgClass='flat', timeStr='';
+      let priceStr='--', pctStr='--', amtStr='', chgClass='flat', timeStr='';
       if(q){
         const price = q.regularMarketPrice;
         const chgPct= q.regularMarketChangePercent;
@@ -1390,7 +1377,8 @@ async function renderPulsePanel(){
         priceStr = price!=null ? price.toLocaleString('en',{minimumFractionDigits:price<100?2:0,maximumFractionDigits:price<100?2:0}) : '--';
         if(chgPct!=null){
           chgClass = chgPct>0?'up':chgPct<0?'dn':'flat';
-          chgStr   = `${chgPct>=0?'+':''}${chgPct.toFixed(2)}%　${chgAmt>=0?'+':''}${chgAmt?.toFixed(2)??''}`;
+          pctStr   = `${chgPct>=0?'+':''}${chgPct.toFixed(2)}%`;
+          amtStr   = `${chgAmt>=0?'+':''}${chgAmt?.toFixed(2)??''}`;
         }
         if(q.regularMarketTime){
           const d = new Date(q.regularMarketTime*1000);
@@ -1398,9 +1386,13 @@ async function renderPulsePanel(){
         }
       }
       html += `<div class="gm-card">
-        <div class="gm-name">${idx.flag} ${idx.name}</div>
+        <div class="gm-card-top"><span class="gm-flag">${idx.flag}</span><span class="gm-name">${idx.name}</span></div>
         <div class="gm-index">${priceStr}</div>
-        <div class="gm-chg ${chgClass}">${chgStr}</div>
+        <div class="gm-chg-row ${chgClass}">
+          ${chgArrowSVG(chgClass)}
+          <span class="gm-chg-pct">${pctStr}</span>
+          <span class="gm-chg-amt">${amtStr}</span>
+        </div>
         ${timeStr?`<div class="gm-sub">${timeStr}</div>`:''}
       </div>`;
     });
@@ -1409,6 +1401,13 @@ async function renderPulsePanel(){
 
   html += `<div class="gm-time">資料來源：Yahoo Finance　更新時間：${new Date().toLocaleString('zh-TW',{timeZone:'Asia/Taipei'})}</div>`;
   el.innerHTML = html;
+}
+
+// 漲跌 SVG 箭頭（台股慣例：紅漲、綠跌，用 currentColor 直接吃 .gm-chg-row 的顏色）
+function chgArrowSVG(cls){
+  if(cls==='up') return `<svg class="gm-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>`;
+  if(cls==='dn') return `<svg class="gm-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>`;
+  return `<svg class="gm-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>`;
 }
 
 
