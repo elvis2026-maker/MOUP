@@ -283,6 +283,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 .ai-result-name{font-size:22px;font-weight:800;color:var(--text)}
 .ai-result-sid{font-family:var(--mono);font-size:13px;color:var(--text3);margin-top:2px}
 .ai-prob-badge{padding:8px 20px;border-radius:20px;font-size:20px;font-weight:800;font-family:var(--mono)}
+.ai-prob-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.ai-prob-label{font-size:11px;color:var(--text3);font-weight:700;letter-spacing:.02em}
 .ai-reason-list{display:flex;flex-direction:column;gap:8px;margin-top:14px}
 .ai-reason-item{display:flex;gap:8px;font-size:14px;color:var(--text2);line-height:1.6;padding:10px 14px;background:var(--surface2);border-radius:8px}
 .ai-reason-item .ai-dot{flex-shrink:0;width:6px;height:6px;border-radius:50%;background:#7c3aed;margin-top:7px}
@@ -1063,7 +1065,7 @@ function aiResultHTML(s,serverData,fullMarketOnly){
     return `<div class="ai-result-card">
       <div class="ai-result-head">
         <div><div class="ai-result-name">${s?s.name:serverData.name||''}</div><div class="ai-result-sid">${s?s.sid:serverData.sid||''}</div></div>
-        <div class="ai-prob-badge" style="background:rgba(124,58,237,.12);color:#7c3aed">${prob}</div>
+        <div class="ai-prob-wrap"><div class="ai-prob-label">隔日續航機率</div><div class="ai-prob-badge" style="background:rgba(124,58,237,.12);color:#7c3aed">${prob}</div></div>
       </div>
       <div class="ai-reason-list">${(serverData.reasons||[]).map(r=>`<div class="ai-reason-item"><span class="ai-dot"></span>${r}</div>`).join('')}</div>
       ${fullMarketOnly?`<div style="margin-top:10px;font-size:11px;color:var(--text3)">⚠ 此股票不在今日電子股掃描清單內，評分為 AI 綜合研判，非系統量化評分。</div>`:''}
@@ -1098,7 +1100,7 @@ function aiResultHTML(s,serverData,fullMarketOnly){
   return `<div class="ai-result-card">
     <div class="ai-result-head">
       <div><div class="ai-result-name">${s.name}</div><div class="ai-result-sid">${s.sid}</div></div>
-      <div class="ai-prob-badge" style="background:rgba(${hexToRgb(color)},.12);color:${color}">${badgeText}</div>
+      <div class="ai-prob-wrap"><div class="ai-prob-label">${hasFullData?'隔日續航機率':'AI 綜合研判'}</div><div class="ai-prob-badge" style="background:rgba(${hexToRgb(color)},.12);color:${color}">${badgeText}</div></div>
     </div>
     <div class="ai-reason-list">${reasons.map(r=>`<div class="ai-reason-item"><span class="ai-dot"></span>${r}</div>`).join('')}</div>
     ${!hasFullData?`<div style="margin-top:10px;font-size:11px;color:var(--text3)">⚠ 此股票不在今日電子股掃描清單內，資料僅供參考，非完整量化評分。</div>`:''}
