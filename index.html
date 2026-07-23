@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>強勢股掃描｜隔日續航力分析 V44</title>
+<title>艾維斯玩股所(強勢股掃描/隔日續航力分析)</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -267,7 +267,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 .watch-star svg{width:20px;height:20px;fill:none;stroke:var(--text3);stroke-width:1.8;transition:fill .15s,stroke .15s}
 .watch-star.on svg{fill:#d97706;stroke:#d97706}
 
-/* ══ AI 診股 PANEL ══ */
+/* ══ 個股分析 PANEL ══ */
 .ai-search-box{display:flex;gap:10px;margin-bottom:18px}
 .ai-search-box input{flex:1;padding:13px 18px;border-radius:var(--r2);border:1.5px solid var(--border);font-size:15px;font-family:var(--font);background:var(--surface);color:var(--text);transition:border-color .15s}
 .ai-search-box input:focus{outline:none;border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.12)}
@@ -455,7 +455,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
       <path d="M20 27.5c1 1.2 2.4 1.8 4 1.8s3-.6 4-1.8" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
       <path d="M24 10v4M24 34v4M10 24h4M34 24h4M14 14l2.8 2.8M31.2 31.2L34 34M34 14l-2.8 2.8M16.8 31.2L14 34" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
     </svg>
-    <div class="feature-label">AI診股</div>
+    <div class="feature-label">個股分析</div>
     <div class="feature-desc">輸入代號查機率</div>
   </div>
   <div class="feature-btn" style="--fb-color:#d97706;--fb-color-l:rgba(217,119,6,.16)" onclick="switchView('watch',this)">
@@ -487,15 +487,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
   <div class="cards" id="cards"></div>
 </div>
 
-<!-- ══ 2. AI診股 PANEL ══ -->
+<!-- ══ 2. 個股分析 PANEL ══ -->
 <div id="ai-panel" style="display:none">
   <div class="ai-search-box">
     <input type="text" id="ai-input" placeholder="輸入股票代號或名稱，例如：2377 或 微星" onkeydown="if(event.key==='Enter')runAiAnalysis()">
     <button class="ai-btn" onclick="runAiAnalysis()">開始分析</button>
   </div>
   <div id="ai-suggest" class="ai-suggest"></div>
-  <div id="ai-result"><div class="ai-empty">輸入股票代號或名稱，AI 將根據今日技術指標、籌碼動向與風險評分，估算隔日續航機率。</div></div>
-  <div class="disc" style="margin-top:16px"><strong>⚠ 說明：</strong>目前僅能分析今日「盤後精選」掃描範圍內的標的；範圍外的股票需另外串接 AI 分析伺服器才能查詢（可用專案內 cloudflare-worker-optional 作為串接起點）。分析結果為機率參考，不構成投資建議。</div>
+  <div id="ai-result"><div class="ai-empty">輸入股票代號或名稱，系統將根據今日技術指標、籌碼動向與風險評分，估算隔日續航機率。</div></div>
+  <div class="disc" style="margin-top:16px"><strong>⚠ 說明：</strong>目前僅能分析今日「盤後精選」掃描範圍內的標的；範圍外的股票需另外串接分析伺服器才能查詢（可用專案內 cloudflare-worker-optional 作為串接起點）。分析結果為機率參考，不構成投資建議。</div>
 </div>
 
 <!-- ══ 3. 我的關注 PANEL ══ -->
@@ -894,13 +894,13 @@ function genHint(s){
 function toggleCard(el){ el.classList.toggle('open'); }
 
 // ════════════════════════════════════════════
-//  AI 診股：輸入代號／名稱 → 估算隔日續航機率
-//  （目前以今日「盤後精選」掃描到的技術／籌碼／風險資料為基礎的規則式評估。
-//   若要接上真正的 LLM 分析、涵蓋掃描範圍外的個股，可在 AI_ENDPOINT 填入
-//   自架的後端（例如 cloudflare-worker-optional 內加一支呼叫 AI API 的
-//   worker），此函式會優先呼叫它，失敗或未設定時才 fallback 回規則式評估。）
+//  個股分析：輸入代號／名稱 → 估算隔日續航機率
+//  AI_ENDPOINT 已接上 Cloudflare Worker（elvis-moup-api），該 Worker 呼叫
+//  Google Gemini API（gemini-3.5-flash，額度用完時退到 gemini-3.1-flash-lite），
+//  並備援 3 組金鑰輪替。若 Worker 沒回應或發生錯誤，這裡會自動 fallback
+//  回下方的規則式評估，範圍外的個股仍只能靠規則式評估（無歷史資料可用）。
 // ════════════════════════════════════════════
-const AI_ENDPOINT = ''; // 例：'https://your-worker.your-name.workers.dev/analyze'
+const AI_ENDPOINT = 'https://elvis-moup-api.elvis-liu2027.workers.dev'; // Cloudflare Worker（Gemini API 三組金鑰備援）
 
 function updateAiSuggest(){
   const box=document.getElementById('ai-suggest');
@@ -924,7 +924,7 @@ async function runAiAnalysis(){
   const resultEl=document.getElementById('ai-result');
   if(!query){ resultEl.innerHTML='<div class="ai-empty">請輸入股票代號或名稱，例如 2377 或 微星</div>'; return; }
 
-  resultEl.innerHTML='<div class="loading"><div class="spinner"></div>AI 分析中...</div>';
+  resultEl.innerHTML='<div class="loading"><div class="spinner"></div>診斷分析中...</div>';
 
   const s = findStock(query);
 
@@ -936,7 +936,7 @@ async function runAiAnalysis(){
   }
 
   if(!s){
-    resultEl.innerHTML=`<div class="ai-not-found">⚠ 「${query}」不在今日「盤後精選」掃描清單內，暫時無法分析。<br>此工具目前僅掃描電子股中通過門檻的強勢標的；若需涵蓋全市場個股，需另外串接 AI 分析伺服器（AI_ENDPOINT）。</div>`;
+    resultEl.innerHTML=`<div class="ai-not-found">⚠ 「${query}」不在今日「盤後精選」掃描清單內，暫時無法分析。<br>此工具目前僅掃描電子股中通過門檻的強勢標的；若需涵蓋全市場個股，需另外串接分析伺服器（AI_ENDPOINT）。</div>`;
     return;
   }
   resultEl.innerHTML = aiResultHTML(s,null);
