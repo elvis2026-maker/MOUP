@@ -1316,11 +1316,12 @@ async function renderPulsePanel(){
   const indices = [
     // 台灣
     {sym:'^TWII',   name:'加權指數',     flag:'🇹🇼', region:'台灣'},
-    {sym:'00632R.TW', name:'台50反1',   flag:'🇹🇼', region:'台灣'},
+    {sym:'2330.TW', name:'台積電',       flag:'🇹🇼', region:'台灣'},
     // 美國
     {sym:'^GSPC',   name:'S&P 500',     flag:'🇺🇸', region:'美國'},
     {sym:'^IXIC',   name:'Nasdaq',      flag:'🇺🇸', region:'美國'},
     {sym:'^DJI',    name:'道瓊',        flag:'🇺🇸', region:'美國'},
+    {sym:'^SOX',    name:'費城半導體',  flag:'🇺🇸', region:'美國'},
     // 亞洲
     {sym:'^N225',   name:'日經225',     flag:'🇯🇵', region:'亞洲'},
     {sym:'000001.SS',name:'上証',       flag:'🇨🇳', region:'亞洲'},
@@ -1330,11 +1331,14 @@ async function renderPulsePanel(){
     {sym:'^FTSE',   name:'英國 FTSE',   flag:'🇬🇧', region:'歐洲'},
     {sym:'^GDAXI',  name:'德國 DAX',    flag:'🇩🇪', region:'歐洲'},
     {sym:'^FCHI',   name:'法國 CAC40',  flag:'🇫🇷', region:'歐洲'},
+    {sym:'IMOEX.ME',name:'俄羅斯 MOEX', flag:'🇷🇺', region:'歐洲'},
     // 大宗商品 / 匯率
     {sym:'GC=F',    name:'黃金',        flag:'🥇', region:'大宗'},
     {sym:'CL=F',    name:'原油(WTI)',   flag:'🛢️', region:'大宗'},
     {sym:'TWD=X',   name:'美元/新台幣', flag:'💱', region:'外匯'},
+    {sym:'JPY=X',   name:'美元/日圓',   flag:'💴', region:'外匯'},
     {sym:'BTC-USD', name:'比特幣',      flag:'₿',  region:'加密'},
+    {sym:'ETH-USD', name:'以太幣',      flag:'Ξ',  region:'加密'},
   ];
 
   // V46 修正：瀏覽器直接呼叫 query2.finance.yahoo.com/v7/finance/quote 已失效
