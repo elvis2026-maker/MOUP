@@ -5,21 +5,22 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/24 20:23",
+  "updated_at": "2026/07/24 21:13",
   "trade_date": "20260724",
   "data_date": "2026-07-24",
-  "total_scanned": 587,
+  "total_scanned": 782,
   "this_round_scanned": 195,
-  "candidates_count": 5,
-  "pool_count": 19,
-  "total_api_req": 281,
+  "candidates_count": 6,
+  "pool_count": 20,
+  "total_api_req": 272,
   "scan_progress": {
     "date": "2026-07-24",
     "total_slots": 5,
     "slots_done": [
       0,
       1,
-      2
+      2,
+      3
     ]
   },
   "stocks": [
@@ -246,52 +247,6 @@
         "up_streak_days": 4,
         "dist_from_high_pct": -4.1,
         "is_new_high": false
-      },
-      "data_date": "2026-07-23",
-      "age_days": 1,
-      "is_today": false,
-      "prob": "中（60%）",
-      "prob_level": "medium",
-      "risk_flags": {}
-    },
-    {
-      "sid": "6166",
-      "name": "凌華",
-      "close": 159.5,
-      "change_pct": 10.0,
-      "volume": 7006594,
-      "market": "tse",
-      "score": 67,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "收盤靠近最高點（買盤強）",
-        "站上月線 MA20=134.53",
-        "突破近10日高點",
-        "三大法人買超 2411張"
-      ],
-      "warnings": [
-        "量能過度放大"
-      ],
-      "inst": {
-        "foreign_net": 2394,
-        "trust_net": 0,
-        "dealer_net": 16,
-        "total_net": 2411,
-        "buy_streak_days": 2
-      },
-      "ma5": 128.9,
-      "ma10": 131.1,
-      "ma20": 134.53,
-      "has_warrant": true,
-      "warrants": [],
-      "risk": {
-        "volatility_pct": 5.09,
-        "volatility_level": "高",
-        "bias20_pct": 18.3,
-        "overheated": true,
-        "up_streak_days": 4,
-        "dist_from_high_pct": 0.0,
-        "is_new_high": true
       },
       "data_date": "2026-07-23",
       "age_days": 1,
@@ -567,6 +522,52 @@
       "data_date": "2026-07-23",
       "age_days": 1,
       "is_today": false,
+      "prob": "中（55%）",
+      "prob_level": "medium",
+      "risk_flags": {}
+    },
+    {
+      "sid": "6243",
+      "name": "迅杰",
+      "close": 52.2,
+      "change_pct": 9.89,
+      "volume": 6751053,
+      "market": "tse",
+      "score": 62,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "均線多頭排列",
+        "站上月線 MA20=43.07",
+        "突破近10日高點"
+      ],
+      "warnings": [
+        "融資追價明顯"
+      ],
+      "inst": {
+        "foreign_net": 583,
+        "trust_net": 0,
+        "dealer_net": -1,
+        "total_net": 582,
+        "buy_streak_days": 2
+      },
+      "ma5": 49.33,
+      "ma10": 45.34,
+      "ma20": 43.07,
+      "has_warrant": true,
+      "warrants": [],
+      "risk": {
+        "volatility_pct": 6.76,
+        "volatility_level": "高",
+        "bias20_pct": 20.1,
+        "overheated": true,
+        "up_streak_days": 1,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
+      },
+      "data_date": "2026-07-24",
+      "age_days": 0,
+      "is_today": true,
       "prob": "中（55%）",
       "prob_level": "medium",
       "risk_flags": {}
