@@ -483,7 +483,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
       <path d="M32.6 30.1l1.8 1.8 3-3.4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <div class="feature-label">盤後精選</div>
-    <div class="feature-desc">今日強勢股清單</div>
+    <div class="feature-desc">昨日收盤篩選 → 今日追蹤</div>
   </div>
   <div class="feature-btn" style="--fb-color:#7c3aed;--fb-color-l:rgba(124,58,237,.16)" onclick="switchView('ai',this)">
     <svg class="feature-icon" viewBox="0 0 48 48" fill="none">
@@ -627,7 +627,7 @@ async function loadData(){
     }catch(e){}
 
     document.getElementById('sub-info').innerHTML=
-      `交易日 ${fmtDate(d.trade_date)} ／ 更新 ${updatedAt}${fresh} <span style="color:var(--text3);font-size:11px">｜掃描範圍：電子股</span>`;
+      `<strong>資料日期：${fmtDate(d.trade_date)}</strong>（昨日收盤資料，供今日開盤追蹤參考）／ 更新 ${updatedAt}${fresh} <span style="color:var(--text3);font-size:11px">｜掃描範圍：電子股</span>`;
     document.getElementById('s-scan').textContent=(d.total_scanned||0).toLocaleString();
     document.getElementById('s-cand').textContent=d.candidates_count||0;
     document.getElementById('s-sel').textContent=allStocks.length;
@@ -856,11 +856,11 @@ function cardHTML(s, rank){
       <!-- V14核心改進：關鍵數字直接顯示，不需展開 -->
       <div class="key-metrics">
         <div class="km-item">
-          <div class="km-lbl">昨收</div>
+          <div class="km-lbl" title="昨日收盤價">昨收</div>
           <div class="km-val">${s.close?.toFixed(1)}</div>
         </div>
         <div class="km-item">
-          <div class="km-lbl">漲幅</div>
+          <div class="km-lbl" title="昨日漲幅（非今日）">昨漲幅</div>
           <div class="km-val ${pctCls}">${pct}</div>
         </div>
         ${s.ma20?`<div class="km-divider"></div>
