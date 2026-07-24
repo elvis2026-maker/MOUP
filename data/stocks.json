@@ -5,22 +5,20 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/23 23:51",
+  "updated_at": "2026/07/24 15:04",
   "trade_date": "20260723",
   "data_date": "2026-07-23",
-  "total_scanned": 1174,
-  "this_round_scanned": 196,
-  "candidates_count": 14,
-  "pool_count": 26,
-  "total_api_req": 329,
+  "total_scanned": 1565,
+  "this_round_scanned": 391,
+  "candidates_count": 25,
+  "pool_count": 34,
+  "total_api_req": 545,
   "scan_progress": {
-    "date": "2026-07-23",
+    "date": "2026-07-24",
     "total_slots": 5,
     "slots_done": [
-      0,
       1,
-      2,
-      3
+      2
     ]
   },
   "stocks": [
@@ -301,51 +299,6 @@
       "risk_flags": {}
     },
     {
-      "sid": "4938",
-      "name": "和碩",
-      "close": 87.2,
-      "change_pct": 3.32,
-      "volume": 29077949,
-      "market": "tse",
-      "score": 64,
-      "reasons": [
-        "大漲 ≥3%",
-        "量能放大 2.3x",
-        "站上月線 MA20=82.98",
-        "突破近10日高點",
-        "三大法人買超 10681張",
-        "外資積極買超"
-      ],
-      "warnings": [],
-      "inst": {
-        "foreign_net": 12446,
-        "trust_net": -2088,
-        "dealer_net": 322,
-        "total_net": 10681,
-        "buy_streak_days": 3
-      },
-      "ma5": 82.52,
-      "ma10": 82.65,
-      "ma20": 82.98,
-      "has_warrant": true,
-      "warrants": [],
-      "risk": {
-        "volatility_pct": 2.26,
-        "volatility_level": "中",
-        "bias20_pct": 4.9,
-        "overheated": false,
-        "up_streak_days": 3,
-        "dist_from_high_pct": 0.0,
-        "is_new_high": true
-      },
-      "data_date": "2026-07-23",
-      "age_days": 0,
-      "is_today": true,
-      "prob": "中（57%）",
-      "prob_level": "medium",
-      "risk_flags": {}
-    },
-    {
       "sid": "6245",
       "name": "立端",
       "close": 84.9,
@@ -565,6 +518,53 @@
       "age_days": 0,
       "is_today": true,
       "prob": "中（54%）",
+      "prob_level": "medium",
+      "risk_flags": {}
+    },
+    {
+      "sid": "4938",
+      "name": "和碩",
+      "close": 87.2,
+      "change_pct": 3.32,
+      "volume": 29077949,
+      "market": "tse",
+      "score": 59,
+      "reasons": [
+        "大漲 ≥3%",
+        "量能放大 2.3x",
+        "站上月線 MA20=82.98",
+        "突破近10日高點",
+        "三大法人買超 10681張",
+        "外資積極買超"
+      ],
+      "warnings": [
+        "融資追價明顯"
+      ],
+      "inst": {
+        "foreign_net": 12446,
+        "trust_net": -2088,
+        "dealer_net": 322,
+        "total_net": 10681,
+        "buy_streak_days": 3
+      },
+      "ma5": 82.52,
+      "ma10": 82.65,
+      "ma20": 82.98,
+      "has_warrant": true,
+      "warrants": [],
+      "risk": {
+        "volatility_pct": 2.26,
+        "volatility_level": "中",
+        "bias20_pct": 4.9,
+        "overheated": false,
+        "up_streak_days": 3,
+        "dist_from_high_pct": 0.0,
+        "is_new_high": true
+      },
+      "data_date": "2026-07-23",
+      "age_days": 0,
+      "is_today": true,
+      "prob": "中（52%）",
       "prob_level": "medium",
       "risk_flags": {}
     },
