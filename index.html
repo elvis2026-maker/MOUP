@@ -957,11 +957,18 @@ async function _doFetchLiveQuotes(sids) {
       const cls    = chgPct > 0 ? 'lq-up' : chgPct < 0 ? 'lq-down' : 'lq-flat';
       const sign   = chgPct > 0 ? '+' : '';
       const ts     = q.ts || now;
+      // suspiciousPct=true 表示漲跌幅超過 ±20%，可能是除權息基準偏差，加提示
+      const suspWarn = q.suspiciousPct
+        ? `<span title="漲跌幅異常，可能遇到除權息基準偏差，請至 Yahoo 股市確認" style="cursor:help;color:var(--warn,#d97706);font-size:12px">⚠</span>`
+        : '';
+      const chgStr = (chgAmt != null && chgPct != null)
+        ? `${sign}${chgAmt.toFixed(2)} (${sign}${chgPct.toFixed(2)}%)`
+        : '--';
       el.innerHTML = `
         <span class="lq-label">即時股價</span>
         <span class="live-badge">LIVE</span>
         <span class="lq-price ${cls}">${q.price.toFixed(1)}</span>
-        <span class="lq-chg ${cls}">${sign}${chgAmt?.toFixed(2) ?? '--'} (${sign}${chgPct?.toFixed(2) ?? '--'}%)</span>
+        <span class="lq-chg ${cls}">${chgStr}</span>${suspWarn}
         <span class="lq-time">Yahoo Finance ${ts}</span>`;
     });
   } catch(e) {
