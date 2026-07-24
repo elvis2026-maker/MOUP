@@ -5,14 +5,14 @@
     "notice": "本資料僅供本站展示使用，禁止未經授權之重製、轉載、商業利用，或作為第三方應用程式的資料來源／API 使用。",
     "generated_by": "fetch_twse.py"
   },
-  "updated_at": "2026/07/24 21:13",
+  "updated_at": "2026/07/24 22:48",
   "trade_date": "20260724",
   "data_date": "2026-07-24",
-  "total_scanned": 782,
+  "total_scanned": 977,
   "this_round_scanned": 195,
-  "candidates_count": 6,
-  "pool_count": 20,
-  "total_api_req": 272,
+  "candidates_count": 8,
+  "pool_count": 23,
+  "total_api_req": 280,
   "scan_progress": {
     "date": "2026-07-24",
     "total_slots": 5,
@@ -20,7 +20,8 @@
       0,
       1,
       2,
-      3
+      3,
+      4
     ]
   },
   "stocks": [
@@ -251,6 +252,50 @@
       "data_date": "2026-07-23",
       "age_days": 1,
       "is_today": false,
+      "prob": "中（60%）",
+      "prob_level": "medium",
+      "risk_flags": {}
+    },
+    {
+      "sid": "6588",
+      "name": "東典光電",
+      "close": 81.5,
+      "change_pct": 9.99,
+      "volume": 1614770,
+      "market": "otc",
+      "score": 67,
+      "reasons": [
+        "強勢大漲 ≥5%",
+        "收盤靠近最高點（買盤強）",
+        "量能放大 3.8x",
+        "站上月線 MA20=81.08",
+        "突破近10日高點"
+      ],
+      "warnings": [],
+      "inst": {
+        "foreign_net": 108,
+        "trust_net": 0,
+        "dealer_net": 2,
+        "total_net": 110,
+        "buy_streak_days": 1
+      },
+      "ma5": 71.76,
+      "ma10": 75.04,
+      "ma20": 81.08,
+      "has_warrant": true,
+      "warrants": [],
+      "risk": {
+        "volatility_pct": 4.77,
+        "volatility_level": "高",
+        "bias20_pct": 1.6,
+        "overheated": false,
+        "up_streak_days": 4,
+        "dist_from_high_pct": -22.4,
+        "is_new_high": false
+      },
+      "data_date": "2026-07-24",
+      "age_days": 0,
+      "is_today": true,
       "prob": "中（60%）",
       "prob_level": "medium",
       "risk_flags": {}
@@ -657,50 +702,6 @@
       "age_days": 1,
       "is_today": false,
       "prob": "中（52%）",
-      "prob_level": "medium",
-      "risk_flags": {}
-    },
-    {
-      "sid": "2455",
-      "name": "全新",
-      "close": 345.0,
-      "change_pct": 6.32,
-      "volume": 19113416,
-      "market": "tse",
-      "score": 58,
-      "reasons": [
-        "強勢大漲 ≥5%",
-        "量能放大 3.9x",
-        "站上月線 MA20=332.68",
-        "突破近10日高點",
-        "三大法人買超 2104張"
-      ],
-      "warnings": [],
-      "inst": {
-        "foreign_net": 1481,
-        "trust_net": 362,
-        "dealer_net": 261,
-        "total_net": 2104,
-        "buy_streak_days": 2
-      },
-      "ma5": 298.3,
-      "ma10": 311.6,
-      "ma20": 332.68,
-      "has_warrant": true,
-      "warrants": [],
-      "risk": {
-        "volatility_pct": 5.4,
-        "volatility_level": "高",
-        "bias20_pct": 4.5,
-        "overheated": false,
-        "up_streak_days": 3,
-        "dist_from_high_pct": -17.1,
-        "is_new_high": false
-      },
-      "data_date": "2026-07-23",
-      "age_days": 1,
-      "is_today": false,
-      "prob": "中（51%）",
       "prob_level": "medium",
       "risk_flags": {}
     }
