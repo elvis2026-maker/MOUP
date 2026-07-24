@@ -212,6 +212,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 .score-num{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text2);min-width:28px;text-align:right}
 
 /* 展開提示箭頭 */
+.live-quote-bar{display:flex;align-items:center;gap:6px;padding:7px 20px 0;flex-wrap:wrap}
+.lq-label{font-size:11px;color:var(--text3);letter-spacing:.04em}
+.lq-price{font-family:var(--mono);font-size:16px;font-weight:700}
+.lq-chg{font-family:var(--mono);font-size:13px;font-weight:600}
+.lq-time{font-size:11px;color:var(--text3);margin-left:auto}
+.lq-loading{font-size:11px;color:var(--text3);animation:pulse 1.5s infinite}
+.lq-up{color:var(--danger)}
+.lq-down{color:var(--ok)}
+.lq-flat{color:var(--text2)}
+.live-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:#059669;letter-spacing:.04em}
+.live-badge::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:#059669;animation:pulse 2s infinite}
 .expand-hint{
   font-size:13px;
   color:var(--text3);
@@ -223,7 +234,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 /* ── 卡片展開詳細 ── */
 .card-body{display:none;padding:18px 20px 20px;border-top:1px solid var(--border);background:var(--surface2)}
 .card.open .card-body{display:block}
-.card.open .expand-hint{display:none}
+
+.expand-hint{display:none}
 .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .d-section h4{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;font-weight:700}
 .chip-row{display:flex;gap:6px;flex-wrap:wrap}
@@ -731,6 +743,9 @@ function renderCards(){
   const el   = document.getElementById('cards');
   if(!list.length){ el.innerHTML='<div class="loading" style="padding:30px">此篩選條件無資料</div>'; return; }
   el.innerHTML = list.map((s,i)=>cardHTML(s,i+1)).join('');
+  // V50：渲染後立即抓即時股價
+  const sids = list.map(s=>s.sid).filter(Boolean);
+  fetchLiveQuotes(sids);
 }
 
 function probColor(lv){
@@ -871,6 +886,10 @@ function cardHTML(s, rank){
     </div>
   </div>
   <div class="expand-hint">▼ 展開查看均線、籌碼、認購權證詳細</div>
+  <div class="live-quote-bar" id="lq-${s.sid}">
+    <span class="lq-label">即時股價</span>
+    <span class="lq-loading">載入中…</span>
+  </div>
   <div class="card-body">
     <div class="detail-grid">
       <div class="d-section">
@@ -903,6 +922,51 @@ function cardHTML(s, rank){
     </div>
   </div>
 </div>`;
+}
+
+// ── V50：個股即時股價（Yahoo Finance via Cloudflare Worker）──────
+// 每 60 秒自動更新，不影響 FinMind API 配額
+let _lqTimer = null;
+let _lqSids  = [];
+
+async function fetchLiveQuotes(sids) {
+  if (!AI_ENDPOINT || !sids.length) return;
+  _lqSids = sids;
+  clearInterval(_lqTimer);
+  await _doFetchLiveQuotes(sids);
+  _lqTimer = setInterval(() => _doFetchLiveQuotes(_lqSids), 60000);
+}
+
+async function _doFetchLiveQuotes(sids) {
+  const symStr = sids.join(',');
+  try {
+    const res = await fetch(`${AI_ENDPOINT}/stock-quote?symbols=${encodeURIComponent(symStr)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const now   = new Date().toLocaleTimeString('zh-TW', { timeZone:'Asia/Taipei', hour:'2-digit', minute:'2-digit' });
+    sids.forEach(sid => {
+      const el = document.getElementById(`lq-${sid}`);
+      if (!el) return;
+      const q = data.quotes?.[sid];
+      if (!q || q.price == null) {
+        el.innerHTML = `<span class="lq-label">即時股價</span><span class="lq-loading">暫無資料</span>`;
+        return;
+      }
+      const chgPct = q.chgPct;
+      const chgAmt = q.chgAmt;
+      const cls    = chgPct > 0 ? 'lq-up' : chgPct < 0 ? 'lq-down' : 'lq-flat';
+      const sign   = chgPct > 0 ? '+' : '';
+      const ts     = q.ts || now;
+      el.innerHTML = `
+        <span class="lq-label">即時股價</span>
+        <span class="live-badge">LIVE</span>
+        <span class="lq-price ${cls}">${q.price.toFixed(1)}</span>
+        <span class="lq-chg ${cls}">${sign}${chgAmt?.toFixed(2) ?? '--'} (${sign}${chgPct?.toFixed(2) ?? '--'}%)</span>
+        <span class="lq-time">Yahoo Finance ${ts}</span>`;
+    });
+  } catch(e) {
+    console.warn('fetchLiveQuotes error:', e.message);
+  }
 }
 
 function genHint(s){
